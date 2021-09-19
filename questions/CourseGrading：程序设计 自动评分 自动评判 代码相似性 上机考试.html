@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<!-- saved from url=(0093)https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&courseID=10&assignID=1002 -->
+<html lang="zh-CN"><link type="text/css" id="dark-mode" rel="stylesheet" href="https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&amp;courseID=10&amp;assignID=1002"><head><meta http-equiv="Content-Type" content="text/html; charset=GBK">
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">    
+    
+    <meta http-equiv="Expires" content="0"> 
+    <meta http-equiv="Cache-Control" content="no-cache"> 
+    <meta http-equiv="Pragma" content="no-cache"> 
+    <link rel="shortcut icon" href="https://judge.e1.buaa.edu.cn/images/cgicon.png">
+
+    <title>CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试</title>
+    <script language="javascript">   
+        history.pushState(null, null, document.URL);
+        window.addEventListener('popstate', function () {
+                history.pushState(null, null, document.URL);
+        });
+    </script>
+    <!-- Bootstrap core CSS -->
+    <link href="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/bootstrap.min.css" rel="stylesheet">
+    <link href="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/docs.min.css" rel="stylesheet">    
+    
+   
+    <link href="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/all.css" rel="stylesheet">
+    <link href="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/sticky-footer-navbar.css" rel="stylesheet">
+    <link href="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/cg_sv2.css" rel="stylesheet">
+    
+    <script src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/jquery-3.5.1.min.js.download"></script>
+    <script src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/popper.min.js.download"></script>
+    
+    <script src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/bootstrap.bundle.min.js.download"></script>
+    <script src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/docs.min.js.download"></script>
+
+    <link href="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/bootstrap-select.min.css" rel="stylesheet">
+    <script src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/bootstrap-select.min.js.download"></script>
+  <link href="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/css2" rel="stylesheet"></head>
+
+<body data-new-gr-c-s-check-loaded="14.1028.0" data-gr-ext-installed=""><span id="warning-container"><i data-reactroot=""></i></span>
+<nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
+    
+    <a class="navbar-brand" href="https://judge.e1.buaa.edu.cn/index.jsp"> <img src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/logo.png" border="0" height="25"></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=0">首页 <span class="sr-only">(current)</span></a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-1">课程信息</a>
+            </li>
+            
+            
+            
+            <li class="nav-item">
+                <a class="nav-link" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-2">在线作业</a>
+            </li>
+            
+            
+            
+            <li class="nav-item">
+                <a class="nav-link" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-3">在线考试</a>
+            </li>  
+            
+            
+            
+            <li class="nav-item">
+                <a class="nav-link" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-7">在线实验</a>
+            </li>   
+                
+            
+            
+            <li class="nav-item">
+                <a class="nav-link" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-4">在线答疑</a>
+            </li>    
+            
+            
+            
+            <li class="nav-item">
+                <a class="nav-link" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-5">成绩查询</a>
+            </li>               
+                      
+
+                     
+            
+            
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&amp;courseID=10&amp;assignID=1002#" id="tutorialDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  在线教程
+                </a>
+                <div class="dropdown-menu" aria-labelledby="tutorialDropdown">
+                 
+                
+                    <a class="dropdown-item" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-9&amp;columnID=3">成绩</a>
+              
+                </div>
+            </li>
+                                  
+
+        </ul>
+       
+        <form class="form-inline my-2 my-lg-0" name="courseForm" method="post" action="https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&amp;courseID=10&amp;assignID=1002">
+            
+            
+            <ul class="navbar-nav mr-auto">
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&amp;courseID=10&amp;assignID=1002#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                       <i class="fas fa-user"></i> 陈劲安
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="userDropdown">
+                      <a class="dropdown-item" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-6"><i class="far fa-user"></i>个人信息</a>
+                    <a class="dropdown-item" href="https://judge.e1.buaa.edu.cn/login/loginproc.jsp?logout=true"><i class="fas fa-sign-out-alt"></i> 注销</a>
+
+                    </div>
+                </li>
+                <!--
+                <li class="nav-item active">
+                    <a class="nav-link" href="help.jsp" target="_blank"><i class="fas fa-question-circle"></i> 帮助</a>
+                </li>
+                -->
+            </ul>
+            <label for="doChangeCourse" class="sr-only">切换课程</label>
+
+            <input type="hidden" name="doChangeCourse" value="true">
+            <select class="form-control" name="changeCourse" onchange="document.courseForm.submit()">
+              
+              <option value="10" selected="">编译技术</option>
+              
+              <option value="25">数据结构与程序设计（信息大类）</option>
+                    
+            </select>
+            
+            <ul class="navbar-nav mr-auto">
+                
+                
+                <li> <a class="nav-link" href="https://judge.e1.buaa.edu.cn/sv2/indexexp/contest/index.jsp?my=true&amp;contestCID=10"><i class="fas fa-medal text-danger"></i> 比赛</a></li>
+                
+                
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="https://judge.e1.buaa.edu.cn/acm/index.jsp" target="_blank"><i class="fas fa-code text-danger"></i> OnlineJudge</a>                    
+                </li>
+                
+                
+                    
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="https://judge.e1.buaa.edu.cn/gitlab/index.jsp" target="_blank"><i class="fab fa-gitlab text-danger"></i> GitLab</a>                    
+                </li>
+               
+               
+               
+                    <a class="nav-link" href="https://judge.e1.buaa.edu.cn/graduation/index.jsp"><i class="fa fa-user-graduate text-danger"></i> 毕业设计</a>  
+                
+               
+                
+                <li> <a class="nav-link" href="https://judge.e1.buaa.edu.cn/sv2/indexexp/pai/publicProjects.jsp"><i class="fas fa-microscope text-danger"></i> 科研</a></li>
+                
+            </ul>
+            
+        </form>
+  </div>
+</nav>
+  
+
+
+
+<script language="JavaScript" src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/common.js.download"></script>
+
+<script src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/judgeutils.js.download"></script>
+<div class="container-fluid">
+    <div class="row mr-2 ml-1 mt-3">
+        
+        <div class="col-2">
+           
+
+
+
+
+            <h6 class="d-flex justify-content-between align-items-center">
+                <span class="text-muted"><strong><i class="far fa-clock"></i> 当前作业</strong></span>
+                
+            </h6>
+            <div class="list-group list-group-flush mb-4">
+                
+                
+                  
+                        <a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?courseID=10&amp;assignID=1002" class="list-group-item list-group-item-action active">
+                            <i class="fas fa-angle-double-right"></i> 2021 文法解读作业题目
+                            
+                        </a>
+                            
+                        
+                  
+            </div>
+
+
+            <h6 class="d-flex justify-content-between align-items-center">
+                <span class="text-muted"><strong><i class="fas fa-history"></i> 历史作业</strong></span>                
+            </h6>
+            <div class="list-group list-group-flush">
+                
+                
+            </div>
+            
+      
+              
+        </div>
+        <div class="col-10">
+              
+            
+            
+        
+         
+         
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination flex-wrap">
+                        
+                        <li class="page-item"><a class="page-link" href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?assignID=1002#An_ProgramOJP">
+                                <i class="fas fa-arrow-alt-circle-left"></i> 返回通用评测题列表</a>
+                        </li>
+                        
+
+                      
+                       
+                        <li class="page-item active"><a class="page-link" href="https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&amp;courseID=10&amp;assignID=1002&amp;libCenter=false">1</a></li>
+
+                       
+
+                      
+                    </ul>
+                </nav>
+
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item"><a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?assignID=1002">2021 文法解读作业题目</a></li>
+                      <li class="breadcrumb-item"><a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?assignID=1002#An_ProgramOJP">通用评测题</a></li>
+                      <li class="breadcrumb-item active" aria-current="page"><b>1.</b> 2021文法解读作业题目</li>
+                    </ol>
+                </nav>
+         
+                <p style="box-sizing: border-box; margin-top: 0px; color: rgb(51, 51, 51); font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; white-space: normal; background-color: rgb(249, 249, 249); text-indent: 28px; line-height: 1.5em; margin-bottom: 10px;"><span style="box-sizing: border-box; font-size: 16px;">本课程的实验，是根据给定的文法实现一个小型编译器。该编译器的实现分成几个阶段来完成，请根据每次作业的提示，逐步增加该编译器的模块，最终形成一个生成特定目标代码的完整编译器。</span></p><p style="box-sizing: border-box; margin-top: 0px; color: rgb(51, 51, 51); font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; white-space: normal; background-color: rgb(249, 249, 249); text-indent: 28px; line-height: 1.5em; margin-bottom: 10px;"><span style="box-sizing: border-box; font-size: 16px;">开始编写编译器代码之前，需要仔细阅读和分析给定的文法、设计编译器的总体结构和各模块之间的接口、考虑编译的每个阶段可能出现的错误类型。为此，第一项作业从文法的解读开始。</span></p><p style="box-sizing: border-box; margin-top: 0px; color: rgb(51, 51, 51); font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; white-space: normal; background-color: rgb(249, 249, 249); text-indent: 28px; line-height: 1.5em; margin-bottom: 10px;"><span style="box-sizing: border-box; font-size: 16px;">请仔细阅读下面的文法，要求对文法中每条规则所定义的语法成分进行分析，了解其作用、限定条件、组合情况和可能产生出的句子，在此基础上，编写4-6个测试程序，要求所有测试程序能共同覆盖所有语法规则及每条规则内的常见组合情况，每个测试程序有且仅有10条写语句（每个测试程序的第一条写语句请用printf '('＜字符串＞ ')'输出自己的学号，<span style="color: #C00000;">其他写语句需尽量反映出程序定义的数据及其运算结果，以便在后续阶段测试各种语法成分翻译的正确性</span>）。请提供每个测试程序的输入数据(有&lt;读语句&gt;则提供，否则无需提供)、输出数据（<span style="background-color: #F9F9F9;">输出数据必须提供。</span>若输入输出数据没有正确提供，评测时会报错），放到文件中，按下述要求为文件命名：</span></p><p style="box-sizing: border-box; margin-top: 0px; color: rgb(51, 51, 51); font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; white-space: normal; background-color: rgb(249, 249, 249); text-indent: 28px; line-height: 1.5em; margin-bottom: 10px;"><span style="box-sizing: border-box; font-size: 16px;">测试程序及对应的输入输出数据文件分别为&nbsp;&nbsp;</span></p><p style="box-sizing: border-box; margin-top: 0px; color: rgb(51, 51, 51); font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; white-space: normal; background-color: rgb(249, 249, 249); text-indent: 28px; line-height: 1.5em; margin-bottom: 10px;"><span style="box-sizing: border-box; font-size: 16px;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;testfile1.txt&nbsp; &nbsp;input1.txt&nbsp; &nbsp;output1.txt</span></p><p style="box-sizing: border-box; margin-top: 0px; color: rgb(51, 51, 51); font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; white-space: normal; background-color: rgb(249, 249, 249); line-height: 1.5em; margin-bottom: 10px;"><span style="box-sizing: border-box; font-size: 16px;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;testfile2.txt&nbsp; &nbsp;<span style="text-indent: 28px; background-color: #F9F9F9;"><span style="box-sizing: border-box; font-size: 16px; color: #333333; font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; text-indent: 28px; background-color: #F9F9F9;">input2</span>.txt&nbsp; &nbsp;<span style="box-sizing: border-box; font-size: 16px; color: #333333; font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; text-indent: 28px; background-color: #F9F9F9;">output2</span>.txt</span></span></p><p style="box-sizing: border-box; margin-top: 0px; color: rgb(51, 51, 51); font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; white-space: normal; background-color: rgb(249, 249, 249); line-height: 1.5em; margin-bottom: 10px;"><span style="box-sizing: border-box; font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp;&nbsp;...</span></p><p style="box-sizing: border-box; margin-top: 0px; color: rgb(51, 51, 51); font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; white-space: normal; background-color: rgb(249, 249, 249); line-height: 1.5em; margin-bottom: 10px;"><span style="box-sizing: border-box; font-size: 16px;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;testfilen.txt&nbsp; &nbsp;&nbsp;<span style="text-indent: 28px; background-color: #F9F9F9;"><span style="box-sizing: border-box; font-size: 16px; color: #333333; font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; text-indent: 28px; background-color: #F9F9F9;">inputn</span>.txt&nbsp; &nbsp;<span style="box-sizing: border-box; font-size: 16px; color: #333333; font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; text-indent: 28px; background-color: #F9F9F9;">outputn</span>.txt</span></span></p><p style="box-sizing: border-box; margin-top: 0px; color: rgb(51, 51, 51); font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; white-space: normal; background-color: rgb(249, 249, 249); line-height: 1.5em; margin-bottom: 10px;"><span style="text-indent: 28px; font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp; 将以上文件打包为rar或zip文件后上传（请直接打包文件，不用置于文件夹中打包）。</span></p><p style="box-sizing: border-box; margin-top: 0px; color: rgb(51, 51, 51); font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; white-space: normal; background-color: rgb(249, 249, 249); line-height: 1.5em; margin-bottom: 10px;"><span style="box-sizing: border-box; font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;需独立完成，发现雷同按作弊处理</span></p><p style="box-sizing: border-box; margin-top: 0px; color: rgb(51, 51, 51); font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; white-space: normal; background-color: rgb(249, 249, 249); line-height: 1.5em; margin-bottom: 10px;"><span style="box-sizing: border-box; font-size: 16px;">&nbsp; &nbsp;&nbsp;&nbsp;注：本学期实验的所有作业都针对此文法，后续作业需在上一次作业的基础上进行增量式开发</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="box-sizing: border-box; font-size: 16px;"></span></p><p style="margin: 0px 0px 10px; background: rgb(249, 249, 249); line-height: 1.5em;"><span style="color: #333333; font-size: 16px;">&nbsp; &nbsp; 2021 年编译器课程设计文法如下（详见“课件下载”中的文档《2021编译技术实验文法定义及相关说明》，由于9月19日文档有修订，请及时更新）：</span></p><p style="margin: 0px 0px 10px; background: rgb(249, 249, 249); line-height: 1.5em;"><span style="color: #333333; font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;<span style="font-size: 16px; color: #FF0000;">补充更新内容：1. 常量数组不能作为参数传递；2. 相邻的 UnaryOp 不能相同，如 i = --+4; 是不符合语义约束的。</span><br></span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;编译单元 CompUnit&nbsp;→&nbsp;{Decl}&nbsp;{FuncDef}&nbsp;MainFuncDef&nbsp;&nbsp;//&nbsp;1.是否存在Decl&nbsp;2.是否存在FuncDef</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp; &nbsp; 声明 Decl&nbsp;→&nbsp;ConstDecl&nbsp;|&nbsp;VarDecl&nbsp;//&nbsp;覆盖两种声明</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;常量声明 ConstDecl&nbsp;→&nbsp;'const'&nbsp;BType&nbsp;ConstDef&nbsp;{&nbsp;','&nbsp;ConstDef&nbsp;}&nbsp;';'&nbsp;//&nbsp;1.花括号内重复0次&nbsp;2.花括号内重复多次</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;基本类型 BType&nbsp;→&nbsp;'int'&nbsp;//&nbsp;存在即可</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;常数定义 ConstDef&nbsp;→&nbsp;Ident<span style="font-size: 16px; background-color: #FFFF00;">&nbsp;{&nbsp;'['&nbsp;ConstExp&nbsp;']'&nbsp;}&nbsp;'</span>='&nbsp;ConstInitVal&nbsp;&nbsp;//&nbsp;包含普通变量、<span style="font-size: 16px; background-color: #FFFF00;">一维数组、二维数组</span>共三种情况</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;常量初值 ConstInitVal&nbsp;→&nbsp;ConstExp<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<span style="font-size: 16px; background-color: #FFFF00;">&nbsp;'{'&nbsp;[&nbsp;ConstInitVal&nbsp;{&nbsp;','&nbsp;ConstInitVal&nbsp;}&nbsp;]&nbsp;'}'</span>&nbsp;//&nbsp;1.常表达式初值&nbsp;<span style="font-size: 16px; background-color: #FFFF00;">2.一维数组初值&nbsp;3.二维数组初值</span></span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;变量声明 VarDecl&nbsp;→&nbsp;BType&nbsp;VarDef&nbsp;{&nbsp;','&nbsp;VarDef&nbsp;}&nbsp;';'&nbsp;//&nbsp;1.花括号内重复0次&nbsp;2.花括号内重复多次</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;变量定义 VarDef&nbsp;→&nbsp;Ident<span style="font-size: 16px; background-color: #FFFF00;">&nbsp;{&nbsp;'['&nbsp;ConstExp&nbsp;']'&nbsp;}&nbsp;</span>//&nbsp;包含普通变量、<span style="font-size: 16px; background-color: #FFFF00;">一维数组、二维数组定义</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;Ident&nbsp;<span style="font-size: 16px; background-color: #FFFF00;">{&nbsp;'['&nbsp;ConstExp&nbsp;']'&nbsp;}&nbsp;'</span>='&nbsp;InitVal</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;变量初值 InitVal&nbsp;→&nbsp;Exp&nbsp;|<span style="font-size: 16px; background-color: #FFFF00;">&nbsp;'{'&nbsp;[&nbsp;InitVal&nbsp;{&nbsp;','&nbsp;InitVal&nbsp;}&nbsp;]&nbsp;'}'</span>//&nbsp;1.表达式初值&nbsp;2.一维数组初值&nbsp;3.二维数组初值</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;函数定义 FuncDef&nbsp;→&nbsp;FuncType&nbsp;Ident&nbsp;'('&nbsp;[FuncFParams]&nbsp;')'&nbsp;Block&nbsp;//&nbsp;1.无形参&nbsp;2.有形参</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;主函数定义&nbsp;MainFuncDef&nbsp;→&nbsp;'int'&nbsp;'main'&nbsp;'('&nbsp;')'&nbsp;Block&nbsp;//&nbsp;存在main函数</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;函数类型 FuncType&nbsp;→&nbsp;'void'&nbsp;|&nbsp;'int'&nbsp;//&nbsp;覆盖两种类型的函数&nbsp;</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;函数形参表 FuncFParams&nbsp;→&nbsp;FuncFParam&nbsp;{&nbsp;','&nbsp;FuncFParam&nbsp;}&nbsp;//&nbsp;1.花括号内重复0次&nbsp;2.花括号内重复多次</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;函数形参 FuncFParam&nbsp;→&nbsp;BType&nbsp;Ident&nbsp;<span style="font-size: 16px; background-color: #FFFF00;">['['&nbsp;']'&nbsp;{&nbsp;'['&nbsp;ConstExp&nbsp;']'&nbsp;}]</span>&nbsp;//&nbsp;1.普通变量<span style="font-size: 16px; background-color: #FFFF00;">&nbsp;2.一维数组变量&nbsp;3.二维数组变量</span></span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;语句块 Block&nbsp;→&nbsp;'{'&nbsp;{&nbsp;BlockItem&nbsp;}&nbsp;'}'&nbsp;//&nbsp;1.花括号内重复0次&nbsp;2.花括号内重复多次</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;语句块项 BlockItem&nbsp;→&nbsp;Decl&nbsp;|&nbsp;Stmt&nbsp;//&nbsp;覆盖两种语句块项</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;语句 Stmt&nbsp;→&nbsp;LVal&nbsp;'='&nbsp;Exp&nbsp;';'&nbsp;//&nbsp;每种类型的语句都要覆盖<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;[Exp]&nbsp;';'&nbsp;&nbsp;//有无Exp两种情况<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;Block&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;'if'&nbsp;'(&nbsp;Cond&nbsp;')'&nbsp;Stmt&nbsp;[&nbsp;'else'&nbsp;Stmt&nbsp;]&nbsp;//&nbsp;1.有else&nbsp;2.无else<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;'while'&nbsp;'('&nbsp;Cond&nbsp;')'&nbsp;Stmt<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;'break'&nbsp;';'&nbsp;|&nbsp;'continue'&nbsp;';'<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;'return'&nbsp;[Exp]&nbsp;';'&nbsp;//&nbsp;1.有Exp&nbsp;2.无Exp<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;LVal&nbsp;=&nbsp;'getint''('')'';'<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;'printf' '('FormatString {',' Exp} ')'';'&nbsp;//&nbsp;1.有Exp&nbsp;2.无Exp</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;表达式 Exp&nbsp;→&nbsp;AddExp&nbsp;注：SysY&nbsp;表达式是int&nbsp;型表达式&nbsp;//&nbsp;存在即可</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;条件表达式 Cond&nbsp;→&nbsp;LOrExp&nbsp;//&nbsp;存在即可</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;左值表达式 LVal&nbsp;→&nbsp;Ident&nbsp;{'['&nbsp;Exp&nbsp;']'}&nbsp;//1.普通变量&nbsp;<span style="font-size: 16px; background-color: #FFFF00;">2.一维数组&nbsp;3.二维数组</span></span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;基本表达式 PrimaryExp&nbsp;→&nbsp;'('&nbsp;Exp&nbsp;')'&nbsp;|&nbsp;LVal&nbsp;|&nbsp;Number&nbsp;//&nbsp;三种情况均需覆盖</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;数值 Number&nbsp;→&nbsp;IntConst&nbsp;//&nbsp;存在即可</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;一元表达式 UnaryExp&nbsp;→&nbsp;PrimaryExp&nbsp;|&nbsp;Ident&nbsp;'('&nbsp;[FuncRParams]&nbsp;')'&nbsp;//&nbsp;三种情况均需覆盖,函数调用也需要覆盖FuncRParams的不同情况<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;UnaryOp&nbsp;UnaryExp&nbsp;//&nbsp;存在即可</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;单目运算符 UnaryOp&nbsp;→&nbsp;'+'&nbsp;|&nbsp;'&#8722;'&nbsp;|&nbsp;'!'&nbsp;注：'!'仅出现在条件表达式中&nbsp;//&nbsp;三种均需覆盖</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;函数实参表 FuncRParams&nbsp;→&nbsp;Exp&nbsp;{&nbsp;','&nbsp;Exp&nbsp;}&nbsp;//&nbsp;1.花括号内重复0次&nbsp;2.花括号内重复多次&nbsp;<span style="font-size: 16px; background-color: #FFFF00;">3.&nbsp;Exp需要覆盖数组传参和部分数组传参</span></span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;乘除模表达式 MulExp&nbsp;→&nbsp;UnaryExp&nbsp;|&nbsp;MulExp&nbsp;('*'&nbsp;|&nbsp;'/'&nbsp;|&nbsp;'%')&nbsp;UnaryExp&nbsp;//&nbsp;1.UnaryExp&nbsp;2.*&nbsp;3./&nbsp;4.%&nbsp;均需覆盖</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;加减表达式 AddExp&nbsp;→&nbsp;MulExp&nbsp;|&nbsp;AddExp&nbsp;('+'&nbsp;|&nbsp;'&#8722;')&nbsp;MulExp&nbsp;//&nbsp;1.MulExp&nbsp;2.+&nbsp;3.-&nbsp;均需覆盖</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;关系表达式 RelExp&nbsp;→&nbsp;AddExp&nbsp;|&nbsp;RelExp&nbsp;('&lt;'&nbsp;|&nbsp;'&gt;'&nbsp;|&nbsp;'&lt;='&nbsp;|&nbsp;'&gt;=')&nbsp;AddExp&nbsp;//&nbsp;1.AddExp&nbsp;2.&lt;&nbsp;3.&gt;&nbsp;4.&lt;=&nbsp;5.&gt;=&nbsp;均需覆盖</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;相等性表达式 EqExp&nbsp;→&nbsp;RelExp&nbsp;|&nbsp;EqExp&nbsp;('=='&nbsp;|&nbsp;'!=')&nbsp;RelExp&nbsp;//&nbsp;1.RelExp&nbsp;2.==&nbsp;3.!=&nbsp;均需覆盖</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;逻辑与表达式 LAndExp&nbsp;→&nbsp;EqExp&nbsp;|&nbsp;<span style="font-size: 16px; background-color: #C3D69B;">LAndExp&nbsp;'&amp;&amp;'&nbsp;EqExp&nbsp;</span>//&nbsp;1.EqExp&nbsp;<span style="font-size: 16px; background-color: #C3D69B;">2.&amp;&amp;&nbsp;均需覆盖</span></span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;逻辑或表达式 LOrExp&nbsp;→&nbsp;LAndExp&nbsp;|&nbsp;<span style="font-size: 16px; background-color: #C3D69B;">LOrExp&nbsp;'||'&nbsp;LAndExp</span>&nbsp;//&nbsp;1.LAndExp&nbsp;<span style="font-size: 16px; background-color: #C3D69B;">2.||&nbsp;均需覆盖</span></span></p><p style="line-height: 1.5em; margin-bottom: 10px;">&nbsp;&nbsp;&nbsp;&nbsp;常量表达式 ConstExp&nbsp;→&nbsp;AddExp&nbsp;注：使用的Ident&nbsp;必须是常量&nbsp;//&nbsp;存在即可<span style="font-size: 16px;"><br></span></p><p style="line-height: 1.5em; margin-bottom: 10px;">&nbsp;&nbsp;&nbsp;&nbsp;格式化字符 FormatChar → %d</p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;普通字符 NormalChar → 十进制编码为32,33,40-126的ASCII字符</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;字符 Char → FormatChar | NormalChar&nbsp;</span></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;&nbsp;格式化字符串 FormatString → '"'{ Char }'"'</span></p><p><br></p><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">*请注意：</span></p><ol class=" list-paddingleft-2" style="list-style-type: decimal;"><li><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">评测程序对各测试程序进行编译运行，检查输入输出是否与给定的文件一致；计算每个测试程序的覆盖率和所有测试程序的累积覆盖率，得分率=累积覆盖的项数/检查的总项数。若得分率小于90%，不给出提示，请仔细阅读文法补充或完善测试程序；得分率大于等于90%，则可以得到关于未覆盖规则或组合的提示。</span></p></li><li><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">测试程序难度分为三个等级：A、B、C，难度依次递减。其中 B 级难度需要包含文法中<span style="font-size: 16px; background-color: #FFFF00;">黄色高亮</span>内容，A 级难度需要包含<span style="font-size: 16px; background-color: #C3D69B;">绿色高亮</span>内容，其中绿色高亮部分，即程序中的条件判断需要【短路求值】规则。<span style="font-size: 16px; color: #FF0000;">上传文件时，请保证有且仅有一个 A 级难度 testfile ，编号为 1；有且仅有两个 B 级难度 testfile，编号为 2 和 3；其余为 C 级难度。即 testfile 编号越小，难度越高。</span></span></p></li><li><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">请同学在本地使用 gcc 8.5.0 以上的版本进行调测，需要替换输入的 getint() 函数为scanf（详见文档第一节）。</span></p></li><li><p style="line-height: 1.5em; margin-bottom: 10px;"><span style="font-size: 16px;">如果对测试结果有异议的话，请联系各班助教，课程组将进行错误排查。<br></span></p></li></ol>
+                
+                <hr>
+                    
+						
+                    
+						
+						
+                    
+                    提交源文件
+                    
+                    ， 只能提交以 <kbd>rar、zip</kbd> 为后缀的文件
+                    				
+                    <form class="form-inline my-2" name="upload" onsubmit="return filesubmit()" method="post" enctype="multipart/form-data" target="showmessage" action="https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&amp;courseID=10&amp;assignID=1002">
+
+                        <div class="form-group">
+                            <label class="sr-only" for="CGFILE"></label>
+                            <input name="FILE1" type="file" id="CGFILE" required="">
+                        </div>
+                        <input id="ojpSubmitBtn" type="button" name="ojpSubmitBtn" class="btn btn-success" value="提 交">          
+                        
+                
+                    </form>
+                    <progress class="d-none" id="localfileprocess"></progress>
+                    <p class="text-danger font-weight-bold font-italic" id="fileuploadmsg"></p>
+                    <div class="card">
+                        <div class="card-header">
+                          运行结果
+                        </div>
+                        <div class="card-body">
+                            <iframe id="showmessageFRAME" name="showmessage" src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/showOJPProcessMsg.html" frameborder="0" height="500" marginheight="0" marginwidth="0" width="100%"></iframe>
+                        </div>
+                    </div>     
+                        
+                    <script src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/ajax.js.download" type="text/javascript"></script>
+                    <script type="text/javascript" language="javascript">
+                        var datenow = new Date();
+                        var submitStartTime = datenow.getTime();
+                        var firstLoad = true;
+                        var uploadQueryString = "";
+                        function filesubmit() {	
+
+
+                            var filename = document.upload.FILE1.value;
+
+                            if(filename.length<1) {
+                                    alert("请输入要提交的文件!");
+                                    return false;
+                            }
+                            if(!isIeLessThan9()) {
+                                    var maxFileSize = 1048576;
+                                    var uploadFileObj = document.getElementById("CGFILE").files[0];
+
+                                    if(uploadFileObj.size > maxFileSize) {
+                                        alert("上传的文件大小不能超过 1024 KB !" );
+                                        return false;
+                                    }
+                                }
+
+                            
+                                if(!CGHasExtension(filename, ['.rar', '.zip'])) {
+                                    alert("文件格式不对，上传文件格式仅限于：rar,zip");
+                                    return false;
+                                }
+
+                            
+
+                            var now = new Date();       
+                            var submitTimeSpent = Math.floor((now.getTime() - submitStartTime) / 1000);     
+                            if((submitTimeSpent < 10) && (!firstLoad)) {                    
+                                alert("两次提交的时间间隔不能少于10秒！");
+                                return false;
+                            }
+                            firstLoad = false;
+
+                            submitStartTime = now.getTime();
+                            var requestString = "showOJPProcessMsg.jsp?problemID=5827&assignID=1002&doSubmit=true";               
+                            uploadQueryString = requestString + "&wtime=" + submitTimeSpent; 
+
+                            document.getElementById("ojpSubmitBtn").disabled=true;
+                            document.getElementById("ojpSubmitBtn").value="正在处理...";
+                            try {
+                                document.getElementById("cancelBtn").disabled=false;
+                            }catch {
+                                // object does not exist
+                            }
+                            cgShowLoading('showmessageFRAME', '正在上传......，请等待上传完毕。');
+                            //cgShowProcessLoading('showmessageFRAME');
+
+                            return true;
+                        }
+                        
+                        function cancelcb() {
+                            document.getElementById("cancelBtn").innerHTML="取消";
+                        }
+                        function doCancelJudge() {
+                            if(confirm("确定取消正在执行的评测任务吗？")) {
+                                document.getElementById("cancelBtn").innerHTML="正在取消评测......";
+                                document.getElementById("cancelBtn").disabled=true;
+                                var cancelURL="showOJPProcessMsg.jsp?problemID=5827&assignID=1002&doCancel=true";
+                                cgVoidExec(cancelURL, cancelcb);
+                            }
+                        }
+                        
+                        
+                        $('#ojpSubmitBtn').on('click', function() {
+
+                            var file = document.getElementById("CGFILE").files[0];
+                            if(!filesubmit()) {
+                                return;
+                            }
+
+                            var filename = file.name;
+
+                            document.getElementById("fileuploadmsg").innerHTML="";
+
+
+                            var ext=filename.substring(filename.lastIndexOf('.'));
+
+                            document.getElementById("localfileprocess").className="d-inline";
+
+                            var newFormData = new FormData();
+                            
+                            var chineseRE=/[\u4E00-\u9FA5]|[\uFE30-\uFFA0]/gi;
+                            if (chineseRE.exec(filename)) {
+                                var imgName = "18364" + Date.now() + ext;
+                                newFormData.append('file', file, imgName);
+                            } else {
+                                newFormData.append('file', file);
+                            }
+
+                            
+                            $.ajax({
+                                // Your server script to process the upload
+                                url: uploadQueryString,
+                                type: 'POST',
+
+                                // Form data
+                                data: newFormData,
+
+                                // Tell jQuery not to process data or worry about content-type
+                                // You *must* include these options!
+                                cache: false,
+                                contentType: false,
+                                processData: false,
+
+                                // Custom XMLHttpRequest
+                                xhr: function() {
+                                    var myXhr = $.ajaxSettings.xhr();
+                                    if (myXhr.upload) {
+                                        // For handling the progress of the upload
+                                        myXhr.upload.addEventListener('progress', function(e) {
+                                            if (e.lengthComputable) {
+                                                $('progress').attr({
+                                                    value: e.loaded,
+                                                    max: e.total,
+                                                });
+                                            }
+                                        } , false);
+                                    }
+                                    return myXhr;
+                                }
+                            }).done(function(msg){ 
+                                document.getElementById("localfileprocess").className="d-none";
+
+                                //document.getElementById("fileuploadmsg").innerHTML=msg;
+
+                                //document.getElementById("ojpSubmitBtn").disabled=false;
+                                //document.getElementById("ojpSubmitBtn").value="提 交"; 
+
+                                frames['showmessage'].location.href="showOJPProcessMsg.jsp?problemID=5827&assignID=1002";	
+                            }).fail(function(msg){ 
+
+                                document.getElementById("fileuploadmsg").innerHTML="上传失败，检查网络是否正常。";
+                                document.getElementById("ojpSubmitBtn").disabled=false;
+                                document.getElementById("ojpSubmitBtn").value="提 交"; 
+                            });
+                        });
+
+                    </script>    
+                        
+            
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination flex-wrap">
+                            
+                            <li class="page-item"><a class="page-link" href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?assignID=1002#An_ProgramOJP">
+                                    <i class="fas fa-arrow-alt-circle-left"></i> 返回通用评测题列表</a>
+                            </li>
+                            
+
+                          
+                           
+                            <li class="page-item active"><a class="page-link" href="https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&amp;courseID=10&amp;assignID=1002&amp;libCenter=false">1</a></li>
+
+                           
+
+                          
+                        </ul>
+                    </nav>
+            
+                        
+            
+                        
+
+
+
+
+            <script type="text/javascript" src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/URI.js.download"></script>
+            <script type="text/javascript" src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/analytics.js.download"></script>
+            <script type="text/javascript" src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/cgplugin.js.download"></script>
+            <script>
+
+                const cgtracker = _analytics.init({
+                    app: 'judge.e1.buaa.edu.cn',
+                    plugins: [
+                        cgXAPIPlugin({
+                            // 采集服务器地址
+                            trackEndpoint: "http://10.212.31.87:8080/cglearning",
+                            // 采集域名
+                            trackHomePage: "judge.e1.buaa.edu.cn",
+                            // 用户token
+                            trackToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzIxMDQ3MTksImlzcyI6Imh0dHBzOi8vbGVhcm5pbmcuZWR1Y2cubmV0LyIsIumZiOWKsuWuiSI6Ijc5MDY2MDEyIn0.O0CGb0bM8kX3KK1DO5SmSeQXROqydJ5DFrUMGWlnj8g"
+                        })
+                    ]
+                });
+                window.cgtracker = cgtracker;
+                function enterCourse(){
+                    window.cgtracker.track('enter', {
+                        "type": "pro",
+                        "id": "5827",
+                        "name": "2021文法解读作业题目",
+                        "parent": {
+                            "type": "homework",
+                            "id": "1002",
+                            "name": "2021 文法解读作业题目",
+                            "parent": {
+                                "type": "course",
+                                "id": "10",
+                                "name": "编译技术"
+                            }
+                        }
+                    }
+                    )
+
+                    // Page tracking with page data overrides
+                    window.cgtracker.page()
+
+                    // Identify with additional traits
+                    window.cgtracker.identify('79066012', {
+                      name: '陈劲安',
+                      email: 'tjan2000@gmail.com'
+                    })
+                }
+                enterCourse();
+
+            </script>
+              
+
+            
+            
+        </div>
+    </div>
+</div>	  
+          
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    <iframe src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/stayalive.html" frameborder="0" height="0" marginheight="0" marginwidth="0" width="0"></iframe>
+    
+    <footer id="cgfooter" style="min-height: 70px; width: 100%; padding: 15px;position: relative;bottom: 0;" class="bg-light mt-5">
+      <div class="container text-center">
+       
+              <p><span style="color: rgb(102, 102, 153);">北京航空航天大学 计算机学院</span></p><p><span style="color: rgb(102, 102, 153);">若重置密码，请与当前的任课教师联系</span></p>
+      </div>
+    </footer>
+    
+    
+  
+  
+
+
+ 
+  
+
+<div id="wot-new-assistant-container"><div data-reactroot=""></div></div></body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>

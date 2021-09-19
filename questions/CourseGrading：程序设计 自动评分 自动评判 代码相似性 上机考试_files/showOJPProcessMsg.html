@@ -1,0 +1,55 @@
+
+<!-- saved from url=(0090)https://judge.e1.buaa.edu.cn/assignment/showOJPProcessMsg.jsp?problemID=5827&assignID=1002 -->
+<html><link type="text/css" id="dark-mode" rel="stylesheet" href="https://judge.e1.buaa.edu.cn/assignment/showOJPProcessMsg.jsp?problemID=5827&amp;assignID=1002"><head><meta http-equiv="Content-Type" content="text/html; charset=GBK">
+<title></title>
+<link href="./style.css" rel="stylesheet" type="text/css">
+<script src="./jquery-1.3.2.min.js.download" type="text/javascript"></script>
+      
+ <script src="./ajax.js.download" type="text/javascript"></script>
+<script language="JavaScript" type="text/javascript">
+    function cb() {     
+        var html = "";
+        $("#morediv").html(html);
+        
+        parent.document.getElementById("ojpSubmitBtn").disabled=false;
+        parent.document.getElementById("ojpSubmitBtn").value="提 交";
+        try {
+            parent.document.getElementById("cancelBtn").disabled=true;
+        }catch {
+            // object does not exist
+        }
+    }
+    
+    
+   
+    $(document).ready(function(){
+
+        ajaxGetURL("result", "showOJPProcessJSON.jsp?assignID=1002&problemID=5827&userID=1e0WAssm358", cb);
+    });
+    
+</script>
+</head>
+<body bgcolor="#FFFFFF" marginwidth="0" marginheight="0" data-new-gr-c-s-check-loaded="14.1028.0" data-gr-ext-installed="">
+<table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+
+ <tbody><tr> 
+ <td height="100%">
+        
+    
+    
+    <div id="result">还未提交源文件</div>
+ 	
+ </td>
+ </tr>
+
+ <tr>
+     <td align="center">
+         <div id="morediv"></div>
+         <br>         
+     </td>
+ </tr>
+
+</tbody></table>
+
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>
