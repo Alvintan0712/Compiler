@@ -1,21 +1,20 @@
 #include <stdio.h>
 
+int v1, v2 = 2, v3;
+int arr1[2], arr2[3], arr3[4] = {1,-1,+-1,-+1};
+int arr4[1][2] = {{3,4}}, arr5[7][8];
+
+int b1 = 6;
+int b2[2] = {7,-8};
+int b3[1][2] = {{9,10}};
+
 const int a1=1;
 const int a2[2] = {2,-3};
 const int a3[1][2] = {{-4,5}};
-      int b1 = 6;
-      int b2[2] = {7, -8};
-      int b3[1][2] = {  {9  ,10}};
 
 const int c1  = 1, c2 = 2, c3 = 3;
 const int d1[2] = {4,-5}, d2[3] = {6,7,-8};
 const int e1[1][2] = {{3,1}}, e2[2][3] = {{9,10,-11},{-12,13,14}};
-int v1, 
-    v2 = 2, 
-    v3;
-int 
-arr1[2], arr2[3], arr3[4] = {1,-1,+-1,-+1};
-int arr4[5][6], arr5[7][8];
 
 int getint() {
     int n;
@@ -62,20 +61,21 @@ int main() {
     x = getint();
     ;
     {}
-    int i = 0;
-    while (i < x) {
-        if (i == 2) {
-            i = i + 2;
+    int i;
+    b3[0][0] = 0;
+    while (b3[0][0] < x) {
+        if (b3[0][0] == 2) {
+            b3[0][0] = b3[0][0] + 2;
             continue;
         }
-        else if (i == 5) break;
-        i = i + 1;
+        else if (b3[0][0] == 5) break;
+        b3[0][0] = b3[0][0] + 1;
     }
-    print(i);
+    print(b3[0][0]);
 
     if (!0 || 1) printf("! is work\n");
     x = 8 * (7 + 6) / (2 - 3) % 2;
-    print(x);
+    printf("%d %d\n", x, e1[0][1]);
 
     int arrr[3][3];
     i = 0;
@@ -93,9 +93,9 @@ int main() {
     print(res);
 
     x = getint();
-    i = 0;
-    while (i < x) i = i + 1;
-    print(i);
+    arr2[0] = 0;
+    while (arr2[0] < x) arr2[0] = arr2[0] + 1;
+    print(arr2[0]);
     printf("end compile\n");
 
     return 0;
