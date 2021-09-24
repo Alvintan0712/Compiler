@@ -51,7 +51,7 @@ void LexicalAnalyzer::nextSymbol() {
         c = nextChar();
         if (c == '&') {
             sym += c;
-            symbols.push_back(make_pair(OR, sym));
+            symbols.push_back(make_pair(AND, sym));
             return;
         } else {
             cout << "unknown symbols" << endl;
@@ -84,6 +84,24 @@ void LexicalAnalyzer::nextSymbol() {
 
             sym = "";
             sym += c;
+        }
+    } else if (c == '/') {
+        c = nextChar();
+        if (c == '/') {
+            while (c != '\n' && c != '\0')
+                c = nextChar();
+            return;
+        } else if (c == '*') {
+            char cc;
+            c = nextChar();
+            cc = c; c = nextChar();
+            while (cc != '*' || c != '/')
+                cc = c, c = nextChar();
+            return;
+        } else {
+            symbols.push_back(make_pair(DIV, sym));
+            ptr--;
+            return;
         }
     }
 
@@ -148,10 +166,7 @@ bool LexicalAnalyzer::checkUnary(string sym) {
     } else if (sym == "*") {
         symbols.push_back(make_pair(MULT, sym));
         return true;
-    } else if (sym == "/") {
-        symbols.push_back(make_pair(DIV, sym));
-        return true;
-    } else if (sym == "%%") {
+    } else if (sym == "%") {
         symbols.push_back(make_pair(MOD, sym));
         return true;
     } else if (sym == ";") {
@@ -195,6 +210,7 @@ void LexicalAnalyzer::output() {
             "NEQ", "ASSIGN", "SEMICN", "COMMA", "LPARENT", "RPARENT", "LBRACK",
             "RBRACK", "LBRACE", "RBRACE"
     };
+    ofstream f("output.txt");
     for (auto x : symbols)
-        cout << symbolsName[x.first] << ' ' << x.second << endl;
+        f << symbolsName[x.first] << ' ' << x.second << endl;
 }
