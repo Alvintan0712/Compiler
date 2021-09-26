@@ -42,32 +42,25 @@ void LexicalAnalyzer::nextSymbol() {
         if (c == '|') {
             sym += c;
             symbols.push_back(make_pair(OR, sym));
-            return;
         } else {
             cout << "unknown symbols" << endl;
-            return;
         }
     } else if (c == '&') {
         c = nextChar();
         if (c == '&') {
             sym += c;
             symbols.push_back(make_pair(AND, sym));
-            return;
         } else {
             cout << "unknown symbols" << endl;
-            return;
         }
     } else if (c == '!') {
         c = nextChar();
         if (c == '=') {
             sym += c;
             symbols.push_back(make_pair(NEQ, sym));
-            return;
         } else {
             symbols.push_back(make_pair(NOT, sym));
-
-            sym = "";
-            sym += c;
+            ptr--;
         }
     } else if (c == '=' || c == '<' || c == '>') {
         c = nextChar();
@@ -76,36 +69,28 @@ void LexicalAnalyzer::nextSymbol() {
             if (sym == "==") symbols.push_back(make_pair(EQL, sym));
             else if (sym == "<=") symbols.push_back(make_pair(LEQ, sym));
             else if (sym == ">=") symbols.push_back(make_pair(GEQ, sym));
-            return;
         } else {
             if (sym == "=") symbols.push_back(make_pair(ASSIGN, sym));
             else if (sym == "<") symbols.push_back(make_pair(LSS, sym));
             else if (sym == ">") symbols.push_back(make_pair(GRE, sym));
-
-            sym = "";
-            sym += c;
+            ptr--;
         }
     } else if (c == '/') {
         c = nextChar();
         if (c == '/') {
             while (c != '\n' && c != '\0')
                 c = nextChar();
-            return;
         } else if (c == '*') {
             char cc;
             c = nextChar();
             cc = c; c = nextChar();
             while (cc != '*' || c != '/')
                 cc = c, c = nextChar();
-            return;
         } else {
             symbols.push_back(make_pair(DIV, sym));
             ptr--;
-            return;
         }
-    }
-
-    if (isalpha(c)) {
+    } else if (c == '_' || isalpha(c)) {
         sym = "";
         while (c == '_' || isalpha(c) || isdigit(c)) {
             sym += c;
