@@ -36,8 +36,8 @@ int main() {
         printf("%d\n", i);
         i = i + 1;
     }
-
-    printf("end compile\n");
+    int a11_1___ = 10;
+    if (a11_1___)printf("end compile\n");
 
     return 0;
 }

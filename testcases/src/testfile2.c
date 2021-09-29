@@ -96,7 +96,8 @@ int main() {
     arr2[0] = 0;
     while (arr2[0] < x) arr2[0] = arr2[0] + 1;
     print(arr2[0]);
-    printf("end compile\n");
+    int _check_ = 0;
+    if(!_check_) printf("end compile\n");
 
     return 0;
 }

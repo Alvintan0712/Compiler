@@ -99,8 +99,10 @@ int main() {
         i = i + 1;
     }
     print(res);
+    int check_123 = 0*1 + 2;
+    if (check_123) 
 
-    printf("end compile\n");
+        printf("end compile\n");
 
     return 0;
 }

@@ -152,7 +152,8 @@ main() {
     int arrr[3][3] = {{1,2,3},{4,5,6},{7,8,9}};
     x = isPrime(arrr[2][2]);
     printMatrix(arrr, 3);
-    printf("end compile\n");
+    int __check = 1 + 0 - 1 / 2;
+    if(__check) printf("end compile\n");
 
     return 0;
 }
