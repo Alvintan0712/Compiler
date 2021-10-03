@@ -4,8 +4,17 @@
 
 #ifndef SRC_SYMBOL_H
 #define SRC_SYMBOL_H
+#include <bits/stdc++.h>
+using namespace std;
 
-#endif //SRC_SYMBOL_H
+const string symbolsName[] = {
+        "UNKNOWN", "END", "IDENFR", "INTCON", "STRCON", "MAINTK", "CONSTTK",
+        "INTTK", "BREAKTK", "CONTINUETK", "IFTK", "ELSETK", "NOT", "AND",
+        "OR", "WHILETK", "GETINTTK", "PRINTFTK", "RETURNTK", "PLUS", "MINU",
+        "VOIDTK", "MULT", "DIV", "MOD", "LSS", "LEQ", "GRE", "GEQ", "EQL",
+        "NEQ", "ASSIGN", "SEMICN", "COMMA", "LPARENT", "RPARENT", "LBRACK",
+        "RBRACK", "LBRACE", "RBRACE"
+};
 
 enum symbol {
     UNKNOWN,    // unknown symbol
@@ -49,3 +58,5 @@ enum symbol {
     LBRACE,     // {
     RBRACE      // }
 };
+
+#endif //SRC_SYMBOL_H

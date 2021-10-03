@@ -182,20 +182,12 @@ bool LexicalAnalyzer::checkUnary(string sym) {
     return false;
 }
 
-void LexicalAnalyzer::printSrc() {
-    cout << src << endl;
-}
-
 void LexicalAnalyzer::output() {
-    const string symbolsName[] = {
-            "UNKNOWN", "END", "IDENFR", "INTCON", "STRCON", "MAINTK", "CONSTTK",
-            "INTTK", "BREAKTK", "CONTINUETK", "IFTK", "ELSETK", "NOT", "AND",
-            "OR", "WHILETK", "GETINTTK", "PRINTFTK", "RETURNTK", "PLUS", "MINU",
-            "VOIDTK", "MULT", "DIV", "MOD", "LSS", "LEQ", "GRE", "GEQ", "EQL",
-            "NEQ", "ASSIGN", "SEMICN", "COMMA", "LPARENT", "RPARENT", "LBRACK",
-            "RBRACK", "LBRACE", "RBRACE"
-    };
     ofstream f("output.txt");
     for (auto x : symbols)
         f << symbolsName[x.first] << ' ' << x.second << endl;
+}
+
+vector<pair<symbol, string>> LexicalAnalyzer::getSymbols() {
+    return symbols;
 }
