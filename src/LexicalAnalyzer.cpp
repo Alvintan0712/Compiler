@@ -11,18 +11,18 @@ LexicalAnalyzer::LexicalAnalyzer(string buffer) {
 }
 
 void LexicalAnalyzer::initialTokens() {
-    tokens["main"] = MAINTK;
-    tokens["const"] = CONSTTK;
+    tokens["main"] = MIANTK;
+    tokens["const"] = CCONSTTK;
     tokens["int"] = INTTK;
-    tokens["break"] = BREAKTK;
-    tokens["continue"] = CONTINUETK;
-    tokens["if"] = IFTK;
-    tokens["else"] = ELSETK;
-    tokens["while"] = WHILETK;
-    tokens["getint"] = GETINTTK;
-    tokens["printf"] = PRINTFTK;
-    tokens["return"] = RETURNTK;
-    tokens["void"] = VOIDTK;
+    tokens["break"] = BBREAKTK;
+    tokens["continue"] = CCONTINUETK;
+    tokens["if"] = IFFTK;
+    tokens["else"] = EELSETK;
+    tokens["while"] = WWHILETK;
+    tokens["getint"] = GGETINTTK;
+    tokens["printf"] = PRINTTK;
+    tokens["return"] = RETURTK;
+    tokens["void"] = VOTK;
 }
 
 void LexicalAnalyzer::analyze() {
@@ -49,7 +49,7 @@ void LexicalAnalyzer::nextSymbol() {
         c = nextChar();
         if (c == '&') {
             sym += c;
-            symbols.push_back(make_pair(AND, sym));
+            symbols.push_back(make_pair(ANDD, sym));
         } else {
             cout << "unknown symbols" << endl;
         }
@@ -57,22 +57,22 @@ void LexicalAnalyzer::nextSymbol() {
         c = nextChar();
         if (c == '=') {
             sym += c;
-            symbols.push_back(make_pair(NEQ, sym));
+            symbols.push_back(make_pair(NOTEQUAL, sym));
         } else {
-            symbols.push_back(make_pair(NOT, sym));
+            symbols.push_back(make_pair(NOTT, sym));
             ptr--;
         }
     } else if (c == '=' || c == '<' || c == '>') {
         c = nextChar();
         if (c == '=') {
             sym += c;
-            if (sym == "==") symbols.push_back(make_pair(EQL, sym));
-            else if (sym == "<=") symbols.push_back(make_pair(LEQ, sym));
-            else if (sym == ">=") symbols.push_back(make_pair(GEQ, sym));
+            if (sym == "==") symbols.push_back(make_pair(EQUAL, sym));
+            else if (sym == "<=") symbols.push_back(make_pair(LEQUAL, sym));
+            else if (sym == ">=") symbols.push_back(make_pair(GEEQ, sym));
         } else {
-            if (sym == "=") symbols.push_back(make_pair(ASSIGN, sym));
-            else if (sym == "<") symbols.push_back(make_pair(LSS, sym));
-            else if (sym == ">") symbols.push_back(make_pair(GRE, sym));
+            if (sym == "=") symbols.push_back(make_pair(ASS, sym));
+            else if (sym == "<") symbols.push_back(make_pair(LESS, sym));
+            else if (sym == ">") symbols.push_back(make_pair(BGE, sym));
             ptr--;
         }
     } else if (c == '/') {
@@ -87,7 +87,7 @@ void LexicalAnalyzer::nextSymbol() {
             while (cc != '*' || c != '/')
                 cc = c, c = nextChar();
         } else {
-            symbols.push_back(make_pair(DIV, sym));
+            symbols.push_back(make_pair(DIVV, sym));
             ptr--;
         }
     } else if (c == '_' || isalpha(c)) {
@@ -98,14 +98,14 @@ void LexicalAnalyzer::nextSymbol() {
         }
         ptr--;
         if (tokens.count(sym)) symbols.push_back(make_pair(tokens[sym], sym));
-        else symbols.push_back(make_pair(IDENFR, sym));
+        else symbols.push_back(make_pair(IDENFRR, sym));
     } else if (isdigit(c)) {
         bool iszero = c == '0';
         if (iszero && isdigit(viewNextChar())) {
             cout << "no zero prefix number" << endl;
             return;
         } else if (iszero) {
-            symbols.push_back(make_pair(INTCON, sym));
+            symbols.push_back(make_pair(INTCONN, sym));
             return;
         }
         sym = "";
@@ -114,7 +114,7 @@ void LexicalAnalyzer::nextSymbol() {
             c = nextChar();
         }
         ptr--;
-        symbols.push_back(make_pair(INTCON, sym));
+        symbols.push_back(make_pair(INTCONN, sym));
     } else if (c == '\"') {
         do {
             c = nextChar();
@@ -129,7 +129,7 @@ void LexicalAnalyzer::nextSymbol() {
                 cout << "wrong format in FormatString" << endl;
             }
         } while (c != '\"');
-        symbols.push_back(make_pair(STRCON, sym));
+        symbols.push_back(make_pair(STRCONN, sym));
     }
 }
 
@@ -143,40 +143,40 @@ char LexicalAnalyzer::viewNextChar() {
 
 bool LexicalAnalyzer::checkUnary(string sym) {
     if (sym == "+") {
-        symbols.push_back(make_pair(PLUS, sym));
+        symbols.push_back(make_pair(PLUSS, sym));
         return true;
     } else if (sym == "-") {
-        symbols.push_back(make_pair(MINU, sym));
+        symbols.push_back(make_pair(MINUS, sym));
         return true;
     } else if (sym == "*") {
-        symbols.push_back(make_pair(MULT, sym));
+        symbols.push_back(make_pair(MUL, sym));
         return true;
     } else if (sym == "%") {
         symbols.push_back(make_pair(MOD, sym));
         return true;
     } else if (sym == ";") {
-        symbols.push_back(make_pair(SEMICN, sym));
+        symbols.push_back(make_pair(SEMICOLON, sym));
         return true;
     } else if (sym == ",") {
-        symbols.push_back(make_pair(COMMA, sym));
+        symbols.push_back(make_pair(COMM, sym));
         return true;
     } else if (sym == "(") {
-        symbols.push_back(make_pair(LPARENT, sym));
+        symbols.push_back(make_pair(LPRT, sym));
         return true;
     } else if (sym == ")") {
-        symbols.push_back(make_pair(RPARENT, sym));
+        symbols.push_back(make_pair(RPRT, sym));
         return true;
     } else if (sym == "[") {
-        symbols.push_back(make_pair(LBRACK, sym));
+        symbols.push_back(make_pair(LBRK, sym));
         return true;
     } else if (sym == "]") {
-        symbols.push_back(make_pair(RBRACK, sym));
+        symbols.push_back(make_pair(RBRK, sym));
         return true;
     } else if (sym == "{") {
-        symbols.push_back(make_pair(LBRACE, sym));
+        symbols.push_back(make_pair(LBRE, sym));
         return true;
     } else if (sym == "}") {
-        symbols.push_back(make_pair(RBRACE, sym));
+        symbols.push_back(make_pair(RBRE, sym));
         return true;
     }
     return false;
