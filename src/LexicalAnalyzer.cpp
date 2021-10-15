@@ -4,6 +4,7 @@
 
 #include "LexicalAnalyzer.h"
 
+int row = 1, col = 1;
 LexicalAnalyzer::LexicalAnalyzer(string buffer) {
     src = buffer;
     initialTokens();
@@ -41,7 +42,7 @@ void LexicalAnalyzer::nextSymbol() {
         c = nextChar();
         if (c == '|') {
             sym += c;
-            symbols.push_back(make_pair(OR, sym));
+            symbols.push_back(Symbol(OR, sym, row, col));
         } else {
             cout << "unknown symbols" << endl;
         }
@@ -49,7 +50,7 @@ void LexicalAnalyzer::nextSymbol() {
         c = nextChar();
         if (c == '&') {
             sym += c;
-            symbols.push_back(make_pair(AND, sym));
+            symbols.push_back(Symbol(AND, sym, row, col));
         } else {
             cout << "unknown symbols" << endl;
         }
@@ -57,22 +58,22 @@ void LexicalAnalyzer::nextSymbol() {
         c = nextChar();
         if (c == '=') {
             sym += c;
-            symbols.push_back(make_pair(NEQ, sym));
+            symbols.push_back(Symbol(NEQ, sym, row, col));
         } else {
-            symbols.push_back(make_pair(NOT, sym));
+            symbols.push_back(Symbol(NOT, sym, row, col));
             ptr--;
         }
     } else if (c == '=' || c == '<' || c == '>') {
         c = nextChar();
         if (c == '=') {
             sym += c;
-            if (sym == "==") symbols.push_back(make_pair(EQL, sym));
-            else if (sym == "<=") symbols.push_back(make_pair(LEQ, sym));
-            else if (sym == ">=") symbols.push_back(make_pair(GEQ, sym));
+            if (sym == "==") symbols.push_back(Symbol(EQL, sym, row, col));
+            else if (sym == "<=") symbols.push_back(Symbol(LEQ, sym, row, col));
+            else if (sym == ">=") symbols.push_back(Symbol(GEQ, sym, row, col));
         } else {
-            if (sym == "=") symbols.push_back(make_pair(ASSIGN, sym));
-            else if (sym == "<") symbols.push_back(make_pair(LSS, sym));
-            else if (sym == ">") symbols.push_back(make_pair(GRE, sym));
+            if (sym == "=") symbols.push_back(Symbol(ASSIGN, sym, row, col));
+            else if (sym == "<") symbols.push_back(Symbol(LSS, sym, row, col));
+            else if (sym == ">") symbols.push_back(Symbol(GRE, sym, row, col));
             ptr--;
         }
     } else if (c == '/') {
@@ -87,7 +88,7 @@ void LexicalAnalyzer::nextSymbol() {
             while (cc != '*' || c != '/')
                 cc = c, c = nextChar();
         } else {
-            symbols.push_back(make_pair(DIV, sym));
+            symbols.push_back(Symbol(DIV, sym, row, col));
             ptr--;
         }
     } else if (c == '_' || isalpha(c)) {
@@ -97,15 +98,15 @@ void LexicalAnalyzer::nextSymbol() {
             c = nextChar();
         }
         ptr--;
-        if (tokens.count(sym)) symbols.push_back(make_pair(tokens[sym], sym));
-        else symbols.push_back(make_pair(IDENFR, sym));
+        if (tokens.count(sym)) symbols.push_back(Symbol(tokens[sym], sym, row, col));
+        else symbols.push_back(Symbol(IDENFR, sym, row, col));
     } else if (isdigit(c)) {
         bool iszero = c == '0';
         if (iszero && isdigit(viewNextChar())) {
             cout << "no zero prefix number" << endl;
             return;
         } else if (iszero) {
-            symbols.push_back(make_pair(INTCON, sym));
+            symbols.push_back(Symbol(INTCON, sym, row, col));
             return;
         }
         sym = "";
@@ -114,7 +115,7 @@ void LexicalAnalyzer::nextSymbol() {
             c = nextChar();
         }
         ptr--;
-        symbols.push_back(make_pair(INTCON, sym));
+        symbols.push_back(Symbol(INTCON, sym, row, col));
     } else if (c == '\"') {
         do {
             c = nextChar();
@@ -129,11 +130,17 @@ void LexicalAnalyzer::nextSymbol() {
                 cout << "wrong format in FormatString" << endl;
             }
         } while (c != '\"');
-        symbols.push_back(make_pair(STRCON, sym));
+        symbols.push_back(Symbol(STRCON, sym, row, col));
     }
 }
 
 char LexicalAnalyzer::nextChar() {
+    if (src[ptr] == '\n') {
+        row++;
+        col = 0;
+    } else {
+        col++;
+    }
     return src[ptr] ? src[ptr++] : 0;
 }
 
@@ -143,51 +150,50 @@ char LexicalAnalyzer::viewNextChar() {
 
 bool LexicalAnalyzer::checkUnary(string sym) {
     if (sym == "+") {
-        symbols.push_back(make_pair(PLUS, sym));
+        symbols.push_back(Symbol(PLUS, sym, row, col));
         return true;
     } else if (sym == "-") {
-        symbols.push_back(make_pair(MINU, sym));
+        symbols.push_back(Symbol(MINU, sym, row, col));
         return true;
     } else if (sym == "*") {
-        symbols.push_back(make_pair(MULT, sym));
+        symbols.push_back(Symbol(MULT, sym, row, col));
         return true;
     } else if (sym == "%") {
-        symbols.push_back(make_pair(MOD, sym));
+        symbols.push_back(Symbol(MOD, sym, row, col));
         return true;
     } else if (sym == ";") {
-        symbols.push_back(make_pair(SEMICN, sym));
+        symbols.push_back(Symbol(SEMICN, sym, row, col));
         return true;
     } else if (sym == ",") {
-        symbols.push_back(make_pair(COMMA, sym));
+        symbols.push_back(Symbol(COMMA, sym, row, col));
         return true;
     } else if (sym == "(") {
-        symbols.push_back(make_pair(LPARENT, sym));
+        symbols.push_back(Symbol(LPARENT, sym, row, col));
         return true;
     } else if (sym == ")") {
-        symbols.push_back(make_pair(RPARENT, sym));
+        symbols.push_back(Symbol(RPARENT, sym, row, col));
         return true;
     } else if (sym == "[") {
-        symbols.push_back(make_pair(LBRACK, sym));
+        symbols.push_back(Symbol(LBRACK, sym, row, col));
         return true;
     } else if (sym == "]") {
-        symbols.push_back(make_pair(RBRACK, sym));
+        symbols.push_back(Symbol(RBRACK, sym, row, col));
         return true;
     } else if (sym == "{") {
-        symbols.push_back(make_pair(LBRACE, sym));
+        symbols.push_back(Symbol(LBRACE, sym, row, col));
         return true;
     } else if (sym == "}") {
-        symbols.push_back(make_pair(RBRACE, sym));
+        symbols.push_back(Symbol(RBRACE, sym, row, col));
         return true;
     }
     return false;
 }
 
 void LexicalAnalyzer::output() {
-    ofstream f("output.txt");
     for (auto x : symbols)
-        f << symbolsName[x.first] << ' ' << x.second << endl;
+        x.print();
 }
 
-vector<pair<symbol, string>> LexicalAnalyzer::getSymbols() {
+vector<Symbol> LexicalAnalyzer::getSymbols() {
     return symbols;
 }

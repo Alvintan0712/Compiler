@@ -16,7 +16,7 @@ const string symbolsName[] = {
         "RBRACK", "LBRACE", "RBRACE"
 };
 
-enum symbol {
+enum SYMBOL {
     UNKNOWN,    // unknown symbol
     END,        // end symbol
     IDENFR,     // Ident
@@ -57,6 +57,17 @@ enum symbol {
     RBRACK,     // ]
     LBRACE,     // {
     RBRACE      // }
+};
+
+class Symbol {
+public:
+    Symbol(SYMBOL symbol, string value, int line, int column);
+    void print();
+
+    SYMBOL sym;
+    string val;
+    int row;
+    int col;
 };
 
 #endif //SRC_SYMBOL_H

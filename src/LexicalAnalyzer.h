@@ -18,12 +18,12 @@ public:
     bool checkUnary(string sym);
     char viewNextChar();
     void output();
-    vector<pair<symbol, string>> getSymbols();
+    vector<Symbol> getSymbols();
 private:
     int ptr;
     string src;
-    map<string, symbol> tokens;
-    vector<pair<symbol, string>> symbols;
+    map<string, SYMBOL> tokens;
+    vector<Symbol> symbols;
 };
 
 

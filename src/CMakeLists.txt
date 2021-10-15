@@ -3,4 +3,4 @@ project(src)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(src main.cpp LexicalAnalyzer.cpp LexicalAnalyzer.h Symbol.h GrammarAnalyzer.cpp GrammarAnalyzer.h)
+add_executable(src main.cpp LexicalAnalyzer.cpp LexicalAnalyzer.h Symbol.h GrammarAnalyzer.cpp GrammarAnalyzer.h Symbol.cpp)

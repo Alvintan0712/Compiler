@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 #include "LexicalAnalyzer.h"
-#include "GrammarAnalyzer.h"
+//#include "GrammarAnalyzer.h"
 using namespace std;
 
 int main () {
@@ -14,8 +14,9 @@ int main () {
     f.close();
 
     LexicalAnalyzer lexical(buffer);
-    GrammarAnalyzer grammar(lexical.getSymbols());
-    grammar.output();
+    lexical.output();
+    // GrammarAnalyzer grammar(lexical.getSymbols());
+    // grammar.output();
 
     return 0;
 }
