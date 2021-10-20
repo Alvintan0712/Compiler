@@ -2,9 +2,15 @@
 // Created by tjan2 on 15/10/2021.
 //
 
+#include <iostream>
 #include "Symbol.h"
+using namespace std;
 
-Symbol::Symbol(SYMBOL symbol, string value, int line, int column) {
+Symbol::Symbol() : Node() {
+    level = 0;
+}
+
+Symbol::Symbol(SYMBOL symbol, string value, int line, int column) : Node() {
     sym = symbol;
     val = value;
     row = line;
@@ -12,5 +18,5 @@ Symbol::Symbol(SYMBOL symbol, string value, int line, int column) {
 }
 
 void Symbol::print() {
-    cout << symbolsName[sym] << ' ' << val << ' ' << row << endl;
+    cout << symbolsName[sym] << ' ' << val << ' ' << row << ' ' << col << endl;
 }

@@ -2,283 +2,256 @@
 // Created by tjan2 on 1/10/2021.
 //
 
+#include <iostream>
+#include <fstream>
+#include "Variable.h"
+#include "Function.h"
 #include "GrammarAnalyzer.h"
-#define tkn first
+using namespace std;
 
 bool isLVal;
-GrammarAnalyzer::GrammarAnalyzer(vector<pair<symbol, string>> symbols) {
+GrammarAnalyzer::GrammarAnalyzer(vector<Symbol> symbols) {
     src = symbols;
-    src.push_back(make_pair(END, ""));
+    src.push_back(Symbol(END, "", 0, 0));
     analyze();
 }
 
 void GrammarAnalyzer::analyze() {
     ptr = 0;
     sym = nextSymbol();
-    CompUnit();
+    _CompUnit();
 }
 
-void GrammarAnalyzer::pushPair() {
-    out.push_back(symbolsName[sym.first] + " " + sym.second);
+void GrammarAnalyzer::pushSymbol() {
+    out.push_back(symbolsName[sym.sym] + " " + sym.val);
+    sym = nextSymbol();
 }
 
-pair<symbol, string> GrammarAnalyzer::nextSymbol() {
+Symbol GrammarAnalyzer::nextSymbol() {
     return src[ptr++];
 }
 
-pair<symbol, string> GrammarAnalyzer::viewNextSymbol() {
+Symbol GrammarAnalyzer::viewNextSymbol() {
     return src[ptr];
 }
 
-pair<symbol, string> GrammarAnalyzer::viewNextSymbol(int i) {
+Symbol GrammarAnalyzer::viewNextSymbol(int i) {
     return src[ptr + i];
 }
 
-void GrammarAnalyzer::CompUnit() {
-    while (sym.tkn == INTTK || sym.tkn == CONSTTK) {
-        if (sym.tkn != CONSTTK && (viewNextSymbol().tkn != IDENFR || viewNextSymbol(1).tkn == LPARENT))
+void GrammarAnalyzer::_CompUnit() {
+    while (sym.sym == INTTK || sym.sym == CONSTTK) {
+        if (sym.sym != CONSTTK && (viewNextSymbol().sym != IDENFR || viewNextSymbol(1).sym == LPARENT))
             break;
-        Decl();
+        _Decl();
     }
-    while (sym.tkn == INTTK || sym.tkn == VOIDTK) {
-        if (viewNextSymbol().tkn == MAINTK)
+    while (sym.sym == INTTK || sym.sym == VOIDTK) {
+        if (viewNextSymbol().sym == MAINTK)
             break;
-        FuncDef();
+        _FuncDef();
     }
-    if (sym.tkn != INTTK) output();
-    MainFuncDef();
+    if (sym.sym != INTTK) output();
+    _MainFuncDef();
     out.push_back("<CompUnit>");
 }
 
-void GrammarAnalyzer::Decl() {
-    if (sym.tkn == CONSTTK)
-        ConstDecl();
-    else if (sym.tkn == INTTK)
-        VarDecl();
+void GrammarAnalyzer::_Decl() {
+    if (sym.sym == CONSTTK)
+        _ConstDecl();
+    else if (sym.sym == INTTK)
+        _VarDecl();
     else
         output();
 }
 
-void GrammarAnalyzer::ConstDecl() {
-    if (sym.tkn != CONSTTK) output();
-    pushPair();
-    sym = nextSymbol();
-    BType();
-    if (sym.tkn != IDENFR) output();
-    ConstDef();
-    while (sym.tkn == COMMA) {
-        pushPair();
-        sym = nextSymbol();
-        if (sym.tkn != IDENFR) output();
-        ConstDef();
+void GrammarAnalyzer::_ConstDecl() {
+    if (sym.sym != CONSTTK) output();
+    pushSymbol();
+    _BType();
+    if (sym.sym != IDENFR) output();
+    _ConstDef();
+    while (sym.sym == COMMA) {
+        pushSymbol();
+        if (sym.sym != IDENFR) output();
+        _ConstDef();
     }
-    if (sym.tkn != SEMICN) output();
-    pushPair();
-    sym = nextSymbol();
+    if (sym.sym != SEMICN) output();
+    pushSymbol();
     out.push_back("<ConstDecl>");
 }
 
-void GrammarAnalyzer::BType() {
-    if (sym.tkn == INTTK) {
-        pushPair();
-        sym = nextSymbol();
+void GrammarAnalyzer::_BType() {
+    if (sym.sym == INTTK) {
+        pushSymbol();
     } else {
         output();
     }
 }
 
-void GrammarAnalyzer::ConstDef() {
-    Ident();
-    while (sym.tkn == LBRACK) {
-        pushPair();
-        sym = nextSymbol();
-        ConstExp();
-        if (sym.tkn != RBRACK) output();
-        pushPair();
-        sym = nextSymbol();
+void GrammarAnalyzer::_ConstDef() {
+    _Ident();
+    while (sym.sym == LBRACK) {
+        pushSymbol();
+        _ConstExp();
+        if (sym.sym != RBRACK) output();
+        pushSymbol();
     }
-    if (sym.tkn != ASSIGN) output();
-    pushPair();
-    sym = nextSymbol();
-    ConstInitVal();
+    if (sym.sym != ASSIGN) output();
+    pushSymbol();
+    _ConstInitVal();
     out.push_back("<ConstDef>");
 }
 
-void GrammarAnalyzer::ConstInitVal() {
-    if (sym.tkn == LBRACE) {
-        pushPair();
-        sym = nextSymbol();
-        if (sym.tkn != RBRACE) {
-            ConstInitVal();
-            while (sym.tkn == COMMA) {
-                pushPair();
-                sym = nextSymbol();
-                ConstInitVal();
+void GrammarAnalyzer::_ConstInitVal() {
+    if (sym.sym == LBRACE) {
+        pushSymbol();
+        if (sym.sym != RBRACE) {
+            _ConstInitVal();
+            while (sym.sym == COMMA) {
+                pushSymbol();
+                _ConstInitVal();
             }
         }
-        if (sym.tkn != RBRACE) output();
-        pushPair();
-        sym = nextSymbol();
+        if (sym.sym != RBRACE) output();
+        pushSymbol();
     } else {
-        ConstExp();
+        _ConstExp();
     }
     out.push_back("<ConstInitVal>");
 }
 
-void GrammarAnalyzer::VarDecl() {
-    BType();
-    VarDef();
-    while (sym.tkn == COMMA) {
-        pushPair();
-        sym = nextSymbol();
-        VarDef();
+void GrammarAnalyzer::_VarDecl() {
+    _BType();
+    _VarDef();
+    while (sym.sym == COMMA) {
+        pushSymbol();
+        _VarDef();
     }
-    if (sym.tkn != SEMICN) output();
-    pushPair();
-    sym = nextSymbol();
+    if (sym.sym != SEMICN) output();
+    pushSymbol();
     out.push_back("<VarDecl>");
 }
 
-void GrammarAnalyzer::VarDef() {
-    Ident();
-    while (sym.tkn == LBRACK) {
-        pushPair();
-        sym = nextSymbol();
-        ConstExp();
-        if (sym.tkn != RBRACK) output();
-        pushPair();
-        sym = nextSymbol();
+void GrammarAnalyzer::_VarDef() {
+    _Ident();
+    while (sym.sym == LBRACK) {
+        pushSymbol();
+        _ConstExp();
+        if (sym.sym != RBRACK) output();
+        pushSymbol();
     }
-    if (sym.tkn == ASSIGN) {
-        pushPair();
-        sym = nextSymbol();
-        InitVal();
+    if (sym.sym == ASSIGN) {
+        pushSymbol();
+        _InitVal();
     }
     out.push_back("<VarDef>");
 }
 
-void GrammarAnalyzer::InitVal() {
-    if (sym.tkn == LBRACE) {
-        pushPair();
-        sym = nextSymbol();
-        if (sym.tkn != RBRACE) {
-            InitVal();
-            while (sym.tkn == COMMA) {
-                pushPair();
-                sym = nextSymbol();
-                InitVal();
+void GrammarAnalyzer::_InitVal() {
+    if (sym.sym == LBRACE) {
+        pushSymbol();
+        if (sym.sym != RBRACE) {
+            _InitVal();
+            while (sym.sym == COMMA) {
+                pushSymbol();
+                _InitVal();
             }
         }
-        if (sym.tkn != RBRACE) output();
-        pushPair();
-        sym = nextSymbol();
+        if (sym.sym != RBRACE) output();
+        pushSymbol();
     } else {
-        Exp();
+        _Exp();
     }
     out.push_back("<InitVal>");
 }
 
-void GrammarAnalyzer::FuncDef() {
-    FuncType();
-    Ident();
-    if (sym.tkn != LPARENT) output();
-    pushPair();
-    sym = nextSymbol();
-    if (sym.tkn != RPARENT)
-        FuncFParams();
-    if (sym.tkn != RPARENT) output();
-    pushPair();
-    sym = nextSymbol();
-    Block();
+void GrammarAnalyzer::_FuncDef() {
+    _FuncType();
+    _Ident();
+    if (sym.sym != LPARENT) output();
+    pushSymbol();
+    if (sym.sym != RPARENT)
+        _FuncFParams();
+    if (sym.sym != RPARENT) output();
+    pushSymbol();
+    _Block();
     out.push_back("<FuncDef>");
 }
 
-void GrammarAnalyzer::MainFuncDef() {
-    if (sym.tkn != INTTK) output();
-    pushPair();
-    sym = nextSymbol();
-    if (sym.tkn != MAINTK) output();
-    pushPair();
-    sym = nextSymbol();
-    if (sym.tkn != LPARENT) output();
-    pushPair();
-    sym = nextSymbol();
-    if (sym.tkn != RPARENT) output();
-    pushPair();
-    sym = nextSymbol();
-    Block();
+void GrammarAnalyzer::_MainFuncDef() {
+    if (sym.sym != INTTK) output();
+    pushSymbol();
+    if (sym.sym != MAINTK) output();
+    pushSymbol();
+    if (sym.sym != LPARENT) output();
+    pushSymbol();
+    if (sym.sym != RPARENT) output();
+    pushSymbol();
+    _Block();
     out.push_back("<MainFuncDef>");
 }
 
-void GrammarAnalyzer::FuncType() {
-    if (sym.tkn != INTTK && sym.tkn != VOIDTK) output();
-    pushPair();
-    sym = nextSymbol();
+void GrammarAnalyzer::_FuncType() {
+    if (sym.sym != INTTK && sym.sym != VOIDTK) output();
+    pushSymbol();
     out.push_back("<FuncType>");
 }
 
-void GrammarAnalyzer::FuncFParams() {
-    FuncFParam();
-    while (sym.tkn == COMMA) {
-        pushPair();
-        sym = nextSymbol();
-        FuncFParam();
+void GrammarAnalyzer::_FuncFParams() {
+    _FuncFParam();
+    while (sym.sym == COMMA) {
+        pushSymbol();
+        _FuncFParam();
     }
     out.push_back("<FuncFParams>");
 }
 
-void GrammarAnalyzer::FuncFParam() {
-    BType();
-    Ident();
-    if (sym.tkn == LBRACK) {
-        pushPair();
-        sym = nextSymbol();
-        if (sym.tkn != RBRACK) output();
-        pushPair();
-        sym = nextSymbol();
+void GrammarAnalyzer::_FuncFParam() {
+    _BType();
+    _Ident();
+    if (sym.sym == LBRACK) {
+        pushSymbol();
+        if (sym.sym != RBRACK) output();
+        pushSymbol();
 
-        while (sym.tkn == LBRACK) {
-            pushPair();
-            sym = nextSymbol();
-            ConstExp();
-            if (sym.tkn != RBRACK) output();
-            pushPair();
-            sym = nextSymbol();
+        while (sym.sym == LBRACK) {
+            pushSymbol();
+            _ConstExp();
+            if (sym.sym != RBRACK) output();
+            pushSymbol();
         }
     }
     out.push_back("<FuncFParam>");
 }
 
 bool GrammarAnalyzer::isExp() {
-    return sym.tkn == SEMICN  || sym.tkn == IDENFR   || sym.tkn == PLUS     ||
-           sym.tkn == MINU    || sym.tkn == NOT      || sym.tkn == LPARENT  ||
-           sym.tkn == INTCON;
+    return sym.sym == SEMICN  || sym.sym == IDENFR   || sym.sym == PLUS     ||
+           sym.sym == MINU    || sym.sym == NOT      || sym.sym == LPARENT  ||
+           sym.sym == INTCON;
 }
 
 bool GrammarAnalyzer::isBlockItem() {
-    return sym.tkn == INTTK   || sym.tkn == CONSTTK  || isExp() ||
-           sym.tkn == IFTK    || sym.tkn == WHILETK  || sym.tkn == CONTINUETK ||
-           sym.tkn == BREAKTK || sym.tkn == PRINTFTK || sym.tkn == RETURNTK ||
-           sym.tkn == LBRACE;
+    return sym.sym == INTTK   || sym.sym == CONSTTK  || isExp() ||
+           sym.sym == IFTK    || sym.sym == WHILETK  || sym.sym == CONTINUETK ||
+           sym.sym == BREAKTK || sym.sym == PRINTFTK || sym.sym == RETURNTK ||
+           sym.sym == LBRACE;
 }
 
-void GrammarAnalyzer::Block() {
-    if (sym.tkn != LBRACE) output();
-    pushPair();
-    sym = nextSymbol();
+void GrammarAnalyzer::_Block() {
+    if (sym.sym != LBRACE) output();
+    pushSymbol();
     while (isBlockItem())
-        BlockItem();
-    if (sym.tkn != RBRACE) output();
-    pushPair();
-    sym = nextSymbol();
+        _BlockItem();
+    if (sym.sym != RBRACE) output();
+    pushSymbol();
     out.push_back("<Block>");
 }
 
-void GrammarAnalyzer::BlockItem() {
-    if (sym.tkn == INTTK || sym.tkn == CONSTTK) {
-        Decl();
+void GrammarAnalyzer::_BlockItem() {
+    if (sym.sym == INTTK || sym.sym == CONSTTK) {
+        _Decl();
     } else {
-        Stmt();
+        _Stmt();
     }
 }
 
@@ -290,282 +263,242 @@ void popout(vector<string>& out) {
     out.pop_back();
 }
 
-void GrammarAnalyzer::Stmt() {
-    if (sym.tkn == SEMICN) {
-        pushPair();
-        sym = nextSymbol();
+void GrammarAnalyzer::_Stmt() {
+    if (sym.sym == SEMICN) {
+        pushSymbol();
     } else if (isExp()) { // [Exp];
         isLVal = false;
-        Exp();
-        if (isLVal && sym.tkn == ASSIGN) {
+        _Exp();
+        if (isLVal && sym.sym == ASSIGN) {
             popout(out);
-            pushPair();
-            sym = nextSymbol();
-            if (sym.tkn == GETINTTK) {
-                pushPair();
-                sym = nextSymbol();
-                if (sym.tkn != LPARENT) output();
-                pushPair();
-                sym = nextSymbol();
-                if (sym.tkn != RPARENT) output();
-                pushPair();
-                sym = nextSymbol();
+            pushSymbol();
+            if (sym.sym == GETINTTK) {
+                pushSymbol();
+                if (sym.sym != LPARENT) output();
+                pushSymbol();
+                if (sym.sym != RPARENT) output();
+                pushSymbol();
             } else {
-                Exp();
+                _Exp();
             }
         }
-        if (sym.tkn != SEMICN) output();
-        pushPair();
-        sym = nextSymbol();
-    } else if (sym.tkn == LBRACE) {
-        Block();
-    } else if (sym.tkn == IFTK) {
-        pushPair();
-        sym = nextSymbol();
-        if (sym.tkn != LPARENT) output();
-        pushPair();
-        sym = nextSymbol();
-        Cond();
-        if (sym.tkn != RPARENT) output();
-        pushPair();
-        sym = nextSymbol();
-        Stmt();
-        if (sym.tkn == ELSETK) {
-            pushPair();
-            sym = nextSymbol();
-            Stmt();
+        if (sym.sym != SEMICN) output();
+        pushSymbol();
+    } else if (sym.sym == LBRACE) {
+        _Block();
+    } else if (sym.sym == IFTK) {
+        pushSymbol();
+        if (sym.sym != LPARENT) output();
+        pushSymbol();
+        _Cond();
+        if (sym.sym != RPARENT) output();
+        pushSymbol();
+        _Stmt();
+        if (sym.sym == ELSETK) {
+            pushSymbol();
+            _Stmt();
         }
-    } else if (sym.tkn == WHILETK) {
-        pushPair();
-        sym = nextSymbol();
-        if (sym.tkn != LPARENT) output();
-        pushPair();
-        sym = nextSymbol();
-        Cond();
-        if (sym.tkn != RPARENT) output();
-        pushPair();
-        sym = nextSymbol();
+    } else if (sym.sym == WHILETK) {
+        pushSymbol();
+        if (sym.sym != LPARENT) output();
+        pushSymbol();
+        _Cond();
+        if (sym.sym != RPARENT) output();
+        pushSymbol();
         Stmt();
-    } else if (sym.tkn == BREAKTK || sym.tkn == CONTINUETK) {
-        pushPair();
-        sym = nextSymbol();
-        if (sym.tkn != SEMICN) output();
-        pushPair();
-        sym = nextSymbol();
-    } else if (sym.tkn == RETURNTK) {
-        pushPair();
-        sym = nextSymbol();
-        if (sym.tkn != SEMICN)
-            Exp();
-        if (sym.tkn != SEMICN) output();
-        pushPair();
-        sym = nextSymbol();
-    } else if (sym.tkn == PRINTFTK) {
-        pushPair();
-        sym = nextSymbol();
-        if (sym.tkn != LPARENT) output();
-        pushPair();
-        sym = nextSymbol();
-        FormatString();
-        while (sym.tkn == COMMA) {
-            pushPair();
-            sym = nextSymbol();
-            Exp();
+    } else if (sym.sym == BREAKTK || sym.sym == CONTINUETK) {
+        pushSymbol();
+        if (sym.sym != SEMICN) output();
+        pushSymbol();
+    } else if (sym.sym == RETURNTK) {
+        pushSymbol();
+        if (sym.sym != SEMICN)
+            _Exp();
+        if (sym.sym != SEMICN) output();
+        pushSymbol();
+    } else if (sym.sym == PRINTFTK) {
+        pushSymbol();
+        if (sym.sym != LPARENT) output();
+        pushSymbol();
+        _FormatString();
+        while (sym.sym == COMMA) {
+            pushSymbol();
+            _Exp();
         }
-        if (sym.tkn != RPARENT) output();
-        pushPair();
-        sym = nextSymbol();
-        if (sym.tkn != SEMICN) output();
-        pushPair();
-        sym = nextSymbol();
+        if (sym.sym != RPARENT) output();
+        pushSymbol();
+        if (sym.sym != SEMICN) output();
+        pushSymbol();
     } else {
         output();
     }
     out.push_back("<Stmt>");
 }
 
-void GrammarAnalyzer::Exp() {
-    AddExp();
+void GrammarAnalyzer::_Exp() {
+    _AddExp();
     out.push_back("<Exp>");
 }
 
-void GrammarAnalyzer::Cond() {
-    LOrExp();
+void GrammarAnalyzer::_Cond() {
+    _LOrExp();
     out.push_back("<Cond>");
 }
 
-void GrammarAnalyzer::LVal() {
-    Ident();
-    while (sym.tkn == LBRACK) {
-        pushPair();
-        sym = nextSymbol();
-        Exp();
-        if (sym.tkn != RBRACK) output();
-        pushPair();
-        sym = nextSymbol();
+void GrammarAnalyzer::_LVal() {
+    _Ident();
+    while (sym.sym == LBRACK) {
+        pushSymbol();
+        _Exp();
+        if (sym.sym != RBRACK) output();
+        pushSymbol();
     }
     isLVal = true;
     out.push_back("<LVal>");
 }
 
-void GrammarAnalyzer::PrimaryExp() {
-    if (sym.tkn == LPARENT) {
-        pushPair();
-        sym = nextSymbol();
-        Exp();
-        if (sym.tkn != RPARENT) output();
-        pushPair();
-        sym = nextSymbol();
-    } else if (sym.tkn == IDENFR) {
-        LVal();
-    } else if (sym.tkn == INTCON) {
-        Number();
+void GrammarAnalyzer::_PrimaryExp() {
+    if (sym.sym == LPARENT) {
+        pushSymbol();
+        _Exp();
+        if (sym.sym != RPARENT) output();
+        pushSymbol();
+    } else if (sym.sym == IDENFR) {
+        _LVal();
+    } else if (sym.sym == INTCON) {
+        _Number();
     } else {
         output();
     }
     out.push_back("<PrimaryExp>");
 }
 
-void GrammarAnalyzer::Number() {
-    if (sym.tkn != INTCON) output();
-    pushPair();
-    sym = nextSymbol();
+void GrammarAnalyzer::_Number() {
+    if (sym.sym != INTCON) output();
+    pushSymbol();
     out.push_back("<Number>");
 }
 
-void GrammarAnalyzer::UnaryExp() {
-    if (sym.tkn == LPARENT || sym.tkn == INTCON)
-        PrimaryExp();
-    else if (sym.tkn == IDENFR) {
-        pushPair();
-        sym = nextSymbol();
-        if (sym.tkn == LPARENT) {
-            pushPair();
-            sym = nextSymbol();
-            if (sym.tkn != RPARENT)
-                FuncRParams();
-            if (sym.tkn != RPARENT) output();
-            pushPair();
-            sym = nextSymbol();
+void GrammarAnalyzer::_UnaryExp() {
+    if (sym.sym == LPARENT || sym.sym == INTCON)
+        _PrimaryExp();
+    else if (sym.sym == IDENFR) {
+        pushSymbol();
+        if (sym.sym == LPARENT) {
+            pushSymbol();
+            if (sym.sym != RPARENT)
+                _FuncRParams();
+            if (sym.sym != RPARENT) output();
+            pushSymbol();
         } else {
             out.pop_back();
             ptr -= 2;
             sym = nextSymbol();
-            PrimaryExp();
+            _PrimaryExp();
         }
-    } else if (sym.tkn == PLUS || sym.tkn == MINU || sym.tkn == NOT) {
-        UnaryOp();
-        UnaryExp();
+    } else if (sym.sym == PLUS || sym.sym == MINU || sym.sym == NOT) {
+        _UnaryOp();
+        _UnaryExp();
     } else {
         output();
     }
     out.push_back("<UnaryExp>");
 }
 
-void GrammarAnalyzer::UnaryOp() {
-    if (sym.tkn == PLUS || sym.tkn == MINU || sym.tkn == NOT) {
-        pushPair();
-        sym = nextSymbol();
+void GrammarAnalyzer::_UnaryOp() {
+    if (sym.sym == PLUS || sym.sym == MINU || sym.sym == NOT) {
+        pushSymbol();
     } else {
         output();
     }
     out.push_back("<UnaryOp>");
 }
 
-void GrammarAnalyzer::FuncRParams() {
-    Exp();
-    while (sym.tkn == COMMA) {
-        pushPair();
-        sym = nextSymbol();
-        Exp();
+void GrammarAnalyzer::_FuncRParams() {
+    _Exp();
+    while (sym.sym == COMMA) {
+        pushSymbol();
+        _Exp();
     }
     out.push_back("<FuncRParams>");
 }
 
-void GrammarAnalyzer::MulExp() {
-    UnaryExp();
-    while (sym.tkn == MULT || sym.tkn == DIV || sym.tkn == MOD) {
+void GrammarAnalyzer::_MulExp() {
+    _UnaryExp();
+    while (sym.sym == MULT || sym.sym == DIV || sym.sym == MOD) {
         out.push_back("<MulExp>");
-        pushPair();
-        sym = nextSymbol();
-        UnaryExp();
+        pushSymbol();
+        _UnaryExp();
     }
     out.push_back("<MulExp>");
 }
 
-void GrammarAnalyzer::AddExp() {
-    MulExp();
-    while (sym.tkn == PLUS || sym.tkn == MINU) {
+void GrammarAnalyzer::_AddExp() {
+    _MulExp();
+    while (sym.sym == PLUS || sym.sym == MINU) {
         out.push_back("<AddExp>");
-        pushPair();
-        sym = nextSymbol();
-        MulExp();
+        pushSymbol();
+        _MulExp();
     }
     out.push_back("<AddExp>");
 }
 
-void GrammarAnalyzer::RelExp() {
-    AddExp();
-    while (sym.tkn == LSS || sym.tkn == LEQ || sym.tkn == GRE || sym.tkn == GEQ) {
+void GrammarAnalyzer::_RelExp() {
+    _AddExp();
+    while (sym.sym == LSS || sym.sym == LEQ || sym.sym == GRE || sym.sym == GEQ) {
         out.push_back("<RelExp>");
-        pushPair();
-        sym = nextSymbol();
-        AddExp();
+        pushSymbol();
+        _AddExp();
     }
     out.push_back("<RelExp>");
 }
 
-void GrammarAnalyzer::EqExp() {
-    RelExp();
-    while (sym.tkn == EQL || sym.tkn == NEQ) {
+void GrammarAnalyzer::_EqExp() {
+    _RelExp();
+    while (sym.sym == EQL || sym.sym == NEQ) {
         out.push_back("<EqExp>");
-        pushPair();
-        sym = nextSymbol();
-        RelExp();
+        pushSymbol();
+        _RelExp();
     }
     out.push_back("<EqExp>");
 }
 
-void GrammarAnalyzer::LAndExp() {
-    EqExp();
-    while (sym.tkn == AND) {
+void GrammarAnalyzer::_LAndExp() {
+    _EqExp();
+    while (sym.sym == AND) {
         out.push_back("<LAndExp>");
-        pushPair();
-        sym = nextSymbol();
-        EqExp();
+        pushSymbol();
+        _EqExp();
     }
     out.push_back("<LAndExp>");
 }
 
-void GrammarAnalyzer::LOrExp() {
-    LAndExp();
-    while (sym.tkn == OR) {
+void GrammarAnalyzer::_LOrExp() {
+    _LAndExp();
+    while (sym.sym == OR) {
         out.push_back("<LOrExp>");
-        pushPair();
-        sym = nextSymbol();
-        LAndExp();
+        pushSymbol();
+        _LAndExp();
     }
     out.push_back("<LOrExp>");
 }
 
-void GrammarAnalyzer::ConstExp() {
-    AddExp();
+void GrammarAnalyzer::_ConstExp() {
+    _AddExp();
     out.push_back("<ConstExp>");
 }
 
-void GrammarAnalyzer::Ident() {
-    if (sym.tkn == IDENFR) {
-        pushPair();
-        sym = nextSymbol();
+void GrammarAnalyzer::_Ident() {
+    if (sym.sym == IDENFR) {
+        pushSymbol();
     } else {
         output();
     }
 }
 
-void GrammarAnalyzer::FormatString() {
-    if (sym.tkn == STRCON) {
-        pushPair();
-        sym = nextSymbol();
+void GrammarAnalyzer::_FormatString() {
+    if (sym.sym == STRCON) {
+        pushSymbol();
     } else {
         output();
     }

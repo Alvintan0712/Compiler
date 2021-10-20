@@ -4,64 +4,69 @@
 #ifndef SRC_GRAMMARANALYZER_H
 #define SRC_GRAMMARANALYZER_H
 
-#include <bits/stdc++.h>
+#include <string>
+#include <vector>
+#include <map>
 #include "Symbol.h"
-using namespace std;
+#include "ErrorHandling.h"
 
 class GrammarAnalyzer {
 public:
-    GrammarAnalyzer(vector<pair<symbol, string>> symbols);
+    GrammarAnalyzer(std::vector<Symbol> symbols);
     void analyze();
     void output();
 private:
-    vector<pair<symbol, string>> src;
-    vector<string> out;
-    pair<symbol, string> sym;
+    std::vector<Symbol> src;
+    std::vector<std::string> out;
+    Symbol sym;
+
+    ErrorHandling error;
+    std::vector<std::map<std::string, Symbol>> IdentTable;
 
     int ptr;
-    pair<symbol, string> nextSymbol();
-    pair<symbol, string> viewNextSymbol();
+    Symbol nextSymbol();
+    Symbol viewNextSymbol();
+    Symbol viewNextSymbol(int i);
 
-    pair<symbol, string> viewNextSymbol(int i);
-    void CompUnit();
-    void Decl();
-    void ConstDecl();
-    void BType();
-    void ConstDef();
-    void ConstInitVal();
-    void VarDecl();
-    void VarDef();
-    void InitVal();
-    void FuncDef();
-    void MainFuncDef();
-    void FuncType();
-    void FuncFParams();
-    void FuncFParam();
-    void Block();
-    void BlockItem();
-    void Stmt();
-    void Exp();
-    void Cond();
-    void LVal();
-    void PrimaryExp();
-    void Number();
-    void UnaryExp();
-    void UnaryOp();
-    void FuncRParams();
-    void MulExp();
-    void AddExp();
-    void RelExp();
-    void EqExp();
-    void LAndExp();
-    void LOrExp();
+    void _CompUnit();
+    void _Decl();
+    void _ConstDecl();
+    void _BType();
+    void _ConstDef();
+    void _ConstInitVal();
+    void _VarDecl();
+    void _VarDef();
+    void _InitVal();
+    void _FuncDef();
+    void _MainFuncDef();
+    void _FuncType();
+    void _FuncFParams();
+    void _FuncFParam();
+    void _Block();
+    void _BlockItem();
+    void _Stmt();
+    void _Exp();
+    void _Cond();
+    void _LVal();
+    void _PrimaryExp();
+    void _Number();
+    void _UnaryExp();
+    void _UnaryOp();
+    void _FuncRParams();
+    void _MulExp();
+    void _AddExp();
+    void _RelExp();
+    void _EqExp();
+    void _LAndExp();
+    void _LOrExp();
 
     bool isExp();
     bool isBlockItem();
-    void ConstExp();
-    void Ident();
-    void pushPair();
+    void _ConstExp();
+    void _Ident();
+    void pushSymbol();
 
-    void FormatString();
+    void _FormatString();
 };
 
 

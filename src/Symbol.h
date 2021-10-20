@@ -4,10 +4,10 @@
 
 #ifndef SRC_SYMBOL_H
 #define SRC_SYMBOL_H
-#include <bits/stdc++.h>
-using namespace std;
+#include <string>
+#include "Node.h"
 
-const string symbolsName[] = {
+const std::string symbolsName[] = {
         "UNKNOWN", "END", "IDENFR", "INTCON", "STRCON", "MAINTK", "CONSTTK",
         "INTTK", "BREAKTK", "CONTINUETK", "IFTK", "ELSETK", "NOT", "AND",
         "OR", "WHILETK", "GETINTTK", "PRINTFTK", "RETURNTK", "PLUS", "MINU",
@@ -61,13 +61,14 @@ enum SYMBOL {
 
 class Symbol {
 public:
-    Symbol(SYMBOL symbol, string value, int line, int column);
+    Symbol();
+    Symbol(SYMBOL symbol, std::string value, int line, int column);
     void print();
 
     SYMBOL sym;
-    string val;
-    int row;
-    int col;
+    std::string val;
+    int row, col;
+private:
 };
 
 #endif //SRC_SYMBOL_H

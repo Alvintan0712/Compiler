@@ -3,8 +3,10 @@
 //
 
 #include "LexicalAnalyzer.h"
+#include <iostream>
+using namespace std;
 
-int row = 1, col = 1;
+int row = 1, column = 1;
 LexicalAnalyzer::LexicalAnalyzer(string buffer) {
     src = buffer;
     initialTokens();
@@ -32,17 +34,18 @@ void LexicalAnalyzer::analyze() {
 }
 
 void LexicalAnalyzer::nextSymbol() {
+    int r = row, col = column;
     char c = nextChar();
     string sym = "";
 
     sym += c;
-    if (isspace(c) || checkUnary(sym)) {
+    if (isspace(c) || checkUnary(sym, r, col)) {
         return;
     } else if (c == '|') {
         c = nextChar();
         if (c == '|') {
             sym += c;
-            symbols.push_back(Symbol(OR, sym, row, col));
+            symbols.push_back(Symbol(OR, sym, r, col));
         } else {
             cout << "unknown symbols" << endl;
         }
@@ -50,7 +53,7 @@ void LexicalAnalyzer::nextSymbol() {
         c = nextChar();
         if (c == '&') {
             sym += c;
-            symbols.push_back(Symbol(AND, sym, row, col));
+            symbols.push_back(Symbol(AND, sym, r, col));
         } else {
             cout << "unknown symbols" << endl;
         }
@@ -58,22 +61,22 @@ void LexicalAnalyzer::nextSymbol() {
         c = nextChar();
         if (c == '=') {
             sym += c;
-            symbols.push_back(Symbol(NEQ, sym, row, col));
+            symbols.push_back(Symbol(NEQ, sym, r, col));
         } else {
-            symbols.push_back(Symbol(NOT, sym, row, col));
+            symbols.push_back(Symbol(NOT, sym, r, col));
             ptr--;
         }
     } else if (c == '=' || c == '<' || c == '>') {
         c = nextChar();
         if (c == '=') {
             sym += c;
-            if (sym == "==") symbols.push_back(Symbol(EQL, sym, row, col));
-            else if (sym == "<=") symbols.push_back(Symbol(LEQ, sym, row, col));
-            else if (sym == ">=") symbols.push_back(Symbol(GEQ, sym, row, col));
+            if (sym == "==") symbols.push_back(Symbol(EQL, sym, r, col));
+            else if (sym == "<=") symbols.push_back(Symbol(LEQ, sym, r, col));
+            else if (sym == ">=") symbols.push_back(Symbol(GEQ, sym, r, col));
         } else {
-            if (sym == "=") symbols.push_back(Symbol(ASSIGN, sym, row, col));
-            else if (sym == "<") symbols.push_back(Symbol(LSS, sym, row, col));
-            else if (sym == ">") symbols.push_back(Symbol(GRE, sym, row, col));
+            if (sym == "=") symbols.push_back(Symbol(ASSIGN, sym, r, col));
+            else if (sym == "<") symbols.push_back(Symbol(LSS, sym, r, col));
+            else if (sym == ">") symbols.push_back(Symbol(GRE, sym, r, col));
             ptr--;
         }
     } else if (c == '/') {
@@ -88,7 +91,7 @@ void LexicalAnalyzer::nextSymbol() {
             while (cc != '*' || c != '/')
                 cc = c, c = nextChar();
         } else {
-            symbols.push_back(Symbol(DIV, sym, row, col));
+            symbols.push_back(Symbol(DIV, sym, r, col));
             ptr--;
         }
     } else if (c == '_' || isalpha(c)) {
@@ -98,15 +101,15 @@ void LexicalAnalyzer::nextSymbol() {
             c = nextChar();
         }
         ptr--;
-        if (tokens.count(sym)) symbols.push_back(Symbol(tokens[sym], sym, row, col));
-        else symbols.push_back(Symbol(IDENFR, sym, row, col));
+        if (tokens.count(sym)) symbols.push_back(Symbol(tokens[sym], sym, r, col));
+        else symbols.push_back(Symbol(IDENFR, sym, r, col));
     } else if (isdigit(c)) {
         bool iszero = c == '0';
         if (iszero && isdigit(viewNextChar())) {
             cout << "no zero prefix number" << endl;
             return;
         } else if (iszero) {
-            symbols.push_back(Symbol(INTCON, sym, row, col));
+            symbols.push_back(Symbol(INTCON, sym, r, col));
             return;
         }
         sym = "";
@@ -115,31 +118,22 @@ void LexicalAnalyzer::nextSymbol() {
             c = nextChar();
         }
         ptr--;
-        symbols.push_back(Symbol(INTCON, sym, row, col));
+        symbols.push_back(Symbol(INTCON, sym, r, col));
     } else if (c == '\"') {
         do {
             c = nextChar();
-            if (c == '\"' || c == 32 || c == 33 || 40 <= c && c <= 126) {
-                sym += c;
-            } else if (c == '%') {
-                sym += c;
-                c = nextChar();
-                if (c == 'd') sym += c;
-                else cout << "wrong format in FormatString" << endl;
-            } else {
-                cout << "wrong format in FormatString" << endl;
-            }
+            sym += c;
         } while (c != '\"');
-        symbols.push_back(Symbol(STRCON, sym, row, col));
+        symbols.push_back(Symbol(STRCON, sym, r, col));
     }
 }
 
 char LexicalAnalyzer::nextChar() {
     if (src[ptr] == '\n') {
         row++;
-        col = 0;
+        column = 1;
     } else {
-        col++;
+        column++;
     }
     return src[ptr] ? src[ptr++] : 0;
 }
@@ -148,42 +142,42 @@ char LexicalAnalyzer::viewNextChar() {
     return src[ptr];
 }
 
-bool LexicalAnalyzer::checkUnary(string sym) {
+bool LexicalAnalyzer::checkUnary(string sym, int row, int column) {
     if (sym == "+") {
-        symbols.push_back(Symbol(PLUS, sym, row, col));
+        symbols.push_back(Symbol(PLUS, sym, row, column));
         return true;
     } else if (sym == "-") {
-        symbols.push_back(Symbol(MINU, sym, row, col));
+        symbols.push_back(Symbol(MINU, sym, row, column));
         return true;
     } else if (sym == "*") {
-        symbols.push_back(Symbol(MULT, sym, row, col));
+        symbols.push_back(Symbol(MULT, sym, row, column));
         return true;
     } else if (sym == "%") {
-        symbols.push_back(Symbol(MOD, sym, row, col));
+        symbols.push_back(Symbol(MOD, sym, row, column));
         return true;
     } else if (sym == ";") {
-        symbols.push_back(Symbol(SEMICN, sym, row, col));
+        symbols.push_back(Symbol(SEMICN, sym, row, column));
         return true;
     } else if (sym == ",") {
-        symbols.push_back(Symbol(COMMA, sym, row, col));
+        symbols.push_back(Symbol(COMMA, sym, row, column));
         return true;
     } else if (sym == "(") {
-        symbols.push_back(Symbol(LPARENT, sym, row, col));
+        symbols.push_back(Symbol(LPARENT, sym, row, column));
         return true;
     } else if (sym == ")") {
-        symbols.push_back(Symbol(RPARENT, sym, row, col));
+        symbols.push_back(Symbol(RPARENT, sym, row, column));
         return true;
     } else if (sym == "[") {
-        symbols.push_back(Symbol(LBRACK, sym, row, col));
+        symbols.push_back(Symbol(LBRACK, sym, row, column));
         return true;
     } else if (sym == "]") {
-        symbols.push_back(Symbol(RBRACK, sym, row, col));
+        symbols.push_back(Symbol(RBRACK, sym, row, column));
         return true;
     } else if (sym == "{") {
-        symbols.push_back(Symbol(LBRACE, sym, row, col));
+        symbols.push_back(Symbol(LBRACE, sym, row, column));
         return true;
     } else if (sym == "}") {
-        symbols.push_back(Symbol(RBRACE, sym, row, col));
+        symbols.push_back(Symbol(RBRACE, sym, row, column));
         return true;
     }
     return false;

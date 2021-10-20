@@ -4,26 +4,27 @@
 #ifndef SRC_LEXICALANALYZER_H
 #define SRC_LEXICALANALYZER_H
 
-#include <bits/stdc++.h>
+#include <string>
+#include <vector>
+#include <map>
 #include "Symbol.h"
-using namespace std;
 
 class LexicalAnalyzer {
 public:
-    LexicalAnalyzer(string buffer);
+    LexicalAnalyzer(std::string buffer);
     void initialTokens();
     void analyze();
     void nextSymbol();
     char nextChar();
-    bool checkUnary(string sym);
+    bool checkUnary(std::string sym, int row, int col);
     char viewNextChar();
     void output();
-    vector<Symbol> getSymbols();
+    std::vector<Symbol> getSymbols();
 private:
     int ptr;
-    string src;
-    map<string, SYMBOL> tokens;
-    vector<Symbol> symbols;
+    std::string src;
+    std::map<std::string, SYMBOL> tokens;
+    std::vector<Symbol> symbols;
 };
 
 
