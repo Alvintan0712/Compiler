@@ -27,8 +27,9 @@ enum ERROR {
 class ErrorHandling {
 public:
     ErrorHandling();
-    void formatStringError(int line);
+    void formatStringError(Symbol sym);
     void grammarError(Symbol sym, SYMBOL tkn);
+    void pushError(int line, char err);
     void output();
 private:
     std::vector<std::string> errors;

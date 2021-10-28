@@ -1,6 +1,8 @@
 #include <bits/stdc++.h>
 #include "LexicalAnalyzer.h"
 #include "GrammarAnalyzer.h"
+#include "ErrorHandling.h"
+#include "Ast.h"
 using namespace std;
 
 int main () {
@@ -13,10 +15,11 @@ int main () {
     f.read(&buffer[0], length);
     f.close();
 
+    ErrorHandling* errorHandling = new ErrorHandling();
     LexicalAnalyzer lexical(buffer);
-    // lexical.output();
-    GrammarAnalyzer grammar(lexical.getSymbols());
-    grammar.output();
+    GrammarAnalyzer grammar(lexical.getSymbols(), errorHandling);
+    Ast ast(grammar.getProgram(), errorHandling);
+    ast.traverse();
 
     return 0;
 }

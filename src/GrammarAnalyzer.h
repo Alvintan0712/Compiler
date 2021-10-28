@@ -7,66 +7,68 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "Ast.h"
 #include "Symbol.h"
 #include "ErrorHandling.h"
 
 class GrammarAnalyzer {
 public:
-    GrammarAnalyzer(std::vector<Symbol> symbols);
+    GrammarAnalyzer(std::vector<Symbol> symbols, ErrorHandling errorHandling);
     void analyze();
     void output();
+    Program* getProgram();
 private:
     std::vector<Symbol> src;
     std::vector<std::string> out;
     Symbol sym;
 
-    ErrorHandling error;
-    std::vector<std::map<std::string, Symbol>> IdentTable;
+    Program* program;
+    ErrorHandling* err;
 
     int ptr;
     Symbol nextSymbol();
     Symbol viewNextSymbol();
     Symbol viewNextSymbol(int i);
 
-    void _CompUnit();
-    void _Decl();
-    void _ConstDecl();
-    void _BType();
-    void _ConstDef();
-    void _ConstInitVal();
-    void _VarDecl();
-    void _VarDef();
-    void _InitVal();
-    void _FuncDef();
-    void _MainFuncDef();
-    void _FuncType();
-    void _FuncFParams();
-    void _FuncFParam();
-    void _Block();
-    void _BlockItem();
-    void _Stmt();
-    void _Exp();
-    void _Cond();
-    void _LVal();
-    void _PrimaryExp();
-    void _Number();
-    void _UnaryExp();
-    void _UnaryOp();
-    void _FuncRParams();
-    void _MulExp();
-    void _AddExp();
-    void _RelExp();
-    void _EqExp();
-    void _LAndExp();
-    void _LOrExp();
+    Program* _CompUnit();
+    std::vector<Decl*> _Decl();
+    std::vector<Decl*> _ConstDecl();
+    Symbol _BType();
+    void _ConstDef(Decl* node);
+    void _ConstInitVal(Decl* node);
+    std::vector<Decl*> _VarDecl();
+    void _VarDef(Decl* node);
+    void _InitVal(Decl* node);
+    Func* _FuncDef();
+    Func* _MainFuncDef();
+    Symbol _FuncType();
+    std::vector<Decl*> _FuncFParams();
+    Decl* _FuncFParam();
+    Block* _Block();
+    void _BlockItem(Block *blk);
+    Stmt* _Stmt();
+    Exp* _Exp();
+    Exp* _Cond();
+    UnaryExp* _LVal();
+    UnaryExp* _PrimaryExp();
+    UnaryExp* _Number();
+    UnaryExp* _UnaryExp();
+    Symbol _UnaryOp();
+    std::vector<Exp*> _FuncRParams();
+    Exp* _MulExp();
+    Exp* _AddExp();
+    Exp* _RelExp();
+    Exp* _EqExp();
+    Exp* _LAndExp();
+    Exp* _LOrExp();
+    Exp* _ConstExp();
 
-    bool isExp();
+    bool isExp() const;
     bool isBlockItem();
-    void _ConstExp();
-    void _Ident();
+    Symbol _Ident();
     void pushSymbol();
 
-    void _FormatString();
+    Symbol _FormatString();
 };
 
 

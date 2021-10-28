@@ -6,11 +6,11 @@
 #include "Symbol.h"
 using namespace std;
 
-Symbol::Symbol() : Node() {
-    level = 0;
+Symbol::Symbol() {
+
 }
 
-Symbol::Symbol(SYMBOL symbol, string value, int line, int column) : Node() {
+Symbol::Symbol(SYMBOL symbol, string value, int line, int column) {
     sym = symbol;
     val = value;
     row = line;

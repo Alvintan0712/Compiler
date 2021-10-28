@@ -5,7 +5,6 @@
 #ifndef SRC_SYMBOL_H
 #define SRC_SYMBOL_H
 #include <string>
-#include "Node.h"
 
 const std::string symbolsName[] = {
         "UNKNOWN", "END", "IDENFR", "INTCON", "STRCON", "MAINTK", "CONSTTK",
