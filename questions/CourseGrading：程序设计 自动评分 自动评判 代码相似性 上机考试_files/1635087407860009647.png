@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8">
+        <title>北京航空航天大学  WebVPN </title>
+        <meta name="keywords" content="北京航空航天大学VPN,北京航空航天大学WebVPN,北京航空航天大学内网访问, 北京航空航天大学访问控制系统, 北京航空航天大学内网登陆, vpn, 北京航空航天大学, 内网访问"/>
+        <meta name="description" content="北京航空航天大学WebVPN免客户端免配置，一键访问内网服务器">
+        <meta name="author" content="http://www.webvpn.net.cn">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+				<meta name="renderer" content="webkit">
+				<meta name="force-rendering" content="webkit">
+				<meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <!-- #CSS Links -->
+        <link rel="stylesheet" media="all" href="/assets/application-a4f2f98500f1f7288ac9ef12cb830ca13796d4788321600755414f5a80992824.css" data-turbolinks-track="true" />
+        
+        
+
+        <!-- #FAVICONS -->
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+				<!--[if lt IE 9]>
+					<link rel="stylesheet" media="screen" href="/assets/ie8-28b179c77370c961e7fedfb2df4fd0fa1b339eb621c210b6149cd9803ce0b434.css" data-turbolinks-track="true" />
+				<![endif]-->
+        
+        <meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="AiwMFoEjl+ihtA+eFLox84F1cU0k89bZRwei8aMOczk54S/MqmfW7a/FR/QKE2r+S1fIWtAkAJHR+b8Lu0OEag==" />
+        <script src="/assets/application-b30e6257bdf31f92c687db812087b75fc7dc9565deb65d93766ea5e0d0e579b9.js" data-turbolinks-track="true"></script>
+    </head>
+
+        <noscript><div class="no-js">请先启用JavaScript</div></noscript>
+    <body class="login">
+        <div id="canvas" class="container">
+  <div class="brand row col-xs-12">
+    <div class="org_title">北京航空航天大学 | <small>内网访问</small></div>
+  </div>
+  <div class="content row">
+  
+
+<div class="modal fade" id="modal_captcha" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+  <div class="modal-dialog"  role="document">
+    <div class="modal-content col-md-6 col-sm-12 " style="margin-top:50%">>
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h5 class="modal-title" style="color: black;" id="exampleModalLabel">请输入验证码</h5>
+      </div>
+      <div class="modal-body">
+      <center>
+          <img alt="Captcha" class="click_captcha" src="/rucaptcha/" onclick="this.src = '/rucaptcha/?t=' + Date.now();" background="grey">
+          </br>
+          <input class="otp_captcha" style="color:black" placeholder="请输入验证码" spellcheck="false" name="_rucaptcha" type="text" autocorrect="off" autocapitalize="off" pattern="[a-zA-Z]*" autocomplete="off" maxlength="5">
+        </center>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" id="verify_captcha" data-dismiss="modal">验证</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+      <div class="notice col-md-6 col-xs-12 hidden-xs hidden-sm">
+        <div class="panel">
+          <div class="panel-heading">
+            温馨提示
+          </div>
+          <div class="panel-body" >
+            <p>    根据相关管理办法规定，毕业生统一认证帐号于2020年10月1日注销。由此给您带来的不便，敬请谅解。<br>
+<br />    登录VPN时多次尝试错误密码会导致账号被锁定，一段时间后会自动解锁。如您的账号被锁，请您等待一个小时后再次尝试。
+<br /><br>
+<br />    VPN系统使用账号为统一认证账号，您可以访问统一身份认证网关（<a href="https://sso.buaa.edu.cn/">https://sso.buaa.edu.cn/</a>）验证您的账号密码是否正确。
+<br /><br>
+<br />    如果您忘记统一认证账号密码，请前往统一认证用户注册中心（<a href="https://ucs.buaa.edu.cn/">https://ucs.buaa.edu.cn/</a>）找回密码。<br>
+<br />    同时，如果您在使用WebVPN的过程中遇到其他任何问题，请发送邮件至vpn@buaa.edu.cn反馈，我们会尽快响应，祝您使用愉快！
+<br /><br>
+<br />信息化办公室</p>
+          </div>
+        </div>
+      </div>
+    <div class="login-form col-md-4 col-md-offset-1 col-sm-12 col-xs-12">
+      <h3>用户登录</h3>
+      
+      <div class="alert alert-warning alert-dismissible" role="alert" id="login-info" style="display:none;">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <div class="body"></div>
+      </div>
+
+      <form class="smart-form" id="login-form" role="form" action="/users/sign_in" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="0hHcS87Q2DmmyzNaZfSe9y0+BEY9NT0Ou8v6/Yzo/kHp3P+R5ZSZPKi6ezB7XcX65xy9Ucni60YtNecHlKUJEg==" />
+        <div class="liner">
+          <div class="form-group"><label class="sr-only control-label" for="user_login">登录名</label><div class="input-group"><span class="input-group-addon"><i class='glyphicon glyphicon-user'></i></span><input title="请输入统一认证账号" autofocus="autofocus" placeholder="统一认证账号，字母小写" data-toggle="tooltip" data-placement="top" class="form-control" type="text" name="user[login]" id="user_login" /></div></div>
+        </div>
+        <div class="liner ">
+            <div class="form-group"><label class="sr-only control-label required" for="user_password">密码</label><div class="input-group"><span class="input-group-addon"><i class='glyphicon glyphicon-lock'></i></span><input title="请输入统一认证密码" placeholder="统一认证密码" data-toggle="tooltip" data-placement="top" class="form-control" maxlength="72" size="72" type="password" name="user[password]" id="user_password" /></div></div>
+        </div>
+        <input value="unknown" type="hidden" name="user[dymatice_code]" id="user_dymatice_code" />
+        <input value="false" type="hidden" name="user[otp_with_capcha]" id="user_otp_with_capcha" />
+
+
+        <div class="col-md-6 col-md-offset-6 login-btn">
+          <input type="submit" name="commit" value="登录 Login" class="btn" />
+        </div>
+
+</form>      <div class="col-md-12 col-xs-12 col-lg-12 external_signin_links">
+        
+      </div>
+        <div class="notice hidden-md col-sm-12 col-xs-12 hidden-lg">
+          <div class="panel">
+            <div class="panel-heading">
+              温馨提示
+            </div>
+            <div class="panel-body" >
+              <p>    根据相关管理办法规定，毕业生统一认证帐号于2020年10月1日注销。由此给您带来的不便，敬请谅解。<br>
+<br />    登录VPN时多次尝试错误密码会导致账号被锁定，一段时间后会自动解锁。如您的账号被锁，请您等待一个小时后再次尝试。
+<br /><br>
+<br />    VPN系统使用账号为统一认证账号，您可以访问统一身份认证网关（<a href="https://sso.buaa.edu.cn/">https://sso.buaa.edu.cn/</a>）验证您的账号密码是否正确。
+<br /><br>
+<br />    如果您忘记统一认证账号密码，请前往统一认证用户注册中心（<a href="https://ucs.buaa.edu.cn/">https://ucs.buaa.edu.cn/</a>）找回密码。<br>
+<br />    同时，如果您在使用WebVPN的过程中遇到其他任何问题，请发送邮件至vpn@buaa.edu.cn反馈，我们会尽快响应，祝您使用愉快！
+<br /><br>
+<br />信息化办公室</p>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+
+</div>
+<footer class="text-center fixed-bottom">
+  <div class="logo">
+    <img src="/images/logo-1.png">
+  </div>
+  <div class="links">
+      2021 &copy; 
+  </div>
+</footer>
+
+      
+    </body>
+
+</html>
+

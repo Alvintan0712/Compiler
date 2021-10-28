@@ -33,3 +33,7 @@ function cgShowLoadingImg(myframeID, tipMsg) {
     showmessageFrame.document.write("<p>" + tipMsg + "</p><img src='/images/loading2.gif'>");
     showmessageFrame.document.close();
 }
+
+function cgShowDIVLoadingImg(myDivID, tipMsg) {
+    document.getElementById(myDivID).innerHTML=("<p>" + tipMsg + "</p><img src='/images/loading2.gif'>");
+}

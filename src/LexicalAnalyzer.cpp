@@ -10,6 +10,7 @@ LexicalAnalyzer::LexicalAnalyzer(string buffer) {
     analyze();
 }
 
+bool charMode = false;
 void LexicalAnalyzer::initialTokens() {
     tokens["main"] = MAINTK;
     tokens["const"] = CONSTTK;
@@ -23,11 +24,13 @@ void LexicalAnalyzer::initialTokens() {
     tokens["printf"] = PRINTFTK;
     tokens["return"] = RETURNTK;
     tokens["void"] = VOIDTK;
+    tokens["char"] = CHARTK;
 }
 
 void LexicalAnalyzer::analyze() {
     ptr = 0;
-    while (src[ptr]) nextSymbol();
+    while (src[ptr])
+        nextSymbol();
 }
 
 void LexicalAnalyzer::nextSymbol() {
@@ -37,6 +40,10 @@ void LexicalAnalyzer::nextSymbol() {
     sym += c;
     if (isspace(c) || checkUnary(sym)) {
         return;
+    } else if (charMode) {
+        if (c == 32 || c == 33 || 40 <= c && c <= 126) {
+            symbols.push_back(make_pair(CHAR, sym));
+        }
     } else if (c == '|') {
         c = nextChar();
         if (c == '|') {
@@ -123,7 +130,7 @@ void LexicalAnalyzer::nextSymbol() {
             } else if (c == '%') {
                 sym += c;
                 c = nextChar();
-                if (c == 'd') sym += c;
+                if (c == 'd' || c == 'c') sym += c;
                 else cout << "wrong format in FormatString" << endl;
             } else {
                 cout << "wrong format in FormatString" << endl;
@@ -178,6 +185,10 @@ bool LexicalAnalyzer::checkUnary(string sym) {
     } else if (sym == "}") {
         symbols.push_back(make_pair(RBRACE, sym));
         return true;
+    } else if (sym == "\'") {
+        symbols.push_back(make_pair(SINGLEQUOTE, sym));
+        charMode = !charMode;
+        return true;
     }
     return false;
 }
@@ -185,7 +196,7 @@ bool LexicalAnalyzer::checkUnary(string sym) {
 void LexicalAnalyzer::output() {
     ofstream f("output.txt");
     for (auto x : symbols)
-        f << symbolsName[x.first] << ' ' << x.second << endl;
+        cout << symbolsName[x.first] << ' ' << x.second << endl;
 }
 
 vector<pair<symbol, string>> LexicalAnalyzer::getSymbols() {

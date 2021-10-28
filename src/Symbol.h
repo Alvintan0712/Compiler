@@ -13,7 +13,7 @@ const string symbolsName[] = {
         "OR", "WHILETK", "GETINTTK", "PRINTFTK", "RETURNTK", "PLUS", "MINU",
         "VOIDTK", "MULT", "DIV", "MOD", "LSS", "LEQ", "GRE", "GEQ", "EQL",
         "NEQ", "ASSIGN", "SEMICN", "COMMA", "LPARENT", "RPARENT", "LBRACK",
-        "RBRACK", "LBRACE", "RBRACE"
+        "RBRACK", "LBRACE", "RBRACE", "CHARTK", "CHAR", "SINGLEQUOTE"
 };
 
 enum symbol {
@@ -56,7 +56,10 @@ enum symbol {
     LBRACK,     // [
     RBRACK,     // ]
     LBRACE,     // {
-    RBRACE      // }
+    RBRACE,     // }
+    CHARTK,     // char
+    CHAR,       // NormalChar
+    SINGLEQUOTE // '
 };
 
 #endif //SRC_SYMBOL_H

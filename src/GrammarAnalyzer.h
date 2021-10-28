@@ -35,6 +35,7 @@ private:
     void _FuncDef();
     void _MainFuncDef();
     void _FuncType();
+    void _ConstChar();
     void _FuncFParams();
     void _FuncFParam();
     void _Block();
@@ -58,6 +59,7 @@ private:
     bool isExp();
     bool isBlockItem();
     void _ConstExp();
+    void _NormalChar();
     void _Ident();
     void pushPair();
 
