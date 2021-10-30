@@ -341,9 +341,9 @@ void Block::checkLoop() {
                     errorHandling->loopError(loop->getSym());
                 }
                 if (w->getElseStmt()) {
-                    if (auto* blk = dynamic_cast<Block*>(w->getIfStmt())) {
+                    if (auto* blk = dynamic_cast<Block*>(w->getElseStmt())) {
                         blk->checkLoop();
-                    } else if (auto* loop = dynamic_cast<LoopStmt*>(w->getIfStmt())) {
+                    } else if (auto* loop = dynamic_cast<LoopStmt*>(w->getElseStmt())) {
                         errorHandling->loopError(loop->getSym());
                     }
                 }
