@@ -45,7 +45,7 @@ void LexicalAnalyzer::nextSymbol() {
         c = nextChar();
         if (c == '|') {
             sym += c;
-            symbols.push_back(Symbol(OR, sym, r, col));
+            symbols.emplace_back(Symbol(OR, sym, r, col));
         } else {
             cout << "unknown symbols" << endl;
         }
@@ -53,7 +53,7 @@ void LexicalAnalyzer::nextSymbol() {
         c = nextChar();
         if (c == '&') {
             sym += c;
-            symbols.push_back(Symbol(AND, sym, r, col));
+            symbols.emplace_back(Symbol(AND, sym, r, col));
         } else {
             cout << "unknown symbols" << endl;
         }
@@ -61,22 +61,22 @@ void LexicalAnalyzer::nextSymbol() {
         c = nextChar();
         if (c == '=') {
             sym += c;
-            symbols.push_back(Symbol(NEQ, sym, r, col));
+            symbols.emplace_back(Symbol(NEQ, sym, r, col));
         } else {
-            symbols.push_back(Symbol(NOT, sym, r, col));
+            symbols.emplace_back(Symbol(NOT, sym, r, col));
             ptr--;
         }
     } else if (c == '=' || c == '<' || c == '>') {
         c = nextChar();
         if (c == '=') {
             sym += c;
-            if (sym == "==") symbols.push_back(Symbol(EQL, sym, r, col));
-            else if (sym == "<=") symbols.push_back(Symbol(LEQ, sym, r, col));
-            else if (sym == ">=") symbols.push_back(Symbol(GEQ, sym, r, col));
+            if (sym == "==") symbols.emplace_back(Symbol(EQL, sym, r, col));
+            else if (sym == "<=") symbols.emplace_back(Symbol(LEQ, sym, r, col));
+            else if (sym == ">=") symbols.emplace_back(Symbol(GEQ, sym, r, col));
         } else {
-            if (sym == "=") symbols.push_back(Symbol(ASSIGN, sym, r, col));
-            else if (sym == "<") symbols.push_back(Symbol(LSS, sym, r, col));
-            else if (sym == ">") symbols.push_back(Symbol(GRE, sym, r, col));
+            if (sym == "=") symbols.emplace_back(Symbol(ASSIGN, sym, r, col));
+            else if (sym == "<") symbols.emplace_back(Symbol(LSS, sym, r, col));
+            else if (sym == ">") symbols.emplace_back(Symbol(GRE, sym, r, col));
             ptr--;
         }
     } else if (c == '/') {
@@ -91,7 +91,7 @@ void LexicalAnalyzer::nextSymbol() {
             while (cc != '*' || c != '/')
                 cc = c, c = nextChar();
         } else {
-            symbols.push_back(Symbol(DIV, sym, r, col));
+            symbols.emplace_back(Symbol(DIV, sym, r, col));
             ptr--;
         }
     } else if (c == '_' || isalpha(c)) {
@@ -100,16 +100,17 @@ void LexicalAnalyzer::nextSymbol() {
             sym += c;
             c = nextChar();
         }
+        if (c == '\n') row--;
         ptr--;
-        if (tokens.count(sym)) symbols.push_back(Symbol(tokens[sym], sym, r, col));
-        else symbols.push_back(Symbol(IDENFR, sym, r, col));
+        if (tokens.count(sym)) symbols.emplace_back(Symbol(tokens[sym], sym, r, col));
+        else symbols.emplace_back(Symbol(IDENFR, sym, r, col));
     } else if (isdigit(c)) {
         bool iszero = c == '0';
         if (iszero && isdigit(viewNextChar())) {
             cout << "no zero prefix number" << endl;
             return;
         } else if (iszero) {
-            symbols.push_back(Symbol(INTCON, sym, r, col));
+            symbols.emplace_back(Symbol(INTCON, sym, r, col));
             return;
         }
         sym = "";
@@ -118,13 +119,13 @@ void LexicalAnalyzer::nextSymbol() {
             c = nextChar();
         }
         ptr--;
-        symbols.push_back(Symbol(INTCON, sym, r, col));
+        symbols.emplace_back(Symbol(INTCON, sym, r, col));
     } else if (c == '\"') {
         do {
             c = nextChar();
             sym += c;
         } while (c != '\"');
-        symbols.push_back(Symbol(STRCON, sym, r, col));
+        symbols.emplace_back(Symbol(STRCON, sym, r, col));
     }
 }
 
@@ -144,40 +145,40 @@ char LexicalAnalyzer::viewNextChar() {
 
 bool LexicalAnalyzer::checkUnary(string sym, int row, int column) {
     if (sym == "+") {
-        symbols.push_back(Symbol(PLUS, sym, row, column));
+        symbols.emplace_back(Symbol(PLUS, sym, row, column));
         return true;
     } else if (sym == "-") {
-        symbols.push_back(Symbol(MINU, sym, row, column));
+        symbols.emplace_back(Symbol(MINU, sym, row, column));
         return true;
     } else if (sym == "*") {
-        symbols.push_back(Symbol(MULT, sym, row, column));
+        symbols.emplace_back(Symbol(MULT, sym, row, column));
         return true;
     } else if (sym == "%") {
-        symbols.push_back(Symbol(MOD, sym, row, column));
+        symbols.emplace_back(Symbol(MOD, sym, row, column));
         return true;
     } else if (sym == ";") {
-        symbols.push_back(Symbol(SEMICN, sym, row, column));
+        symbols.emplace_back(Symbol(SEMICN, sym, row, column));
         return true;
     } else if (sym == ",") {
-        symbols.push_back(Symbol(COMMA, sym, row, column));
+        symbols.emplace_back(Symbol(COMMA, sym, row, column));
         return true;
     } else if (sym == "(") {
-        symbols.push_back(Symbol(LPARENT, sym, row, column));
+        symbols.emplace_back(Symbol(LPARENT, sym, row, column));
         return true;
     } else if (sym == ")") {
-        symbols.push_back(Symbol(RPARENT, sym, row, column));
+        symbols.emplace_back(Symbol(RPARENT, sym, row, column));
         return true;
     } else if (sym == "[") {
-        symbols.push_back(Symbol(LBRACK, sym, row, column));
+        symbols.emplace_back(Symbol(LBRACK, sym, row, column));
         return true;
     } else if (sym == "]") {
-        symbols.push_back(Symbol(RBRACK, sym, row, column));
+        symbols.emplace_back(Symbol(RBRACK, sym, row, column));
         return true;
     } else if (sym == "{") {
-        symbols.push_back(Symbol(LBRACE, sym, row, column));
+        symbols.emplace_back(Symbol(LBRACE, sym, row, column));
         return true;
     } else if (sym == "}") {
-        symbols.push_back(Symbol(RBRACE, sym, row, column));
+        symbols.emplace_back(Symbol(RBRACE, sym, row, column));
         return true;
     }
     return false;

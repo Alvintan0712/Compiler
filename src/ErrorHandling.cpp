@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <algorithm>
 #include "ErrorHandling.h"
 using namespace std;
 
@@ -13,10 +14,10 @@ ErrorHandling::ErrorHandling() {
 }
 
 void ErrorHandling::pushError(int line, char err) {
-    errors.emplace_back(to_string(line) + " " + err);
+    errors.emplace_back(line, err);
 }
 
-void ErrorHandling::formatStringError(Symbol sym) {
+void ErrorHandling::formatStringError(const Symbol& sym) {
     int line = sym.row;
     string str = sym.val;
     if (str[0] != '\"' || str[str.size() - 1] != '\"') {
@@ -41,13 +42,56 @@ void ErrorHandling::formatStringError(Symbol sym) {
     }
 }
 
-void ErrorHandling::output() {
-    ofstream f("error.txt");
-    for (auto x : errors)
-        f << x << endl;
+void ErrorHandling::grammarError(const Symbol& sym, SYMBOL tkn) {
+    if (tkn == SEMICN) {
+        pushError(sym.row, 'i');
+    } else if (tkn == RPARENT) {
+        pushError(sym.row, 'j');
+    } else if (tkn == RBRACK) {
+        pushError(sym.row, 'k');
+    }
 }
 
-void ErrorHandling::grammarError(Symbol sym, SYMBOL tkn) {
+void ErrorHandling::identRepeat(const Symbol& sym) {
+    pushError(sym.row, 'b');
+}
 
+void ErrorHandling::identNotFound(const Symbol& sym) {
+    pushError(sym.row, 'c');
+}
+
+void ErrorHandling::paramsNumNotMatch(const Symbol& sym) {
+    pushError(sym.row, 'd');
+}
+
+void ErrorHandling::paramsTypeNotMatch(const Symbol& sym) {
+    pushError(sym.row, 'e');
+}
+
+void ErrorHandling::funcNoNeedReturn(const Symbol& sym) {
+    pushError(sym.row, 'f');
+}
+
+void ErrorHandling::funcNeedReturn(const Symbol& sym) {
+    pushError(sym.row, 'g');
+}
+
+void ErrorHandling::constAssign(const Symbol& sym) {
+    pushError(sym.row, 'h');
+}
+
+void ErrorHandling::printfError(const Symbol& sym) {
+    pushError(sym.row, 'l');
+}
+
+void ErrorHandling::loopError(const Symbol& sym) {
+    pushError(sym.row, 'm');
+}
+
+void ErrorHandling::output() {
+    ofstream f("error.txt");
+    sort(errors.begin(), errors.end());
+    for (auto x : errors)
+        f << x.first << " " << x.second << endl;
 }
 

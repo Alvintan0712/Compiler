@@ -4,12 +4,12 @@
 
 #include <iostream>
 #include "Ast.h"
+#include "Table.h"
+
 using namespace std;
 
-Node::Node() {
-
-}
-
+Table table;
+ErrorHandling* errorHandling;
 BlockItem::BlockItem() {
 
 }
@@ -34,7 +34,7 @@ Decl::Decl() {
 }
 
 Decl::Decl(Symbol _bType, Symbol _name) {
-    bType = _bType;
+    bType = Type(_bType);
     name = _name;
     Const = false;
     pointer = false;
@@ -43,10 +43,10 @@ Decl::Decl(Symbol _bType, Symbol _name) {
 }
 
 void Decl::setType(Symbol _bType) {
-    bType = _bType;
+    bType = Type(_bType);
 }
 
-Symbol Decl::getType() {
+Type Decl::getType() {
     return bType;
 }
 
@@ -58,12 +58,17 @@ bool Decl::isConst() {
     return Const;
 }
 
+void Decl::addDim() {
+    bType.addDim(0);
+    pointer = true;
+}
+
 void Decl::addDim(Exp* size) {
-    dim.push_back(size);
+    bType.addDim(size->evalInt());
 }
 
 int Decl::getDim() {
-    return dim.size() + pointer;
+    return bType.getDims().size() + pointer;
 }
 
 Symbol Decl::getName() {
@@ -74,26 +79,32 @@ void Decl::addInitVal(Exp* init) {
     initVal.push_back(init);
 }
 
+std::vector<int> Decl::getInitVal() {
+    vector<int> v;
+    for (auto x : initVal) {
+        v.push_back(x->evalInt());
+    }
+    return v;
+}
+
 void Decl::setName(Symbol _name) {
     name = _name;
 }
 
-void Decl::addDim() {
-    pointer = true;
-}
-
 void Decl::traverse(int lev) {
+    table.pushDecl(this);
     if (!param) {
         for (int i = 0; i < lev; i++)
             cout << "    ";
     }
     if (isConst()) cout << "const ";
-    cout << bType.val << " ";
+    cout << bType.getType().val << " ";
     cout << name.val;
     if (pointer) cout << "[]";
-    for (auto x : dim) {
+    vector<int> dims = bType.getDims();
+    for (auto x : dims) {
         cout << "[";
-        x->traverse(lev);
+        cout << x;
         cout << "]";
     }
     if (!initVal.empty()) cout << " = ";
@@ -113,27 +124,59 @@ Func::Func() {
 }
 
 Func::Func(Symbol _returnType, Symbol _name, Block *_block) {
-    returnType = _returnType;
+    returnType = Type(_returnType);
     name = _name;
     block = _block;
 }
 
 Func::Func(Symbol _returnType, Symbol _name, Block* _block, vector<Decl*> v) {
-    returnType = _returnType;
+    returnType = Type(_returnType);
     name = _name;
     block = _block;
     FParams = v;
 }
 
+Symbol Func::getName() {
+    return name;
+}
+
+std::vector<Decl *> Func::getParams() {
+    return FParams;
+}
+
+Type Func::getType() {
+    return returnType;
+}
+
+void Func::checkReturn() {
+    ReturnStmt* rs = block->evalReturn();
+    if (returnType.getType().sym != VOIDTK && (rs == nullptr || rs->getExp() == nullptr)) {
+        errorHandling->funcNeedReturn(block->getRBrace());
+    } else if (returnType.getType().sym == VOIDTK &&
+               rs && rs->getExp() &&
+               rs->getExp()->evalType().getType().sym != VOIDTK) {
+        errorHandling->funcNoNeedReturn(rs->getSymbol());
+    }
+}
+
+void Func::checkLoop() {
+    block->checkLoop();
+}
+
 void Func::traverse(int lev) {
-    cout << returnType.val << " ";
+    checkLoop();
+    table.pushFunc(this);
+    table.pushBlock();
+    cout << returnType.getType().val << " ";
     cout << name.val << " (";
     for (int i = 0; i < FParams.size(); i++) {
         if (i > 0) cout << ", ";
         FParams[i]->traverse(lev);
     }
     cout << ")" << endl;
+    checkReturn();
     block->traverse(lev);
+    table.popBlock();
 }
 
 BinaryExp::BinaryExp() {
@@ -163,8 +206,47 @@ void BinaryExp::traverse(int lev) {
     rhs->traverse(lev);
 }
 
+Type BinaryExp::evalType() {
+    return Exp::evalType();
+}
+
+int BinaryExp::evalInt() {
+    if (val.sym == PLUS) {
+        return lhs->evalInt() + rhs->evalInt();
+    } else if (val.sym == MINU) {
+        return lhs->evalInt() - rhs->evalInt();
+    } else if (val.sym == MULT) {
+        return lhs->evalInt() * rhs->evalInt();
+    } else if (val.sym == DIV) {
+        return lhs->evalInt() / rhs->evalInt();
+    } else if (val.sym == MOD) {
+        return lhs->evalInt() % rhs->evalInt();
+    } else if (val.sym == AND) {
+        return lhs->evalInt() && rhs->evalInt();
+    } else if (val.sym == OR) {
+        return lhs->evalInt() || rhs->evalInt();
+    } else if (val.sym == LSS) {
+        return lhs->evalInt() < rhs->evalInt();
+    } else if (val.sym == LEQ) {
+        return lhs->evalInt() <= rhs->evalInt();
+    } else if (val.sym == GRE) {
+        return lhs->evalInt() > rhs->evalInt();
+    } else if (val.sym == GEQ) {
+        return lhs->evalInt() >= rhs->evalInt();
+    } else if (val.sym == EQL) {
+        return lhs->evalInt() == rhs->evalInt();
+    } else if (val.sym == NEQ) {
+        return lhs->evalInt() != rhs->evalInt();
+    }
+    return 0;
+}
+
 Program::Program() {
 
+}
+
+void Program::addError(ErrorHandling* error) {
+    err = error;
 }
 
 void Program::addItem(ProgramItem* item) {
@@ -176,6 +258,7 @@ std::vector<ProgramItem *> Program::getItems() {
 }
 
 void Program::traverse(int lev) {
+    table.pushBlock();
     for (auto node : program_items) {
         if (Decl* decl = dynamic_cast<Decl*>(node)) {
             decl->traverse(lev);
@@ -210,12 +293,81 @@ bool Block::isLoop() {
     return loop;
 }
 
+void Block::setLBrace(Symbol sym) {
+    lBrace = sym;
+}
+
+Symbol Block::getLBrace() {
+    return lBrace;
+}
+
+void Block::setRBrace(Symbol sym) {
+    rBrace = sym;
+}
+
+Symbol Block::getRBrace() {
+    return rBrace;
+}
+
+ReturnStmt* Block::evalReturn() {
+    if (block_items.empty()) return nullptr;
+    for (auto it = block_items.rbegin(); it != block_items.rend(); it++) {
+        if (auto* r = dynamic_cast<ReturnStmt*>(*it))
+            return r;
+    }
+    return nullptr;
+}
+
+vector<LoopStmt*> Block::evalLoop() {
+    vector<LoopStmt*> v;
+    for (auto x : block_items) {
+        if (auto* b = dynamic_cast<Block*>(x)) {
+            auto ret = b->evalLoop();
+            v.insert(v.end(), ret.begin(), ret.end());
+        } else if (auto* r = dynamic_cast<LoopStmt*>(x)) {
+            v.push_back(r);
+        }
+    }
+    return v;
+}
+
+void Block::checkLoop() {
+    for (auto item : block_items) {
+        if (auto* w = dynamic_cast<CondStmt*>(item)) {
+            if (w->getSym().sym == IFTK) {
+                if (auto* blk = dynamic_cast<Block*>(w->getIfStmt())) {
+                    blk->checkLoop();
+                } else if (auto* loop = dynamic_cast<LoopStmt*>(w->getIfStmt())) {
+                    errorHandling->loopError(loop->getSym());
+                }
+                if (w->getElseStmt()) {
+                    if (auto* blk = dynamic_cast<Block*>(w->getIfStmt())) {
+                        blk->checkLoop();
+                    } else if (auto* loop = dynamic_cast<LoopStmt*>(w->getIfStmt())) {
+                        errorHandling->loopError(loop->getSym());
+                    }
+                }
+            }
+        } else if (auto* blk = dynamic_cast<Block*>(item)) {
+            blk->checkLoop();
+        } else if (auto* loop = dynamic_cast<LoopStmt*>(item)) {
+            errorHandling->loopError(loop->getSym());
+        }
+    }
+}
+
 void Block::traverse(int lev) {
     for (int i = 0; i < lev; i++) cout << "    ";
     cout << "{" << endl;
     lev++;
     for (auto x : block_items) {
-        x->traverse(lev);
+        if (auto* blk = dynamic_cast<Block*>(x)) {
+            table.pushBlock();
+            blk->traverse(lev);
+            table.popBlock();
+        } else {
+            x->traverse(lev);
+        }
     }
     lev--;
     for (int i = 0; i < lev; i++) cout << "    ";
@@ -234,6 +386,10 @@ void CallExp::addParam(Exp* param) {
     rParams.push_back(param);
 }
 
+std::vector<Exp *> CallExp::getParams() {
+    return rParams;
+}
+
 bool CallExp::isGetInt() {
     return func.sym == GETINTTK;
 }
@@ -242,13 +398,44 @@ bool CallExp::isPrintf() {
     return func.sym == PRINTFTK;
 }
 
+Symbol CallExp::getFunc() {
+    return func;
+}
+
+void CallExp::checkPrintf() {
+    if (isPrintf()) {
+        int cnt = 0;
+        if (auto* f = dynamic_cast<FormatString*>(rParams[0])) {
+            string s = f->getSym().val;
+            for (int i = 0; i < s.size(); i++) {
+                if (s[i] == '%' && i + 1 < s.size() && s[i + 1] == 'd')
+                    cnt++;
+            }
+            if (cnt != rParams.size() - 1)
+                errorHandling->printfError(func);
+        }
+    }
+}
+
 void CallExp::traverse(int lev) {
+    checkPrintf();
+    table.checkFunc(this);
     cout << func.val << "(";
     for (int i = 0; i < rParams.size(); i++) {
         if (i > 0) cout << ", ";
         rParams[i]->traverse(lev);
     }
     cout << ")";
+}
+
+Type CallExp::evalType() {
+    Func* func = table.findFunc(this);
+    return func->getType();
+}
+
+int CallExp::evalInt() {
+    cout << "only const can eval" << endl;
+    return 0;
 }
 
 ExpStmt::ExpStmt() {
@@ -296,6 +483,18 @@ void UnaryExp::traverse(int lev) {
     else cout << sym.val;
 }
 
+Type UnaryExp::evalType() {
+    return Exp::evalType();
+}
+
+int UnaryExp::evalInt() {
+    if (op.empty()) {
+        if (sym.sym == INTCON) return stoi(sym.val);
+        else return exp->evalInt();
+    }
+    return 0;
+}
+
 LVal::LVal() {
 
 }
@@ -316,13 +515,38 @@ void LVal::addDim(Exp *exp) {
     dims.push_back(exp);
 }
 
+Symbol LVal::getName() {
+    return name;
+}
+
 void LVal::traverse(int lev) {
+    table.checkDecl(this);
     cout << name.val;
     for (auto x : dims) {
         cout << "[";
         x->traverse(lev);
         cout << "]";
     }
+}
+
+Type LVal::evalType() {
+    Decl* decl = table.findDecl(this);
+    return decl->getType();
+}
+
+int LVal::evalInt() {
+    Decl* decl = table.findDecl(this);
+    if (decl->isConst()) {
+        if (dims.empty()) return decl->getInitVal()[0];
+        else {
+            int i = 0, last = 1;
+            for (auto x : dims) i = last*i + x->evalInt();
+        }
+    } else {
+        cout << "only const can eval" << endl;
+        return 0;
+    }
+    return 0;
 }
 
 Exp::Exp() {
@@ -341,6 +565,14 @@ void Exp::traverse(int lev) {
 
 }
 
+Type Exp::evalType() {
+    return Type();
+}
+
+int Exp::evalInt() {
+    return 0;
+}
+
 AssignExp::AssignExp() {
     lhs = nullptr;
     rhs = nullptr;
@@ -351,10 +583,27 @@ AssignExp::AssignExp(LVal *l, Exp *r) {
     rhs = r;
 }
 
+void AssignExp::checkConst() {
+    Decl* decl = table.findDecl(lhs);
+    if (decl == nullptr) return;
+    else if (decl->isConst()) errorHandling->constAssign(lhs->getName());
+}
+
 void AssignExp::traverse(int lev) {
+    checkConst();
     lhs->traverse(lev);
     cout << " = ";
     rhs->traverse(lev);
+}
+
+Type AssignExp::evalType() {
+    if (!(lhs->evalType() == rhs->evalType())); // check lhs and rhs type
+    return lhs->evalType();
+}
+
+int AssignExp::evalInt() {
+    cout << "only const can eval" << endl;
+    return rhs->evalInt();
 }
 
 CondStmt::CondStmt() {
@@ -373,17 +622,33 @@ void CondStmt::addElse(Stmt *stmt) {
     elseStmt = stmt;
 }
 
+Symbol CondStmt::getSym() {
+    return sym;
+}
+
+Stmt *CondStmt::getIfStmt() {
+    return ifStmt;
+}
+
+Stmt *CondStmt::getElseStmt() {
+    return elseStmt;
+}
+
 void CondStmt::traverse(int lev) {
     for (int i = 0; i < lev; i++) cout << "    ";
     cout << sym.val << " (";
     condExp->traverse(lev);
     cout << ")" << endl;
-    if (Block* blk = dynamic_cast<Block*>(ifStmt)) {
+    table.pushBlock();
+    if (auto* blk = dynamic_cast<Block*>(ifStmt)) {
         ifStmt->traverse(lev);
     } else {
         ifStmt->traverse(lev + 1);
     }
+    table.popBlock();
+    table.pushBlock();
     if (elseStmt) elseStmt->traverse(lev);
+    table.popBlock();
 }
 
 LoopStmt::LoopStmt() {
@@ -420,6 +685,10 @@ Exp *ReturnStmt::getExp() {
     return exp;
 }
 
+Symbol ReturnStmt::getSymbol() {
+    return sym;
+}
+
 void ReturnStmt::traverse(int lev) {
     for (int i = 0; i < lev; i++) cout << "    ";
     cout << "return";
@@ -451,13 +720,16 @@ void FormatString::traverse(int lev) {
 Ast::Ast() {
     program = nullptr;
     errorHandling = new ErrorHandling();
+    table.addError(errorHandling);
 }
 
 Ast::Ast(Program* p, ErrorHandling* err) {
     program = p;
     errorHandling = err;
+    table.addError(err);
 }
 
 void Ast::traverse() {
+    program->addError(errorHandling);
     program->traverse(0);
 }

@@ -19,6 +19,7 @@ void GrammarAnalyzer::analyze() {
     ptr = 0;
     sym = nextSymbol();
     program = _CompUnit();
+    program->addError(err);
 }
 
 void GrammarAnalyzer::pushSymbol() {
@@ -65,6 +66,7 @@ vector<Decl*> GrammarAnalyzer::_Decl() {
         return _VarDecl();
     else
         output();
+    return {};
 }
 
 vector<Decl*> GrammarAnalyzer::_ConstDecl() {
@@ -102,15 +104,17 @@ Symbol GrammarAnalyzer::_BType() {
     } else {
         output();
     }
+    return Symbol();
 }
 
 void GrammarAnalyzer::_ConstDef(Decl* node) {
     node->setName(_Ident());
     while (sym.sym == LBRACK) {
         pushSymbol();
+        Symbol symbol = sym;
         node->addDim(_ConstExp());
-        if (sym.sym != RBRACK) output();
-        pushSymbol();
+        if (sym.sym != RBRACK) err->grammarError(symbol, RBRACK);
+        else pushSymbol();
     }
     if (sym.sym != ASSIGN) output();
     pushSymbol();
@@ -163,9 +167,10 @@ void GrammarAnalyzer::_VarDef(Decl* node) {
     node->setName(_Ident());
     while (sym.sym == LBRACK) {
         pushSymbol();
+        Symbol symbol = sym;
         node->addDim(_ConstExp());
-        if (sym.sym != RBRACK) output();
-        pushSymbol();
+        if (sym.sym != RBRACK) err->grammarError(symbol, RBRACK);
+        else pushSymbol();
     }
     if (sym.sym == ASSIGN) {
         pushSymbol();
@@ -259,10 +264,11 @@ Decl* GrammarAnalyzer::_FuncFParam() {
         fparam->addDim();
         while (sym.sym == LBRACK) {
             pushSymbol();
+            symbol = sym;
             Exp* exp = _ConstExp();
-            if (sym.sym != RBRACK) output();
+            if (sym.sym != RBRACK) err->grammarError(symbol, RBRACK);
+            else pushSymbol();
             fparam->addDim(exp);
-            pushSymbol();
         }
     }
     out.emplace_back("<FuncFParam>");
@@ -285,10 +291,13 @@ bool GrammarAnalyzer::isBlockItem() {
 Block* GrammarAnalyzer::_Block() {
     auto* blk = new Block();
     if (sym.sym != LBRACE) output();
+    blk->setLBrace(sym);
     pushSymbol();
-    while (isBlockItem())
+    while (isBlockItem()) {
         _BlockItem(blk);
+    }
     if (sym.sym != RBRACE) output();
+    blk->setRBrace(sym);
     pushSymbol();
     out.emplace_back("<Block>");
     return blk;
@@ -388,7 +397,7 @@ Stmt* GrammarAnalyzer::_Stmt() {
     } else if (sym.sym == RETURNTK) {
         auto* returnStmt = new ReturnStmt(sym);
         pushSymbol();
-        if (sym.sym != SEMICN) returnStmt->addExp(_Exp());
+        if (sym.sym != SEMICN && isExp()) returnStmt->addExp(_Exp());
         if (sym.sym != SEMICN) err->grammarError(symbol, SEMICN);
         else pushSymbol();
         out.emplace_back("<Stmt>");
@@ -416,6 +425,7 @@ Stmt* GrammarAnalyzer::_Stmt() {
     } else {
         output();
     }
+    return nullptr;
 }
 
 Exp* GrammarAnalyzer::_Exp() {
@@ -436,9 +446,10 @@ UnaryExp* GrammarAnalyzer::_LVal() {
     LVal* node = new LVal(ident);
     while (sym.sym == LBRACK) {
         pushSymbol();
+        Symbol symbol = sym;
         node->addDim(_Exp());
-        if (sym.sym != RBRACK) output();
-        pushSymbol();
+        if (sym.sym != RBRACK) err->grammarError(symbol, RBRACK);
+        else pushSymbol();
     }
     isLVal = true;
     out.emplace_back("<LVal>");
@@ -464,6 +475,7 @@ UnaryExp* GrammarAnalyzer::_PrimaryExp() {
     } else {
         output();
     }
+    return nullptr;
 }
 
 UnaryExp* GrammarAnalyzer::_Number() {
@@ -510,6 +522,7 @@ UnaryExp* GrammarAnalyzer::_UnaryExp() {
     } else {
         output();
     }
+    return nullptr;
 }
 
 Symbol GrammarAnalyzer::_UnaryOp() {
@@ -638,16 +651,19 @@ Symbol GrammarAnalyzer::_Ident() {
     } else {
         output();
     }
+    return Symbol();
 }
 
 Symbol GrammarAnalyzer::_FormatString() {
     if (sym.sym == STRCON) {
+        err->formatStringError(sym);
         Symbol name = sym;
         pushSymbol();
         return name;
     } else {
         output();
     }
+    return Symbol();
 }
 
 void GrammarAnalyzer::output() {

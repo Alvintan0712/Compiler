@@ -9,19 +9,25 @@
 #include <string>
 #include "Symbol.h"
 #include "ErrorHandling.h"
+#include "Type.h"
 
-class Node {
+class Program;
+class Ast {
 public:
-    Node();
+    Ast();
+    explicit Ast(Program* p, ErrorHandling* err);
+    void traverse();
+private:
+    Program* program;
 };
 
-class ProgramItem : public Node {
+class ProgramItem {
 public:
     ProgramItem();
     virtual void traverse(int lev);
 };
 
-class BlockItem : public Node {
+class BlockItem {
 public:
     BlockItem();
     virtual void traverse(int lev);
@@ -33,7 +39,7 @@ public:
     Decl();
     Decl(Symbol _bType, Symbol _name);
     void setType(Symbol _bType);
-    Symbol getType();
+    Type getType();
     void setConst();
     bool isConst();
     void addDim();
@@ -43,13 +49,13 @@ public:
     void setName(Symbol _name);
     Symbol getName();
     void addInitVal(Exp* init);
+    std::vector<int> getInitVal();
     void traverse(int lev) override;
 private:
     std::vector<Exp*> initVal;
-    std::vector<Exp*> dim;
     int level;
     bool Const, pointer, param;
-    Symbol bType;
+    Type bType;
     Symbol name;
 };
 
@@ -59,6 +65,8 @@ public:
     virtual void traverse(int lev);
 };
 
+class ReturnStmt;
+class LoopStmt;
 class Block : public Stmt {
 public:
     Block();
@@ -67,9 +75,17 @@ public:
     int getLevel();
     void addLoop();
     bool isLoop();
+    void setLBrace(Symbol sym);
+    Symbol getLBrace();
+    void setRBrace(Symbol sym);
+    Symbol getRBrace();
+    ReturnStmt* evalReturn();
+    std::vector<LoopStmt*> evalLoop();
+    void checkLoop();
     void traverse(int lev) override;
 private:
     std::vector<BlockItem*> block_items;
+    Symbol lBrace, rBrace;
     int level;
     bool loop;
 };
@@ -79,20 +95,27 @@ public:
     Func();
     Func(Symbol _returnType, Symbol _name, Block* _block);
     Func(Symbol _returnType, Symbol _name, Block* _block, std::vector<Decl*> v);
+    Symbol getName();
+    std::vector<Decl*> getParams();
+    Type getType();
+    void checkReturn();
+    void checkLoop();
     void traverse(int lev) override;
 private:
-    Symbol returnType;
+    Type returnType;
     Symbol name;
     std::vector<Decl*> FParams;
     Block *block;
 };
 
-class Exp : public Node {
+class Exp {
 public:
     Exp();
     void addCond();
     bool isCond();
     virtual void traverse(int lev);
+    virtual Type evalType();
+    virtual int evalInt();
 private:
     bool cond;
 };
@@ -111,6 +134,9 @@ public:
     CondStmt();
     CondStmt(Symbol name, Exp* e, Stmt* stmt);
     void addElse(Stmt* stmt);
+    Symbol getSym();
+    Stmt* getIfStmt();
+    Stmt* getElseStmt();
     void traverse(int lev) override;
 private:
     Symbol sym;
@@ -135,6 +161,7 @@ public:
     explicit ReturnStmt(Symbol name);
     void addExp(Exp* e);
     Exp* getExp();
+    Symbol getSymbol();
     void traverse(int lev) override;
 private:
     Exp* exp;
@@ -150,6 +177,8 @@ public:
     Exp* getExp();
     void addSym(Symbol name);
     virtual void traverse(int lev);
+    virtual Type evalType();
+    virtual int evalInt();
 private:
     Symbol sym;
     Exp* exp;
@@ -164,6 +193,8 @@ public:
     void setLhs(Exp* node);
     void setRhs(Exp* node);
     virtual void traverse(int lev);
+    virtual Type evalType();
+    virtual int evalInt();
 private:
     Symbol val;
     Exp *lhs, *rhs;
@@ -174,7 +205,7 @@ public:
     FormatString();
     explicit FormatString(Symbol str);
     Symbol getSym();
-    void traverse(int lev);
+    void traverse(int lev) override;
 private:
     Symbol sym;
 };
@@ -184,7 +215,10 @@ public:
     LVal();
     explicit LVal(Symbol sym);
     void addDim(Exp *exp);
-    void traverse(int lev);
+    Symbol getName();
+    void traverse(int lev) override;
+    Type evalType() override;
+    int evalInt() override;
 private:
     std::vector<Exp*> dims;
     Symbol name;
@@ -194,7 +228,10 @@ class AssignExp : public BinaryExp {
 public:
     AssignExp();
     AssignExp(LVal* l, Exp* r);
+    void checkConst();
     void traverse(int lev) override;
+    Type evalType() override;
+    int evalInt() override;
 private:
     LVal* lhs;
     Exp* rhs;
@@ -205,32 +242,29 @@ public:
     CallExp();
     explicit CallExp(Symbol f);
     void addParam(Exp* param);
+    std::vector<Exp*> getParams();
     bool isGetInt();
     bool isPrintf();
+    void checkPrintf();
     void traverse(int lev) override;
+    Symbol getFunc();
+    Type evalType() override;
+    int evalInt() override;
 private:
     Symbol func;
     std::vector<Exp*> rParams;
 };
 
-class Program : public Node {
+class Program {
 public:
     Program();
+    void addError(ErrorHandling* error);
     void addItem(ProgramItem* item);
     std::vector<ProgramItem*> getItems();
     void traverse(int lev);
+    ErrorHandling* err;
 private:
     std::vector<ProgramItem*> program_items;
-};
-
-class Ast {
-public:
-    Ast();
-    explicit Ast(Program* p, ErrorHandling* err);
-    void traverse();
-private:
-    Program* program;
-    ErrorHandling* errorHandling;
 };
 
 #endif //SRC_AST_H

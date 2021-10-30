@@ -13,7 +13,7 @@
 
 class GrammarAnalyzer {
 public:
-    GrammarAnalyzer(std::vector<Symbol> symbols, ErrorHandling errorHandling);
+    GrammarAnalyzer(std::vector<Symbol> symbols, ErrorHandling* errorHandling);
     void analyze();
     void output();
     Program* getProgram();

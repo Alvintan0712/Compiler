@@ -12,8 +12,8 @@ enum ERROR {
     ERROR_A, // illegal symbol
     ERROR_B, // redefined Ident
     ERROR_C, // undefined Ident
-    ERROR_D, // 函数参数个数不匹配
-    ERROR_E, // 函数参数类型不匹配
+    ERROR_D, // parameters number not match
+    ERROR_E, // parameter type not match
     ERROR_F, // 无返回值的函数存在不匹配的 return 语句
     ERROR_G, // 有返回值的函数缺少 return 语句
     ERROR_H, // 不能改变常量的值
@@ -27,12 +27,21 @@ enum ERROR {
 class ErrorHandling {
 public:
     ErrorHandling();
-    void formatStringError(Symbol sym);
-    void grammarError(Symbol sym, SYMBOL tkn);
+    void formatStringError(const Symbol &sym);
+    void grammarError(const Symbol &sym, SYMBOL tkn);
     void pushError(int line, char err);
+    void identRepeat(const Symbol& sym);
+    void identNotFound(const Symbol& sym);
+    void paramsNumNotMatch(const Symbol& sym);
+    void paramsTypeNotMatch(const Symbol& sym);
+    void funcNoNeedReturn(const Symbol &sym);
+    void funcNeedReturn(const Symbol &sym);
+    void constAssign(const Symbol& sym);
+    void printfError(const Symbol &sym);
+    void loopError(const Symbol &sym);
     void output();
 private:
-    std::vector<std::string> errors;
+    std::vector<std::pair<int, char>> errors;
 };
 
 #endif //SRC_ERRORHANDLING_H

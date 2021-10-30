@@ -63,6 +63,7 @@ public:
     Symbol();
     Symbol(SYMBOL symbol, std::string value, int line, int column);
     void print();
+    bool operator==(const Symbol& t);
 
     SYMBOL sym;
     std::string val;

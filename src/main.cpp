@@ -15,11 +15,12 @@ int main () {
     f.read(&buffer[0], length);
     f.close();
 
-    ErrorHandling* errorHandling = new ErrorHandling();
+    auto* errorHandling = new ErrorHandling();
     LexicalAnalyzer lexical(buffer);
     GrammarAnalyzer grammar(lexical.getSymbols(), errorHandling);
     Ast ast(grammar.getProgram(), errorHandling);
     ast.traverse();
+    errorHandling->output();
 
     return 0;
 }
