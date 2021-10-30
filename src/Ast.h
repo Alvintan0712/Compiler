@@ -45,6 +45,7 @@ public:
     void addDim();
     void addDim(Exp* size);
     int getDim();
+    std::vector<int> getDims();
     void addParam();
     void setName(Symbol _name);
     Symbol getName();
@@ -220,6 +221,7 @@ public:
     Type evalType() override;
     int evalInt() override;
 private:
+    Type type;
     std::vector<Exp*> dims;
     Symbol name;
 };
@@ -243,8 +245,8 @@ public:
     explicit CallExp(Symbol f);
     void addParam(Exp* param);
     std::vector<Exp*> getParams();
-    bool isGetInt();
-    bool isPrintf();
+    bool isGetInt() const;
+    bool isPrintf() const;
     void checkPrintf();
     void traverse(int lev) override;
     Symbol getFunc();

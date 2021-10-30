@@ -204,7 +204,7 @@ Func* GrammarAnalyzer::_FuncDef() {
     Symbol symbol = sym;
     pushSymbol();
     vector<Decl*> v;
-    if (sym.sym != RPARENT) v = _FuncFParams();
+    if (sym.sym != RPARENT && sym.sym == INTTK) v = _FuncFParams();
     if (sym.sym != RPARENT) err->grammarError(symbol, RPARENT);
     else pushSymbol();
     Block* blk = _Block();

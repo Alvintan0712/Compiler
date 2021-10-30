@@ -71,6 +71,10 @@ int Decl::getDim() {
     return bType.getDims().size() + pointer;
 }
 
+vector<int> Decl::getDims() {
+    return bType.getDims();
+}
+
 Symbol Decl::getName() {
     return name;
 }
@@ -207,6 +211,8 @@ void BinaryExp::traverse(int lev) {
 }
 
 Type BinaryExp::evalType() {
+    if (lhs->evalType() == rhs->evalType())
+        return lhs->evalType();
     return Exp::evalType();
 }
 
@@ -390,11 +396,11 @@ std::vector<Exp *> CallExp::getParams() {
     return rParams;
 }
 
-bool CallExp::isGetInt() {
+bool CallExp::isGetInt() const {
     return func.sym == GETINTTK;
 }
 
-bool CallExp::isPrintf() {
+bool CallExp::isPrintf() const {
     return func.sym == PRINTFTK;
 }
 
@@ -484,7 +490,9 @@ void UnaryExp::traverse(int lev) {
 }
 
 Type UnaryExp::evalType() {
-    return Exp::evalType();
+    if (sym.sym == INTCON)
+        return Type(Symbol(INTTK, "int", sym.row, sym.col));
+    return exp->evalType();
 }
 
 int UnaryExp::evalInt() {
@@ -531,7 +539,17 @@ void LVal::traverse(int lev) {
 
 Type LVal::evalType() {
     Decl* decl = table.findDecl(this);
-    return decl->getType();
+    Symbol declType = decl->getType().getType();
+    Type type = Type(declType);
+
+    vector<int> declDim = decl->getType().getDims();
+    int n = declDim.size();
+    int lValDim = declDim.size() - dims.size();
+    for (int i = 0; i < lValDim; i++) {
+        type.addDim(declDim[n - i - 1]);
+    }
+
+    return type;
 }
 
 int LVal::evalInt() {

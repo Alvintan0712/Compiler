@@ -22,6 +22,10 @@ void Symbol::print() {
     cout << symbolsName[sym] << ' ' << val << ' ' << row << ' ' << col << endl;
 }
 
-bool Symbol::operator==(const Symbol &t) {
+bool Symbol::operator==(const Symbol &t) const {
     return sym == t.sym && val == t.val;
+}
+
+bool Symbol::operator!=(const Symbol &t) const {
+    return sym != t.sym || val != t.val;
 }

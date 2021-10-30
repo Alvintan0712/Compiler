@@ -25,6 +25,10 @@ std::vector<int> Type::getDims() const {
 }
 
 bool Type::operator==(const Type& t) {
-    return type == t.getType() && dims == t.getDims();
+    return type == t.getType() && dims.size() == t.getDims().size();
+}
+
+bool Type::operator!=(const Type& t) {
+    return type != t.getType() || dims.size() != t.getDims().size();
 }
 

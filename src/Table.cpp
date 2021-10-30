@@ -73,7 +73,7 @@ bool Table::checkFunc(CallExp* func) {
     for (int i = 0; i < n; i++) {
         Decl* f = fParams[i];
         Exp* r = rParams[i];
-        if (!(f->getType() == r->evalType())) {
+        if (f->getType() != r->evalType()) {
             err->paramsTypeNotMatch(func->getFunc());
             return false;
         }

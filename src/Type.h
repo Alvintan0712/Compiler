@@ -15,6 +15,7 @@ public:
     explicit Type(Symbol type);
     void addDim(int dim);
     bool operator==(const Type& t);
+    bool operator!=(const Type& t);
     Symbol getType() const;
     std::vector<int> getDims() const;
 private:
