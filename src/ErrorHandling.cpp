@@ -30,7 +30,7 @@ void ErrorHandling::formatStringError(const Symbol& sym) {
                     break;
                 }
             } else if (str[i] == '\\') {
-                if (i + 1 >= str.size() || str[i + 1] != '\n') {
+                if (i + 1 >= str.size() || str[i + 1] != 'n') {
                     pushError(line, 'a');
                     break;
                 }
