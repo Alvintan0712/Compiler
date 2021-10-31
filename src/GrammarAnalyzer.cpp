@@ -498,7 +498,7 @@ UnaryExp* GrammarAnalyzer::_UnaryExp() {
             Symbol symbol = sym;
             auto* f = new CallExp(ident);
             pushSymbol();
-            if (sym.sym != RPARENT) {
+            if (sym.sym != RPARENT && isExp()) {
                 vector<Exp*> v = _FuncRParams();
                 for (auto x : v) f->addParam(x);
             }

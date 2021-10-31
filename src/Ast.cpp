@@ -539,6 +539,7 @@ void LVal::traverse(int lev) {
 
 Type LVal::evalType() {
     Decl* decl = table.findDecl(this);
+    if (decl == nullptr) return Type();
     Symbol declType = decl->getType().getType();
     Type type = Type(declType);
 

@@ -91,7 +91,9 @@ void ErrorHandling::loopError(const Symbol& sym) {
 void ErrorHandling::output() {
     ofstream f("error.txt");
     sort(errors.begin(), errors.end());
-    for (auto x : errors)
+    for (auto x : errors) {
+        cout << x.first << " " << x.second << endl;
         f << x.first << " " << x.second << endl;
+    }
 }
 
