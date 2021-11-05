@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<!-- saved from url=(0093)https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&courseID=10&assignID=1030 -->
+<html lang="zh-CN"><link type="text/css" id="dark-mode" rel="stylesheet" href="https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&amp;courseID=10&amp;assignID=1030"><head><meta http-equiv="Content-Type" content="text/html; charset=GBK">
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">    
+    
+    <meta http-equiv="Expires" content="0"> 
+    <meta http-equiv="Cache-Control" content="no-cache"> 
+    <meta http-equiv="Pragma" content="no-cache"> 
+    <link rel="shortcut icon" href="https://judge.e1.buaa.edu.cn/images/cgicon.png">
+
+    <title>CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试</title>
+    <script language="javascript">   
+        history.pushState(null, null, document.URL);
+        window.addEventListener('popstate', function () {
+                history.pushState(null, null, document.URL);
+        });
+    </script>
+    <!-- Bootstrap core CSS -->
+    <link href="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/bootstrap.min.css" rel="stylesheet">
+    <link href="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/docs.min.css" rel="stylesheet">    
+    
+   
+    <link href="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/all.css" rel="stylesheet">
+    <link href="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/sticky-footer-navbar.css" rel="stylesheet">
+    <link href="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/cg_sv2.css" rel="stylesheet">
+    
+    <script src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/jquery-3.5.1.min.js.download"></script>
+    <script src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/popper.min.js.download"></script>
+    
+    <script src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/bootstrap.bundle.min.js.download"></script>
+    <script src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/docs.min.js.download"></script>
+
+    <link href="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/bootstrap-select.min.css" rel="stylesheet">
+    <script src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/bootstrap-select.min.js.download"></script>
+  <style>/* cyrillic-ext */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_ZpC3gTD_u50.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_ZpC3g3D_u50.woff2) format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_ZpC3gbD_u50.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_ZpC3gfD_u50.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_ZpC3gnD_g.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_bZF3gTD_u50.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_bZF3g3D_u50.woff2) format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_bZF3gbD_u50.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_bZF3gfD_u50.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_bZF3gnD_g.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_dJE3gTD_u50.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_dJE3g3D_u50.woff2) format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_dJE3gbD_u50.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_dJE3gfD_u50.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/montserrat/v18/JTURjIg1_i6t8kCHKm45_dJE3gnD_g.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Mu72xKOzY.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Mu5mxKOzY.woff2) format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Mu7mxKOzY.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Mu4WxKOzY.woff2) format('woff2');
+  unicode-range: U+0370-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Mu7WxKOzY.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Mu7GxKOzY.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Mu4mxK.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmEU9fCRc4EsA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmEU9fABc4EsA.woff2) format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmEU9fCBc4EsA.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmEU9fBxc4EsA.woff2) format('woff2');
+  unicode-range: U+0370-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmEU9fCxc4EsA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmEU9fChc4EsA.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmEU9fBBc4.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmWUlfCRc4EsA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmWUlfABc4EsA.woff2) format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmWUlfCBc4EsA.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmWUlfBxc4EsA.woff2) format('woff2');
+  unicode-range: U+0370-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmWUlfCxc4EsA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmWUlfChc4EsA.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmWUlfBBc4.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style></head>
+
+<body data-new-gr-c-s-check-loaded="14.1037.0" data-gr-ext-installed=""><span id="warning-container"><i data-reactroot=""></i></span>
+<nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
+    
+    <a class="navbar-brand" href="https://judge.e1.buaa.edu.cn/index.jsp"> <img src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/logo.png" border="0" height="25"></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=0">首页 <span class="sr-only">(current)</span></a>
+            </li>
+            
+            <li class="nav-item active">
+                <a class="nav-link" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-1">课程信息</a>
+            </li>
+            
+            
+            
+            <li class="nav-item">
+                <a class="nav-link" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-2">在线作业</a>
+            </li>
+            
+            
+            
+            <li class="nav-item">
+                <a class="nav-link" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-3">在线考试</a>
+            </li>  
+            
+            
+            
+            <li class="nav-item">
+                <a class="nav-link" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-7">在线实验</a>
+            </li>   
+                
+            
+            
+            <li class="nav-item">
+                <a class="nav-link" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-4">在线答疑</a>
+            </li>    
+            
+            
+            
+            <li class="nav-item">
+                <a class="nav-link" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-5">成绩查询</a>
+            </li>               
+                      
+
+                     
+            
+            
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&amp;courseID=10&amp;assignID=1030#" id="tutorialDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  在线教程
+                </a>
+                <div class="dropdown-menu" aria-labelledby="tutorialDropdown">
+                 
+                
+                    <a class="dropdown-item" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-9&amp;columnID=3">成绩</a>
+              
+                </div>
+            </li>
+                                  
+
+        </ul>
+       
+        <form class="form-inline my-2 my-lg-0" name="courseForm" method="post" action="https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&amp;courseID=10&amp;assignID=1030">
+            
+            
+            <ul class="navbar-nav mr-auto">
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&amp;courseID=10&amp;assignID=1030#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                       <i class="fas fa-user"></i> 陈劲安
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="userDropdown">
+                      <a class="dropdown-item" href="https://judge.e1.buaa.edu.cn/includes/redirect.jsp?tab=-6"><i class="far fa-user"></i>个人信息</a>
+                    <a class="dropdown-item" href="https://judge.e1.buaa.edu.cn/login/loginproc.jsp?logout=true"><i class="fas fa-sign-out-alt"></i> 注销</a>
+
+                    </div>
+                </li>
+                <!--
+                <li class="nav-item active">
+                    <a class="nav-link" href="help.jsp" target="_blank"><i class="fas fa-question-circle"></i> 帮助</a>
+                </li>
+                -->
+            </ul>
+            <label for="doChangeCourse" class="sr-only">切换课程</label>
+
+            <input type="hidden" name="doChangeCourse" value="true">
+            <select class="form-control" name="changeCourse" onchange="document.courseForm.submit()">
+              
+              <option value="10" selected="">编译技术</option>
+              
+              <option value="25">数据结构与程序设计（信息大类）</option>
+                    
+            </select>
+            
+            <ul class="navbar-nav mr-auto">
+                
+                
+                <li> <a class="nav-link" href="https://judge.e1.buaa.edu.cn/sv2/indexexp/contest/index.jsp?my=true&amp;contestCID=10"><i class="fas fa-medal text-danger"></i> 比赛</a></li>
+                
+                
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="https://judge.e1.buaa.edu.cn/acm/index.jsp" target="_blank"><i class="fas fa-code text-danger"></i> OnlineJudge</a>                    
+                </li>
+                
+                
+                    
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="https://judge.e1.buaa.edu.cn/gitlab/index.jsp" target="_blank"><i class="fab fa-gitlab text-danger"></i> GitLab</a>                    
+                </li>
+               
+               
+               
+                    <a class="nav-link" href="https://judge.e1.buaa.edu.cn/graduation/index.jsp"><i class="fa fa-user-graduate text-danger"></i> 毕业设计</a>  
+                
+               
+                
+                <li> <a class="nav-link" href="https://judge.e1.buaa.edu.cn/sv2/indexexp/pai/publicProjects.jsp"><i class="fas fa-microscope text-danger"></i> 科研</a></li>
+                
+            </ul>
+            
+        </form>
+  </div>
+</nav>
+  
+
+
+
+<script language="JavaScript" src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/common.js.download"></script>
+
+<script src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/judgeutils.js.download"></script>
+<div class="container-fluid">
+    <div class="row mr-2 ml-1 mt-3">
+        
+        <div class="col-2">
+           
+
+
+
+
+            <h6 class="d-flex justify-content-between align-items-center">
+                <span class="text-muted"><strong><i class="far fa-clock"></i> 当前作业</strong></span>
+                
+            </h6>
+            <div class="list-group list-group-flush mb-4">
+                
+                
+                  
+                        <a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?courseID=10&amp;assignID=1033" class="list-group-item list-group-item-action">
+                            <i class="fas fa-angle-double-right"></i> 2021 代码生成作业测试用例库 - 辅助评测
+                            
+                        </a>
+                            
+                        
+                  
+                  
+                        <a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?courseID=10&amp;assignID=1030" class="list-group-item list-group-item-action active">
+                            <i class="fas fa-angle-double-right"></i> 2021 编译技术实验代码生成 - 作业一
+                            
+                        </a>
+                            
+                        
+                  
+                  
+                        <a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?courseID=10&amp;assignID=1017" class="list-group-item list-group-item-action">
+                            <i class="fas fa-angle-double-right"></i> 2021语法分析作业测试用例库 - 辅助评测
+                            
+                        </a>
+                            
+                        
+                  
+                  
+                        <a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?courseID=10&amp;assignID=1009" class="list-group-item list-group-item-action">
+                            <i class="fas fa-angle-double-right"></i> 2021设计文档提交题目 - 2 及总结感想
+                            
+                        </a>
+                            
+                        
+                  
+                  
+                        <a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?courseID=10&amp;assignID=1007" class="list-group-item list-group-item-action">
+                            <i class="fas fa-angle-double-right"></i> 2021设计文档提交题目 - 1
+                            
+                        </a>
+                            
+                        
+                  
+                  
+                        <a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?courseID=10&amp;assignID=1004" class="list-group-item list-group-item-action">
+                            <i class="fas fa-angle-double-right"></i> 2021词法分析作业测试用例库 - 辅助评测
+                            
+                        </a>
+                            
+                        
+                  
+                  
+                        <a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?courseID=10&amp;assignID=978" class="list-group-item list-group-item-action">
+                            <i class="fas fa-angle-double-right"></i> 2021 错误处理作业题目
+                            
+                        </a>
+                            
+                        
+                  
+            </div>
+
+
+            <h6 class="d-flex justify-content-between align-items-center">
+                <span class="text-muted"><strong><i class="fas fa-history"></i> 历史作业</strong></span>                
+            </h6>
+            <div class="list-group list-group-flush">
+                
+                  
+                    <a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?courseID=10&amp;assignID=1027" class="list-group-item list-group-item-action">
+                          <i class="fas fa-angle-double-right"></i> 2021编译技术期中考核 - 样例测试
+                          
+                    </a>                                 
+                        
+              
+                  
+                    <a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?courseID=10&amp;assignID=1002" class="list-group-item list-group-item-action">
+                          <i class="fas fa-angle-double-right"></i> 2021 文法解读作业题目
+                          
+                    </a>                                 
+                        
+              
+                  
+                    <a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?courseID=10&amp;assignID=975" class="list-group-item list-group-item-action">
+                          <i class="fas fa-angle-double-right"></i> 2021 语法分析作业题目
+                          
+                    </a>                                 
+                        
+              
+                  
+                    <a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?courseID=10&amp;assignID=974" class="list-group-item list-group-item-action">
+                          <i class="fas fa-angle-double-right"></i> 2021 词法分析作业题目
+                          
+                    </a>                                 
+                        
+              
+                
+            </div>
+            
+      
+              
+        </div>
+        <div class="col-10">
+              
+            
+            
+        
+         
+         
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination flex-wrap">
+                        
+                        <li class="page-item"><a class="page-link" href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?assignID=1030#An_ProgramOJP">
+                                <i class="fas fa-arrow-alt-circle-left"></i> 返回通用评测题列表</a>
+                        </li>
+                        
+
+                      
+                       
+                        <li class="page-item active"><a class="page-link" href="https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&amp;courseID=10&amp;assignID=1030&amp;libCenter=false">1</a></li>
+
+                       
+
+                      
+                    </ul>
+                </nav>
+
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item"><a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?assignID=1030">2021 编译技术实验代码生成 - 作业一</a></li>
+                      <li class="breadcrumb-item"><a href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?assignID=1030#An_ProgramOJP">通用评测题</a></li>
+                      <li class="breadcrumb-item active" aria-current="page"><b>1.</b> 2021编译技术实验代码生成 - 作业一</li>
+                    </ol>
+                </nav>
+         
+                <p><span style="font-size: 14px;">【问题描述】</span></p><p><span style="font-size: 14px;">请在词法分析、语法分析及错误处理作业的基础上，为编译器实现语义分析、代码生成功能。输入输出及处理要求如下：<br></span></p><p><span style="font-size: 14px;">（1）需根据文法规则及语义约定，采用自顶向下的语法制导翻译技术，进行语义分析并生成目标代码（任选其一）；<br></span></p><p><span style="font-size: 14px;">（2）对于选择生成<strong><span style="font-size: 18px; color: #FF0000;">MIPS</span></strong>的编译器，约定如下：<br></span></p><p><span style="font-size: 14px;">完成编译器，将源文件（统一命名为testfile.txt）编译生成MIPS汇编并输出到文件（统一命名为<span style="font-size: 18px; color: #FF0000;">mips.txt</span>），具体要求包括：</span></p><p><span style="font-size: 14px;">&nbsp; &nbsp; &nbsp; &nbsp; a）需自行设计四元式中间代码，再从中间代码生成MIPS汇编，请设计实现输出中间代码的有关函数<span style="font-size: 14px;">（输出要求见课件下载中“编译器课程设计中间代码格式2021”文档）</span>，本次作业不考核，后续会有优化前后中间代码的输出及评判(输出文件命名为学号_姓名_优化前/后中间代码.txt)</span></p><p><span style="font-size: 14px;">&nbsp; &nbsp; &nbsp; &nbsp; b）若选择此项任务，后续的作业需参加竞速排序，请提前预留代码优化有关的接口，并设计方便切换开启/关闭优化的模式<br></span></p><p><span style="font-size: 14px;">&nbsp; &nbsp; &nbsp; &nbsp; c）自行调试时，可使用Mars仿真器（使用方法见“<span style="font-size: 14px;">竞速排序及仿真器使用说明2021</span>”），提交到平台的编译器只需要能按统一的要求生成MIPS汇编代码文件即可<br></span></p><p><span style="font-size: 14px;">&nbsp; &nbsp; &nbsp; &nbsp; d）<span style="font-size: 18px;"><strong><span style="font-size: 16px; color: #FF0000;">此类提交的编译器请仅读取testfile.txt文件并生成相应的MIPS代码，编译器自身不要读入标准输入中的内容。</span></strong></span><br></span></p><p><span style="font-size: 14px;">（3）对于选择生成<strong><span style="font-size: 18px; color: #FF0000;">PCODE</span></strong>的编译器，约定如下：<br></span></p><p><span style="font-size: 14px;">完成编译器和解释执行程序，将源文件（统一命名为testfile.txt）编译生成PCODE目标代码并解释执行，得到解释执行的结果（以输出至"pcoderesult.txt"文件中的形式给出），具体要求包括：</span></p><p><span style="font-size: 14px;">&nbsp; &nbsp; &nbsp; &nbsp; a）需自行设计PCODE，可参考PASCAL-S编译器的处理</span></p><p><span style="font-size: 14px;">&nbsp; &nbsp; &nbsp; &nbsp; b）将生成的PCODE直接进行解释执行，在提交的作业中不需要输出PCODE<br></span></p><p><span style="font-size: 14px;">&nbsp; &nbsp; &nbsp; &nbsp; c）执行PCODE时，输入从标准输入中读取；输出至&nbsp;<span style="font-size: 18px; color: #FF0000;">pcoderesult.txt&nbsp;</span>文件中</span></p><p><span style="font-size: 14px;">【输入形式】testfile.txt为符合文法要求的测试程序。另外可能存在来自于标准输入的数据。</span></p><p><span style="font-size: 14px;">【输出形式】 按照选择的不同难度分为两类：<br></span></p><p><span style="font-size: 14px;">&nbsp; 1）生成MIPS的编译器</span></p><p><span style="font-size: 14px;">&nbsp; &nbsp; &nbsp; 按如上要求将目标代码生成结果输出至mips.txt中。</span></p><p><span style="font-size: 14px;">&nbsp; &nbsp;2）生成PCODE的编译器</span></p><p><span style="font-size: 14px;">&nbsp; &nbsp; &nbsp;按如上要求生成PCODE并解释执行，在pcoderesult.txt中记录解释执行结果。</span></p><p><span style="font-size: 14px;">【样例输入】</span><span style="font-size: 14px;">testfile.txt 如下：</span></p><pre class="brush:cpp;toolbar:false"><span style="font-size: 14px;">int&nbsp;test;<br>int&nbsp;main(){<br>&nbsp;&nbsp;&nbsp;&nbsp;printf("Hello&nbsp;World\n");<br>&nbsp;&nbsp;&nbsp;&nbsp;test = getint();<br>&nbsp;&nbsp;&nbsp;&nbsp;printf("%d",test);<br>&nbsp;&nbsp;&nbsp;&nbsp;return 0;<br>}<br></span></pre><p><span style="font-size: 14px;">标准输入 input.txt 如下：<br></span></p><pre class="brush:cpp;toolbar:false"><span style="font-size: 14px;">1906<br></span></pre><p><span style="font-size: 14px;">【样例输出】 output.txt 如下：</span></p><pre class="brush:cpp;toolbar:false"><span style="font-size: 14px;">Hello&nbsp;World<br>1906<br></span></pre><p><span style="font-size: 14px;">【评分标准】</span><span style="font-size: 14px;">按与预期结果不一致的行数扣分，每项扣10%。</span></p><p><span style="font-size: 14px;">【特别说明】</span></p><p><span style="font-size: 14px;">&nbsp;（1）本次作业是为了让同学们尽快实现一个完整的编译器，测试程序中仅涉及<span style="font-size: 14px; color: #FF0000;">常量声明、变量声明、读语句、写语句、赋值语句，加减乘除模除等运算语句、函数定义及调用语句</span>。</span></p><p><span style="font-size: 14px;">&nbsp;（2）两种目标代码任选其一完成，若生成PCODE代码，成绩总分为85分；若生成MIPS汇编，成绩总分为100分；请严格按照目标代码的输入输出要求完成，以免造成评判错误。</span></p><p><span style="font-size: 14px;">&nbsp;（3）本次作业仅用正确的测试程序进行考核，但产生的编译器应具有错误处理能力。</span></p><p><span style="font-size: 14px;">【目标代码说明】</span></p><p><span style="font-size: 14px;">&nbsp;（1）PCODE代码的定义可参见教材P458, Pascal-S指令代码集，可以进行修改，解释执行程序也可以借鉴Pascal-S编译器源码中的解释执行程序，若PCODE代码修改了请相应修改解释执行程序<br></span></p><p><span style="font-size: 14px;">&nbsp;（2）MIPS代码可以选择基础指令及伪指令，不能选择宏指令；&nbsp;MARS 使用 4.5 版本（课程组修改版本），请在教学平台的“课件下载”中获取课程组修改过的版本<span class="fontstyle0">Mars</span><span class="fontstyle1">-</span><span class="fontstyle0">Compile</span><span class="fontstyle1">-</span><span class="fontstyle0">2021.jar以及“竞速排序及仿真器使用说明2021”文档查看具体要求</span><br style=" font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: 2; text-align: -webkit-auto; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; "><br style=" font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: 2; text-align: -webkit-auto; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; "></span></p>
+                
+                <hr>
+                    
+						
+                    
+						
+						
+                    
+                    提交源文件
+                    
+                    ， 只能提交以 <kbd>rar、zip</kbd> 为后缀的文件
+                    				
+                    <form class="form-inline my-2" name="upload" onsubmit="return filesubmit()" method="post" enctype="multipart/form-data" target="showmessage" action="https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&amp;courseID=10&amp;assignID=1030">
+
+                        <div class="form-group">
+                            <label class="sr-only" for="CGFILE"></label>
+                            <input name="FILE1" type="file" id="CGFILE" required="">
+                        </div>
+                        <input id="ojpSubmitBtn" type="button" name="ojpSubmitBtn" class="btn btn-success" value="提 交">          
+                        
+                
+                    </form>
+                    <progress class="d-none" id="localfileprocess"></progress>
+                    <p class="text-danger font-weight-bold font-italic" id="fileuploadmsg"></p>
+                    <div class="card">
+                        <div class="card-header">
+                          运行结果
+                        </div>
+                        <div class="card-body">
+                            <iframe id="showmessageFRAME" name="showmessage" src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/showOJPProcessMsg.html" frameborder="0" height="500" marginheight="0" marginwidth="0" width="100%"></iframe>
+                        </div>
+                    </div>     
+                        
+                    <script src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/ajax.js.download" type="text/javascript"></script>
+                    <script type="text/javascript" language="javascript">
+                        var datenow = new Date();
+                        var submitStartTime = datenow.getTime();
+                        var firstLoad = true;
+                        var uploadQueryString = "";
+                        function filesubmit() {	
+
+
+                            var filename = document.upload.FILE1.value;
+
+                            if(filename.length<1) {
+                                    alert("请输入要提交的文件!");
+                                    return false;
+                            }
+                            if(!isIeLessThan9()) {
+                                    var maxFileSize = 1048576;
+                                    var uploadFileObj = document.getElementById("CGFILE").files[0];
+
+                                    if(uploadFileObj.size > maxFileSize) {
+                                        alert("上传的文件大小不能超过 1024 KB !" );
+                                        return false;
+                                    }
+                                }
+
+                            
+                                if(!CGHasExtension(filename, ['.rar', '.zip'])) {
+                                    alert("文件格式不对，上传文件格式仅限于：rar,zip");
+                                    return false;
+                                }
+
+                            
+
+                            var now = new Date();       
+                            var submitTimeSpent = Math.floor((now.getTime() - submitStartTime) / 1000);     
+                            if((submitTimeSpent < 10) && (!firstLoad)) {                    
+                                alert("两次提交的时间间隔不能少于10秒！");
+                                return false;
+                            }
+                            firstLoad = false;
+
+                            submitStartTime = now.getTime();
+                            var requestString = "showOJPProcessMsg.jsp?problemID=6685&assignID=1030&doSubmit=true";               
+                            uploadQueryString = requestString + "&wtime=" + submitTimeSpent; 
+
+                            document.getElementById("ojpSubmitBtn").disabled=true;
+                            document.getElementById("ojpSubmitBtn").value="正在处理...";
+                            try {
+                                document.getElementById("cancelBtn").disabled=false;
+                            }catch {
+                                // object does not exist
+                            }
+                            cgShowLoading('showmessageFRAME', '正在上传......，请等待上传完毕。');
+                            //cgShowProcessLoading('showmessageFRAME');
+
+                            return true;
+                        }
+                        
+                        function cancelcb() {
+                            document.getElementById("cancelBtn").innerHTML="取消";
+                        }
+                        function doCancelJudge() {
+                            if(confirm("确定取消正在执行的评测任务吗？")) {
+                                document.getElementById("cancelBtn").innerHTML="正在取消评测......";
+                                document.getElementById("cancelBtn").disabled=true;
+                                var cancelURL="showOJPProcessMsg.jsp?problemID=6685&assignID=1030&doCancel=true";
+                                cgVoidExec(cancelURL, cancelcb);
+                            }
+                        }
+                        
+                        
+                        $('#ojpSubmitBtn').on('click', function() {
+
+                            var file = document.getElementById("CGFILE").files[0];
+                            if(!filesubmit()) {
+                                return;
+                            }
+
+                            var filename = file.name;
+
+                            document.getElementById("fileuploadmsg").innerHTML="";
+
+
+                            var ext=filename.substring(filename.lastIndexOf('.'));
+
+                            document.getElementById("localfileprocess").className="d-inline";
+
+                            var newFormData = new FormData();
+                            
+                            var chineseRE=/[\u4E00-\u9FA5]|[\uFE30-\uFFA0]/gi;
+                            if (chineseRE.exec(filename)) {
+                                var imgName = "18364" + Date.now() + ext;
+                                newFormData.append('file', file, imgName);
+                            } else {
+                                newFormData.append('file', file);
+                            }
+
+                            
+                            $.ajax({
+                                // Your server script to process the upload
+                                url: uploadQueryString,
+                                type: 'POST',
+
+                                // Form data
+                                data: newFormData,
+
+                                // Tell jQuery not to process data or worry about content-type
+                                // You *must* include these options!
+                                cache: false,
+                                contentType: false,
+                                processData: false,
+
+                                // Custom XMLHttpRequest
+                                xhr: function() {
+                                    var myXhr = $.ajaxSettings.xhr();
+                                    if (myXhr.upload) {
+                                        // For handling the progress of the upload
+                                        myXhr.upload.addEventListener('progress', function(e) {
+                                            if (e.lengthComputable) {
+                                                $('progress').attr({
+                                                    value: e.loaded,
+                                                    max: e.total,
+                                                });
+                                            }
+                                        } , false);
+                                    }
+                                    return myXhr;
+                                }
+                            }).done(function(msg){ 
+                                document.getElementById("localfileprocess").className="d-none";
+
+                                //document.getElementById("fileuploadmsg").innerHTML=msg;
+
+                                //document.getElementById("ojpSubmitBtn").disabled=false;
+                                //document.getElementById("ojpSubmitBtn").value="提 交"; 
+
+                                frames['showmessage'].location.href="showOJPProcessMsg.jsp?problemID=6685&assignID=1030";	
+                            }).fail(function(msg){ 
+
+                                document.getElementById("fileuploadmsg").innerHTML="上传失败，检查网络是否正常。";
+                                document.getElementById("ojpSubmitBtn").disabled=false;
+                                document.getElementById("ojpSubmitBtn").value="提 交"; 
+                            });
+                        });
+
+                    </script>    
+                        
+            
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination flex-wrap">
+                            
+                            <li class="page-item"><a class="page-link" href="https://judge.e1.buaa.edu.cn/assignment/index.jsp?assignID=1030#An_ProgramOJP">
+                                    <i class="fas fa-arrow-alt-circle-left"></i> 返回通用评测题列表</a>
+                            </li>
+                            
+
+                          
+                           
+                            <li class="page-item active"><a class="page-link" href="https://judge.e1.buaa.edu.cn/assignment/programOJPList.jsp?proNum=1&amp;courseID=10&amp;assignID=1030&amp;libCenter=false">1</a></li>
+
+                           
+
+                          
+                        </ul>
+                    </nav>
+            
+                        
+            
+                        
+
+
+
+
+            <script type="text/javascript" src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/URI.js.download"></script>
+            <script type="text/javascript" src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/analytics.js.download"></script>
+            <script type="text/javascript" src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/cgplugin.js.download"></script>
+            <script>
+
+                const cgtracker = _analytics.init({
+                    app: 'judge.e1.buaa.edu.cn',
+                    plugins: [
+                        cgXAPIPlugin({
+                            // 采集服务器地址
+                            trackEndpoint: "http://10.212.31.87:8080/cglearning",
+                            // 采集域名
+                            trackHomePage: "judge.e1.buaa.edu.cn",
+                            // 用户token
+                            trackToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzYxNzc1NjQsImlzcyI6Imh0dHBzOi8vbGVhcm5pbmcuZWR1Y2cubmV0LyIsIumZiOWKsuWuiSI6Ijc5MDY2MDEyIn0.XZlQrilHLvy82LEG3gu81WM9IodQkvfwInMx0IPDkjk"
+                        })
+                    ]
+                });
+                window.cgtracker = cgtracker;
+                function enterCourse(){
+                    window.cgtracker.track('enter', {
+                        "type": "pro",
+                        "id": "6685",
+                        "name": "2021编译技术实验代码生成 - 作业一",
+                        "parent": {
+                            "type": "homework",
+                            "id": "1030",
+                            "name": "2021 编译技术实验代码生成 - 作业一",
+                            "parent": {
+                                "type": "course",
+                                "id": "10",
+                                "name": "编译技术"
+                            }
+                        }
+                    }
+                    )
+
+                    // Page tracking with page data overrides
+                    window.cgtracker.page()
+
+                    // Identify with additional traits
+                    window.cgtracker.identify('79066012', {
+                      name: '陈劲安',
+                      email: 'tjan2000@gmail.com'
+                    })
+                }
+                enterCourse();
+
+            </script>
+              
+
+            
+            
+        </div>
+    </div>
+</div>	  
+          
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    <iframe src="./CourseGrading：程序设计 自动评分 自动评判 代码相似性 上机考试_files/stayalive.html" frameborder="0" height="0" marginheight="0" marginwidth="0" width="0"></iframe>
+    
+    <footer id="cgfooter" style="min-height: 70px; width: 100%; padding: 15px;position: relative;bottom: 0;" class="bg-light mt-5">
+      <div class="container text-center">
+       
+              <p><span style="color: rgb(102, 102, 153);">北京航空航天大学 计算机学院</span></p><p><span style="color: rgb(102, 102, 153);">若重置密码，请与当前的任课教师联系</span></p>
+      </div>
+    </footer>
+    
+    
+  
+  
+
+
+ 
+  
+
+<div id="wot-new-assistant-container"><div data-reactroot=""></div></div></body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>
