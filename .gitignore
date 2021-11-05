@@ -1,6 +1,3 @@
 *.out
 *.zip
 testfiles/*
-src/cmake-build-debug
-src/.idea
-src/*.txt
