@@ -14,31 +14,31 @@ void Table::addError(ErrorHandling* error) {
 }
 
 bool Table::containsDecl(Decl* decl) {
-    return declTable.back().count(decl->getName().val);
+    return declTable.back().count(decl->getIdent().val);
 }
 
 bool Table::checkDecl(LVal* lval) {
-    if (lval->getName().sym != IDENFR) return true;
+    if (lval->getIdent().sym != IDENFR) return true;
     if (findDecl(lval)) return true;
-    err->identNotFound(lval->getName());
+    err->identNotFound(lval->getIdent());
     return false;
 }
 
 Decl* Table::findDecl(LVal *lval) {
     for (auto v = declTable.rbegin(); v != declTable.rend(); v++)
-        if (v->count(lval->getName().val))
-            return (*v)[lval->getName().val];
+        if (v->count(lval->getIdent().val))
+            return (*v)[lval->getIdent().val];
     return nullptr;
 }
 
 void Table::pushDecl(Decl* decl) {
-    if (containsDecl(decl)) err->identRepeat(decl->getName());
-    else declTable.back().insert(make_pair(decl->getName().val, decl));
+    if (containsDecl(decl)) err->identRepeat(decl->getIdent());
+    else declTable.back().insert(make_pair(decl->getIdent().val, decl));
 }
 
 void Table::pushBlock() {
-    declTable.push_back(map<string, Decl*>());
-    funcTable.push_back(map<string, Func*>());
+    declTable.emplace_back();
+    funcTable.emplace_back();
 }
 
 void Table::popBlock() {
@@ -47,16 +47,16 @@ void Table::popBlock() {
 }
 
 bool Table::containsFunc(Func* func) {
-    return funcTable.back().count(func->getName().val);
+    return funcTable.back().count(func->getIdent().val);
 }
 
 bool Table::checkFunc(CallExp* func) {
-    if (func->getFunc().sym != IDENFR) return true;
+    if (func->getIdent().sym != IDENFR) return true;
 
     // ERROR_C
     Func* funcDecl = findFunc(func);
     if (!funcDecl) {
-        err->identNotFound(func->getFunc());
+        err->identNotFound(func->getIdent());
         return false;
     }
 
@@ -64,7 +64,7 @@ bool Table::checkFunc(CallExp* func) {
     vector<Decl*> fParams = funcDecl->getParams();
     vector<Exp*> rParams = func->getParams();
     if (fParams.size() != rParams.size()) {
-        err->paramsNumNotMatch(func->getFunc());
+        err->paramsNumNotMatch(func->getIdent());
         return false;
     }
 
@@ -74,7 +74,7 @@ bool Table::checkFunc(CallExp* func) {
         Decl* f = fParams[i];
         Exp* r = rParams[i];
         if (f->getType() != r->evalType()) {
-            err->paramsTypeNotMatch(func->getFunc());
+            err->paramsTypeNotMatch(func->getIdent());
             return false;
         }
     }
@@ -84,12 +84,12 @@ bool Table::checkFunc(CallExp* func) {
 
 Func *Table::findFunc(CallExp *func) {
     for (auto v = funcTable.rbegin(); v != funcTable.rend(); v++)
-        if (v->count(func->getFunc().val))
-            return (*v)[func->getFunc().val];
+        if (v->count(func->getIdent().val))
+            return (*v)[func->getIdent().val];
     return nullptr;
 }
 
 void Table::pushFunc(Func* func) {
-    if (containsFunc(func)) err->identRepeat(func->getName());
-    else funcTable.back().insert(make_pair(func->getName().val, func));
+    if (containsFunc(func)) err->identRepeat(func->getIdent());
+    else funcTable.back().insert(make_pair(func->getIdent().val, func));
 }

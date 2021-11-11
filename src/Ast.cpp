@@ -27,60 +27,46 @@ void ProgramItem::traverse(int lev) {
 }
 
 Decl::Decl() {
-    Const = false;
-    pointer = false;
-    param = false;
-    level = 0;
+
 }
 
-Decl::Decl(Symbol _bType, Symbol _name) {
-    bType = Type(_bType);
-    name = _name;
-    Const = false;
-    pointer = false;
-    param = false;
-    level = 0;
+Decl::Decl(Type bType, Symbol ident) {
+    this->bType = move(bType);
+    this->ident = move(ident);
 }
 
-void Decl::setType(Symbol _bType) {
-    bType = Type(_bType);
+Decl::Decl(Type bType, Symbol ident, std::vector<Exp *> initVal={}) {
+    this->bType = move(bType);
+    this->ident = move(ident);
+    this->initVal.insert(this->initVal.end(), initVal.begin(), initVal.end());
+}
+
+bool Decl::isConst() {
+    return bType.getConst();
+}
+
+bool Decl::isParam() {
+    return bType.getParam();
+}
+
+bool Decl::isPointer() {
+    return bType.getPointer();
 }
 
 Type Decl::getType() {
     return bType;
 }
 
-void Decl::setConst() {
-    Const = true;
-}
-
-bool Decl::isConst() {
-    return Const;
-}
-
-void Decl::addDim() {
-    bType.addDim(0);
-    pointer = true;
-}
-
-void Decl::addDim(Exp* size) {
-    bType.addDim(size->evalInt());
-}
-
 int Decl::getDim() {
-    return bType.getDims().size() + pointer;
+    return bType.getDim();
 }
 
 vector<int> Decl::getDims() {
     return bType.getDims();
 }
 
-Symbol Decl::getName() {
-    return name;
-}
-
-void Decl::addInitVal(Exp* init) {
-    initVal.push_back(init);
+Symbol Decl::getIdent() {
+    return ident;
 }
 
 std::vector<int> Decl::getInitVal() {
@@ -91,20 +77,16 @@ std::vector<int> Decl::getInitVal() {
     return v;
 }
 
-void Decl::setName(Symbol _name) {
-    name = _name;
-}
-
 void Decl::traverse(int lev) {
     table.pushDecl(this);
-    if (!param) {
+    if (!bType.getParam()) {
         for (int i = 0; i < lev; i++)
             cout << "    ";
     }
-    if (isConst()) cout << "const ";
+    if (bType.getConst()) cout << "const ";
     cout << bType.getType().val << " ";
-    cout << name.val;
-    if (pointer) cout << "[]";
+    cout << ident.val;
+    if (bType.getPointer()) cout << "[]";
     vector<int> dims = bType.getDims();
     for (auto x : dims) {
         cout << "[";
@@ -116,36 +98,26 @@ void Decl::traverse(int lev) {
         if (i > 0) cout << ", ";
         initVal[i]->traverse(lev);
     }
-    if (!param) cout << ";" << endl;
-}
-
-void Decl::addParam() {
-    param = true;
+    if (!bType.getParam()) cout << ";" << endl;
 }
 
 Func::Func() {
     block = nullptr;
 }
 
-Func::Func(Symbol _returnType, Symbol _name, Block *_block) {
-    returnType = Type(_returnType);
-    name = _name;
-    block = _block;
+Func::Func(Type returnType, Symbol ident, std::vector<Decl *> fParams, Block *block) {
+    this->returnType = move(returnType);
+    this->ident = move(ident);
+    this->fParams.insert(this->fParams.end(), fParams.begin(), fParams.end());
+    this->block = block;
 }
 
-Func::Func(Symbol _returnType, Symbol _name, Block* _block, vector<Decl*> v) {
-    returnType = Type(_returnType);
-    name = _name;
-    block = _block;
-    FParams = v;
-}
-
-Symbol Func::getName() {
-    return name;
+Symbol Func::getIdent() {
+    return ident;
 }
 
 std::vector<Decl *> Func::getParams() {
-    return FParams;
+    return fParams;
 }
 
 Type Func::getType() {
@@ -172,10 +144,10 @@ void Func::traverse(int lev) {
     table.pushFunc(this);
     table.pushBlock();
     cout << returnType.getType().val << " ";
-    cout << name.val << " (";
-    for (int i = 0; i < FParams.size(); i++) {
+    cout << ident.val << " (";
+    for (int i = 0; i < fParams.size(); i++) {
         if (i > 0) cout << ", ";
-        FParams[i]->traverse(lev);
+        fParams[i]->traverse(lev);
     }
     cout << ")" << endl;
     checkReturn();
@@ -188,25 +160,19 @@ BinaryExp::BinaryExp() {
     rhs = nullptr;
 }
 
-void BinaryExp::setVal(Symbol _val) {
-    val = _val;
+BinaryExp::BinaryExp(Exp *lhs, Symbol op, Exp *rhs) {
+    this->lhs = lhs;
+    this->op  = move(op);
+    this->rhs = rhs;
 }
 
 Symbol BinaryExp::getVal() {
-    return val;
-}
-
-void BinaryExp::setLhs(Exp* node) {
-    lhs = node;
-}
-
-void BinaryExp::setRhs(Exp* node) {
-    rhs = node;
+    return op;
 }
 
 void BinaryExp::traverse(int lev) {
     lhs->traverse(lev);
-    cout << " " << val.val << " ";
+    cout << " " << op.val << " ";
     rhs->traverse(lev);
 }
 
@@ -217,31 +183,31 @@ Type BinaryExp::evalType() {
 }
 
 int BinaryExp::evalInt() {
-    if (val.sym == PLUS) {
+    if (op.sym == PLUS) {
         return lhs->evalInt() + rhs->evalInt();
-    } else if (val.sym == MINU) {
+    } else if (op.sym == MINU) {
         return lhs->evalInt() - rhs->evalInt();
-    } else if (val.sym == MULT) {
+    } else if (op.sym == MULT) {
         return lhs->evalInt() * rhs->evalInt();
-    } else if (val.sym == DIV) {
+    } else if (op.sym == DIV) {
         return lhs->evalInt() / rhs->evalInt();
-    } else if (val.sym == MOD) {
+    } else if (op.sym == MOD) {
         return lhs->evalInt() % rhs->evalInt();
-    } else if (val.sym == AND) {
+    } else if (op.sym == AND) {
         return lhs->evalInt() && rhs->evalInt();
-    } else if (val.sym == OR) {
+    } else if (op.sym == OR) {
         return lhs->evalInt() || rhs->evalInt();
-    } else if (val.sym == LSS) {
+    } else if (op.sym == LSS) {
         return lhs->evalInt() < rhs->evalInt();
-    } else if (val.sym == LEQ) {
+    } else if (op.sym == LEQ) {
         return lhs->evalInt() <= rhs->evalInt();
-    } else if (val.sym == GRE) {
+    } else if (op.sym == GRE) {
         return lhs->evalInt() > rhs->evalInt();
-    } else if (val.sym == GEQ) {
+    } else if (op.sym == GEQ) {
         return lhs->evalInt() >= rhs->evalInt();
-    } else if (val.sym == EQL) {
+    } else if (op.sym == EQL) {
         return lhs->evalInt() == rhs->evalInt();
-    } else if (val.sym == NEQ) {
+    } else if (op.sym == NEQ) {
         return lhs->evalInt() != rhs->evalInt();
     }
     return 0;
@@ -251,16 +217,13 @@ Program::Program() {
 
 }
 
+Program::Program(std::vector<Decl *> decls, std::vector<Func *> funcs) {
+    this->program_items.insert(this->program_items.end(), decls.begin(), decls.end());
+    this->program_items.insert(this->program_items.end(), funcs.begin(), funcs.end());
+}
+
 void Program::addError(ErrorHandling* error) {
     err = error;
-}
-
-void Program::addItem(ProgramItem* item) {
-    program_items.push_back(item);
-}
-
-std::vector<ProgramItem *> Program::getItems() {
-    return program_items;
 }
 
 void Program::traverse(int lev) {
@@ -275,40 +238,17 @@ void Program::traverse(int lev) {
 }
 
 Block::Block() {
-    level = 0;
     loop = false;
 }
 
-void Block::addItem(BlockItem *item) {
-    block_items.push_back(item);
-}
-
-void Block::setLevel(int lev) {
-    level = lev;
-}
-
-int Block::getLevel() {
-    return level;
-}
-
-void Block::addLoop() {
-    loop = true;
-}
-
-bool Block::isLoop() {
-    return loop;
-}
-
-void Block::setLBrace(Symbol sym) {
-    lBrace = sym;
+Block::Block(Symbol lBrace, vector<BlockItem*> items, Symbol rBrace) {
+    this->lBrace = move(lBrace);
+    block_items.insert(block_items.end(), items.begin(), items.end());
+    this->rBrace = move(rBrace);
 }
 
 Symbol Block::getLBrace() {
     return lBrace;
-}
-
-void Block::setRBrace(Symbol sym) {
-    rBrace = sym;
 }
 
 Symbol Block::getRBrace() {
@@ -340,7 +280,7 @@ vector<LoopStmt*> Block::evalLoop() {
 void Block::checkLoop() {
     for (auto item : block_items) {
         if (auto* w = dynamic_cast<CondStmt*>(item)) {
-            if (w->getSym().sym == IFTK) {
+            if (w->getToken().sym == IFTK) {
                 if (auto* blk = dynamic_cast<Block*>(w->getIfStmt())) {
                     blk->checkLoop();
                 } else if (auto* loop = dynamic_cast<LoopStmt*>(w->getIfStmt())) {
@@ -384,12 +324,13 @@ CallExp::CallExp() {
 
 }
 
-CallExp::CallExp(Symbol f) {
-    func = f;
+CallExp::CallExp(Symbol ident) {
+    this->ident = ident;
 }
 
-void CallExp::addParam(Exp* param) {
-    rParams.push_back(param);
+CallExp::CallExp(Symbol ident, vector<Exp*> rParams) {
+    this->ident = ident;
+    this->rParams.insert(this->rParams.end(), rParams.begin(), rParams.end());
 }
 
 std::vector<Exp *> CallExp::getParams() {
@@ -397,15 +338,15 @@ std::vector<Exp *> CallExp::getParams() {
 }
 
 bool CallExp::isGetInt() const {
-    return func.sym == GETINTTK;
+    return ident.sym == GETINTTK;
 }
 
 bool CallExp::isPrintf() const {
-    return func.sym == PRINTFTK;
+    return ident.sym == PRINTFTK;
 }
 
-Symbol CallExp::getFunc() {
-    return func;
+Symbol CallExp::getIdent() {
+    return ident;
 }
 
 void CallExp::checkPrintf() {
@@ -418,7 +359,7 @@ void CallExp::checkPrintf() {
                     cnt++;
             }
             if (cnt != rParams.size() - 1)
-                errorHandling->printfError(func);
+                errorHandling->printfError(ident);
         }
     }
 }
@@ -426,7 +367,7 @@ void CallExp::checkPrintf() {
 void CallExp::traverse(int lev) {
     checkPrintf();
     table.checkFunc(this);
-    cout << func.val << "(";
+    cout << ident.val << "(";
     for (int i = 0; i < rParams.size(); i++) {
         if (i > 0) cout << ", ";
         rParams[i]->traverse(lev);
@@ -448,8 +389,8 @@ ExpStmt::ExpStmt() {
     exp = nullptr;
 }
 
-void ExpStmt::addExp(Exp *e) {
-    exp = e;
+ExpStmt::ExpStmt(Exp *e) {
+    this->exp = e;
 }
 
 void ExpStmt::traverse(int lev) {
@@ -459,32 +400,44 @@ void ExpStmt::traverse(int lev) {
 }
 
 UnaryExp::UnaryExp() {
-    op = "";
-    exp = nullptr;
+    this->op = nullptr;
+    this->exp = nullptr;
 }
 
-void UnaryExp::addOp(string _op) {
-    op += _op;
+UnaryExp::UnaryExp(Exp *exp) {
+    this->op = nullptr;
+    this->exp = exp;
 }
 
-void UnaryExp::setExp(Exp *e) {
-    exp = e;
+UnaryExp::UnaryExp(Symbol sym) {
+    this->op = nullptr;
+    this->exp = nullptr;
+    this->sym = move(sym);
+}
+
+UnaryExp::UnaryExp(Symbol op, Symbol sym) {
+    this->op = new Symbol;
+    *(this->op) = move(op);
+    this->sym = move(sym);
+    this->exp = nullptr;
+}
+
+UnaryExp::UnaryExp(Symbol op, Exp *exp) {
+    this->op = new Symbol;
+    *(this->op) = move(op);
+    this->exp = exp;
 }
 
 Exp *UnaryExp::getExp() {
     return exp;
 }
 
-string UnaryExp::getOp() {
-    return op;
-}
-
-void UnaryExp::addSym(Symbol name) {
-    sym = name;
+Symbol UnaryExp::getOp() {
+    return *op;
 }
 
 void UnaryExp::traverse(int lev) {
-    cout << op;
+    if (op) cout << op->val;
     if (exp) exp->traverse(lev);
     else cout << sym.val;
 }
@@ -496,19 +449,11 @@ Type UnaryExp::evalType() {
 }
 
 int UnaryExp::evalInt() {
-    if (op.empty()) {
+    if (op == nullptr) {
         if (sym.sym == INTCON) return stoi(sym.val);
         else return exp->evalInt();
     }
     return 0;
-}
-
-LVal::LVal() {
-
-}
-
-LVal::LVal(Symbol sym) {
-    name = sym;
 }
 
 Stmt::Stmt() {
@@ -519,17 +464,22 @@ void Stmt::traverse(int lev) {
 
 }
 
-void LVal::addDim(Exp *exp) {
-    dims.push_back(exp);
+LVal::LVal() {
+
 }
 
-Symbol LVal::getName() {
-    return name;
+LVal::LVal(Symbol sym, std::vector<Exp *> dims = {}) {
+    this->ident = move(sym);
+    this->dims.insert(this->dims.end(), dims.begin(), dims.end());
+}
+
+Symbol LVal::getIdent() {
+    return ident;
 }
 
 void LVal::traverse(int lev) {
     table.checkDecl(this);
-    cout << name.val;
+    cout << ident.val;
     for (auto x : dims) {
         cout << "[";
         x->traverse(lev);
@@ -539,13 +489,16 @@ void LVal::traverse(int lev) {
 
 Type LVal::evalType() {
     Decl* decl = table.findDecl(this);
-    if (decl == nullptr) return Type();
-    Symbol declType = decl->getType().getType();
-    Type type = Type(declType);
+    if (decl == nullptr) return {};
 
-    vector<int> declDim = decl->getType().getDims();
+    Type declType = decl->getType();
+    Symbol tkn = declType.getType();
+    vector<int> declDim = decl->getDims();
+
+    Type type = Type(tkn);
+
     int n = declDim.size();
-    int lValDim = declDim.size() - dims.size();
+    int lValDim = n - dims.size();
     for (int i = 0; i < lValDim; i++) {
         type.addDim(declDim[n - i - 1]);
     }
@@ -555,7 +508,7 @@ Type LVal::evalType() {
 
 int LVal::evalInt() {
     Decl* decl = table.findDecl(this);
-    if (decl->isConst()) {
+    if (decl->getType().getConst()) {
         if (dims.empty()) return decl->getInitVal()[0];
         else {
             int i = 0, last = 1;
@@ -605,7 +558,7 @@ AssignExp::AssignExp(LVal *l, Exp *r) {
 void AssignExp::checkConst() {
     Decl* decl = table.findDecl(lhs);
     if (decl == nullptr) return;
-    else if (decl->isConst()) errorHandling->constAssign(lhs->getName());
+    else if (decl->isConst()) errorHandling->constAssign(lhs->getIdent());
 }
 
 void AssignExp::traverse(int lev) {
@@ -630,19 +583,15 @@ CondStmt::CondStmt() {
     ifStmt = elseStmt = nullptr;
 }
 
-CondStmt::CondStmt(Symbol name, Exp *e, Stmt *stmt) {
-    sym = name;
-    condExp = e;
-    ifStmt = stmt;
-    elseStmt = nullptr;
+CondStmt::CondStmt(Symbol token, Exp *condExp, Stmt *ifStmt, Stmt *elseStmt) {
+    this->token = move(token);
+    this->condExp = condExp;
+    this->ifStmt = ifStmt;
+    this->elseStmt = elseStmt;
 }
 
-void CondStmt::addElse(Stmt *stmt) {
-    elseStmt = stmt;
-}
-
-Symbol CondStmt::getSym() {
-    return sym;
+Symbol CondStmt::getToken() {
+    return token;
 }
 
 Stmt *CondStmt::getIfStmt() {
@@ -655,7 +604,7 @@ Stmt *CondStmt::getElseStmt() {
 
 void CondStmt::traverse(int lev) {
     for (int i = 0; i < lev; i++) cout << "    ";
-    cout << sym.val << " (";
+    cout << token.val << " (";
     condExp->traverse(lev);
     cout << ")" << endl;
     table.pushBlock();
@@ -666,7 +615,11 @@ void CondStmt::traverse(int lev) {
     }
     table.popBlock();
     table.pushBlock();
-    if (elseStmt) elseStmt->traverse(lev);
+    if (elseStmt) {
+        for (int i = 0; i < lev; i++) cout << "    ";
+        cout << "else ";
+        elseStmt->traverse(lev);
+    }
     table.popBlock();
 }
 
@@ -674,8 +627,8 @@ LoopStmt::LoopStmt() {
 
 }
 
-LoopStmt::LoopStmt(Symbol name) {
-    sym = name;
+LoopStmt::LoopStmt(Symbol sym) {
+    this->sym = move(sym);
 }
 
 Symbol LoopStmt::getSym() {
@@ -691,13 +644,9 @@ ReturnStmt::ReturnStmt() {
     exp = nullptr;
 }
 
-ReturnStmt::ReturnStmt(Symbol name) {
-    exp = nullptr;
-    sym = name;
-}
-
-void ReturnStmt::addExp(Exp *e) {
-    exp = e;
+ReturnStmt::ReturnStmt(Symbol sym, Exp* exp = nullptr) {
+    this->sym = move(sym);
+    this->exp = exp;
 }
 
 Exp *ReturnStmt::getExp() {

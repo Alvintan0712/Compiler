@@ -4,21 +4,22 @@
 
 #include <iostream>
 #include <fstream>
+#include <utility>
 #include "GrammarAnalyzer.h"
 using namespace std;
 
 bool isLVal;
 GrammarAnalyzer::GrammarAnalyzer(vector<Symbol> symbols, ErrorHandling* errorHandling) {
-    src = symbols;
+    src = move(symbols);
     err = errorHandling;
-    src.push_back(Symbol(END, "", 0, 0));
+    src.emplace_back(END, "", 0, 0);
     analyze();
 }
 
 void GrammarAnalyzer::analyze() {
     ptr = 0;
     sym = nextSymbol();
-    program = _CompUnit();
+    program = compUnit();
     program->addError(err);
 }
 
@@ -39,64 +40,70 @@ Symbol GrammarAnalyzer::viewNextSymbol(int i) {
     return src[ptr + i];
 }
 
-Program* GrammarAnalyzer::_CompUnit() {
-    auto* p = new Program();
+Program* GrammarAnalyzer::compUnit() {
+    vector<Decl*> decls;
+    vector<Func*> funcs;
+
     while (sym.sym == INTTK || sym.sym == CONSTTK) {
         if (sym.sym != CONSTTK && (viewNextSymbol().sym != IDENFR || viewNextSymbol(1).sym == LPARENT))
             break;
-        vector<Decl*> v = _Decl();
-        for (auto x : v) p->addItem(x);
+        vector<Decl*> v = decl();
+        decls.insert(decls.end(), v.begin(), v.end());
     }
+
     while (sym.sym == INTTK || sym.sym == VOIDTK) {
         if (viewNextSymbol().sym == MAINTK)
             break;
-        Func* f = _FuncDef();
-        p->addItem(f);
+        Func* f = funcDef();
+        funcs.push_back(f);
     }
+
     if (sym.sym != INTTK) output();
-    p->addItem(_MainFuncDef());
+    funcs.push_back(mainFuncDef());
+
     out.emplace_back("<CompUnit>");
-    return p;
+    return new Program(decls, funcs);
 }
 
-vector<Decl*> GrammarAnalyzer::_Decl() {
+vector<Decl*> GrammarAnalyzer::decl() {
     if (sym.sym == CONSTTK)
-        return _ConstDecl();
+        return constDecl();
     else if (sym.sym == INTTK)
-        return _VarDecl();
+        return varDecl();
     else
         output();
     return {};
 }
 
-vector<Decl*> GrammarAnalyzer::_ConstDecl() {
-    vector<Decl*> v;
-    Decl *node = new Decl();
-    if (sym.sym != CONSTTK) output();
+vector<Decl*> GrammarAnalyzer::constDecl() {
+    vector<Decl*> decls;
+    Symbol type;
+    bool isConst = false;
+
     Symbol symbol = sym;
-    node->setConst();
-    pushSymbol();
-    Symbol bType = _BType();
-    node->setType(bType);
-    if (sym.sym != IDENFR) output();
-    _ConstDef(node);
-    v.push_back(node);
-    while (sym.sym == COMMA) {
-        node = new Decl();
-        node->setConst();
+    if (sym.sym != CONSTTK) output();
+    else {
+        isConst = true;
         pushSymbol();
-        node->setType(bType);
+    }
+    type = bType();
+
+    if (sym.sym != IDENFR) output();
+    else decls.push_back(constDef(isConst, type));
+
+    while (sym.sym == COMMA) {
+        pushSymbol();
         if (sym.sym != IDENFR) output();
-        _ConstDef(node);
-        v.push_back(node);
+        decls.push_back(constDef(isConst, type));
     }
     if (sym.sym != SEMICN) err->grammarError(symbol, SEMICN);
     else pushSymbol();
+
     out.emplace_back("<ConstDecl>");
-    return v;
+    return decls;
 }
 
-Symbol GrammarAnalyzer::_BType() {
+Symbol GrammarAnalyzer::bType() {
     if (sym.sym == INTTK) {
         Symbol btype = sym;
         pushSymbol();
@@ -104,132 +111,174 @@ Symbol GrammarAnalyzer::_BType() {
     } else {
         output();
     }
-    return Symbol();
+    return {};
 }
 
-void GrammarAnalyzer::_ConstDef(Decl* node) {
-    node->setName(_Ident());
+Decl* GrammarAnalyzer::constDef(bool isConst, const Symbol& type) {
+    Symbol idt;
+    vector<Exp*> init;
+    vector<int> dims;
+
+    idt = ident();
     while (sym.sym == LBRACK) {
         pushSymbol();
         Symbol symbol = sym;
-        node->addDim(_ConstExp());
+        dims.push_back(constExp()->evalInt());
         if (sym.sym != RBRACK) err->grammarError(symbol, RBRACK);
         else pushSymbol();
     }
+
     if (sym.sym != ASSIGN) output();
-    pushSymbol();
-    _ConstInitVal(node);
-    out.push_back("<ConstDef>");
+    else {
+        pushSymbol();
+        init = constInitVal();
+    }
+
+    out.emplace_back("<ConstDef>");
+    return new Decl(Type(type, dims, isConst), idt, init);
 }
 
-void GrammarAnalyzer::_ConstInitVal(Decl *node) {
+vector<Exp*> GrammarAnalyzer::constInitVal() {
+    vector<Exp*> init;
+
     if (sym.sym == LBRACE) {
         pushSymbol();
         if (sym.sym != RBRACE) {
-            _ConstInitVal(node);
+            vector<Exp*> v;
+            v = constInitVal();
+            init.insert(init.end(), v.begin(), v.end());
             while (sym.sym == COMMA) {
                 pushSymbol();
-                _ConstInitVal(node);
+                v = constInitVal();
+                init.insert(init.end(), v.begin(), v.end());
             }
         }
         if (sym.sym != RBRACE) output();
-        pushSymbol();
+        else pushSymbol();
     } else {
-        node->addInitVal(_ConstExp());
+        init.push_back(constExp());
     }
-    out.push_back("<ConstInitVal>");
+
+    out.emplace_back("<ConstInitVal>");
+    return init;
 }
 
-vector<Decl*> GrammarAnalyzer::_VarDecl() {
-    vector<Decl*> v;
-    Symbol symbol = sym;
-    Decl* node = new Decl();
-    Symbol bType = _BType();
-    node->setType(bType);
+vector<Decl*> GrammarAnalyzer::varDecl() {
+    vector<Decl*> decls;
+    Symbol type;
+
+    Symbol symbol;
+    type = bType();
     if (sym.sym != IDENFR) output();
-    _VarDef(node);
-    v.push_back(node);
+    else decls.push_back(varDef(type));
+
     while (sym.sym == COMMA) {
-        node = new Decl();
-        node->setType(bType);
         pushSymbol();
         if (sym.sym != IDENFR) output();
-        _VarDef(node);
-        v.push_back(node);
+        decls.push_back(varDef(type));
     }
     if (sym.sym != SEMICN) err->grammarError(symbol, SEMICN);
     else pushSymbol();
+
     out.emplace_back("<VarDecl>");
-    return v;
+    return decls;
 }
 
-void GrammarAnalyzer::_VarDef(Decl* node) {
-    node->setName(_Ident());
+Decl* GrammarAnalyzer::varDef(const Symbol& type) {
+    Symbol idt;
+    vector<Exp*> init;
+    vector<int> dims;
+
+    idt = ident();
     while (sym.sym == LBRACK) {
         pushSymbol();
         Symbol symbol = sym;
-        node->addDim(_ConstExp());
+        dims.push_back(constExp()->evalInt());
         if (sym.sym != RBRACK) err->grammarError(symbol, RBRACK);
         else pushSymbol();
     }
+
     if (sym.sym == ASSIGN) {
         pushSymbol();
-        _InitVal(node);
+        init = initVal();
     }
+
     out.emplace_back("<VarDef>");
+    return new Decl(Type(type, dims), idt, init);
 }
 
-void GrammarAnalyzer::_InitVal(Decl* node) {
+vector<Exp*> GrammarAnalyzer::initVal() {
+    vector<Exp*> init;
+
     if (sym.sym == LBRACE) {
         pushSymbol();
         if (sym.sym != RBRACE) {
-            _InitVal(node);
+            vector<Exp*> v;
+            v = initVal();
+            init.insert(init.end(), v.begin(), v.end());
             while (sym.sym == COMMA) {
                 pushSymbol();
-                _InitVal(node);
+                v = initVal();
+                init.insert(init.end(), v.begin(), v.end());
             }
         }
         if (sym.sym != RBRACE) output();
-        pushSymbol();
+        else pushSymbol();
     } else {
-        node->addInitVal(_Exp());
+        init.push_back(exp());
     }
-    out.push_back("<InitVal>");
+
+    out.emplace_back("<InitVal>");
+    return init;
 }
 
-Func* GrammarAnalyzer::_FuncDef() {
-    Symbol bType = _FuncType();
-    Symbol ident = _Ident();
+Func* GrammarAnalyzer::funcDef() {
+    Symbol type, idt;
+    vector<int> dims;
+    vector<Decl*> fParams;
+    Block* blk = nullptr;
+
+    type = funcType();
+    idt = ident();
+
     if (sym.sym != LPARENT) output();
     Symbol symbol = sym;
     pushSymbol();
-    vector<Decl*> v;
-    if (sym.sym != RPARENT && sym.sym == INTTK) v = _FuncFParams();
+    if (sym.sym != RPARENT && sym.sym == INTTK) fParams = funcFParams();
     if (sym.sym != RPARENT) err->grammarError(symbol, RPARENT);
     else pushSymbol();
-    Block* blk = _Block();
+
+    blk = block();
     out.emplace_back("<FuncDef>");
-    return new Func(bType, ident, blk, v);
+
+    return new Func(Type(type, dims), idt, fParams, blk);
 }
 
-Func* GrammarAnalyzer::_MainFuncDef() {
+Func* GrammarAnalyzer::mainFuncDef() {
+    Symbol type, idt;
+    Block* blk = nullptr;
+
     if (sym.sym != INTTK) output();
-    Symbol bType = sym;
+    type = sym;
     pushSymbol();
+
     if (sym.sym != MAINTK) output();
-    Symbol ident = sym;
+    idt = sym;
     pushSymbol();
+
     if (sym.sym != LPARENT) output();
     Symbol symbol = sym;
     pushSymbol();
+
     if (sym.sym != RPARENT) err->grammarError(symbol, RPARENT);
     else pushSymbol();
-    Block* blk = _Block();
+    blk = block();
+
     out.emplace_back("<MainFuncDef>");
-    return new Func(bType, ident, blk);
+    return new Func(Type(type), idt, {}, blk);
 }
 
-Symbol GrammarAnalyzer::_FuncType() {
+Symbol GrammarAnalyzer::funcType() {
     if (sym.sym != INTTK && sym.sym != VOIDTK) output();
     Symbol ftype = sym;
     pushSymbol();
@@ -237,42 +286,47 @@ Symbol GrammarAnalyzer::_FuncType() {
     return ftype;
 }
 
-vector<Decl*> GrammarAnalyzer::_FuncFParams() {
-    vector<Decl*> v;
-    Decl* fparam = _FuncFParam();
-    fparam->addParam();
-    v.push_back(fparam);
+vector<Decl*> GrammarAnalyzer::funcFParams() {
+    vector<Decl*> fParams;
+    Decl* fParam;
+
+    fParam = funcFParam();
+    fParams.push_back(fParam);
     while (sym.sym == COMMA) {
         pushSymbol();
-        fparam = _FuncFParam();
-        fparam->addParam();
-        v.push_back(fparam);
+        fParam = funcFParam();
+        fParams.push_back(fParam);
     }
+
     out.emplace_back("<FuncFParams>");
-    return v;
+    return fParams;
 }
 
-Decl* GrammarAnalyzer::_FuncFParam() {
-    Symbol btype = _BType();
-    Symbol ident = _Ident();
-    Decl* fparam = new Decl(btype, ident);
+Decl* GrammarAnalyzer::funcFParam() {
+    Symbol type, idt;
+    vector<int> dims;
+    bool isConst = false, isPointer = false, isParam = true;
+
+    type = bType();
+    idt = ident();
     if (sym.sym == LBRACK) {
         Symbol symbol = sym;
         pushSymbol();
         if (sym.sym != RBRACK) err->grammarError(symbol, RBRACK);
         else pushSymbol();
-        fparam->addDim();
+        isPointer = true;
+
         while (sym.sym == LBRACK) {
             pushSymbol();
             symbol = sym;
-            Exp* exp = _ConstExp();
+            dims.push_back(constExp()->evalInt());
             if (sym.sym != RBRACK) err->grammarError(symbol, RBRACK);
             else pushSymbol();
-            fparam->addDim(exp);
         }
     }
+
     out.emplace_back("<FuncFParam>");
-    return fparam;
+    return new Decl(Type(type, dims, isConst, isParam, isPointer), idt);
 }
 
 bool GrammarAnalyzer::isExp() const {
@@ -288,27 +342,31 @@ bool GrammarAnalyzer::isBlockItem() {
            sym.sym == LBRACE;
 }
 
-Block* GrammarAnalyzer::_Block() {
-    auto* blk = new Block();
+Block* GrammarAnalyzer::block() {
+    Block* blk = nullptr;
+    vector<BlockItem*> items;
+    Symbol lBrace, rBrace;
+
     if (sym.sym != LBRACE) output();
-    blk->setLBrace(sym);
+    lBrace = sym;
     pushSymbol();
     while (isBlockItem()) {
-        _BlockItem(blk);
+        blockItem(items);
     }
     if (sym.sym != RBRACE) output();
-    blk->setRBrace(sym);
+    rBrace = sym;
     pushSymbol();
+
     out.emplace_back("<Block>");
-    return blk;
+    return new Block(lBrace, items, rBrace);
 }
 
-void GrammarAnalyzer::_BlockItem(Block* blk) {
+void GrammarAnalyzer::blockItem(vector<BlockItem*>& items) {
     if (sym.sym == INTTK || sym.sym == CONSTTK) {
-        vector<Decl*> v = _Decl();
-        for (auto x : v) blk->addItem(x);
+        vector<Decl*> v = decl();
+        for (auto x : v) items.push_back(x);
     } else {
-        blk->addItem(_Stmt());
+        items.push_back(stmt());
     }
 }
 
@@ -320,212 +378,248 @@ void popout(vector<string>& out) {
     out.pop_back();
 }
 
-Stmt* GrammarAnalyzer::_Stmt() {
+Stmt* GrammarAnalyzer::stmt() {
     Symbol symbol = sym;
     if (sym.sym == SEMICN) {
         pushSymbol();
+
         out.emplace_back("<Stmt>");
-        auto* stmt = new ExpStmt();
-        stmt->addExp(new Exp());
-        return stmt;
+        return new ExpStmt(new Exp());
     } else if (isExp()) { // [Exp];
-        auto* expStmt = new ExpStmt();
+        Exp* e;
+
         isLVal = false;
-        Exp* exp = _Exp();
+        e = exp();
         if (isLVal && sym.sym == ASSIGN) {
-            LVal* left = (LVal *) exp;
-            Exp* right;
+            LVal* lVal = (LVal *) e;
+            Exp* assignExp;
+
             popout(out);
             pushSymbol();
             if (sym.sym == GETINTTK) {
-                right = new CallExp(sym);
+                Symbol idt;
+
+                idt = sym;
                 pushSymbol();
                 if (sym.sym != LPARENT) output();
                 symbol = sym;
                 pushSymbol();
                 if (sym.sym != RPARENT) err->grammarError(symbol, RPARENT);
                 else pushSymbol();
+
+                assignExp = new CallExp(idt);
             } else {
-                right = _Exp();
+                assignExp = exp();
             }
-            exp = new AssignExp(left, right);
+            e = new AssignExp(lVal, assignExp);
         }
-        expStmt->addExp(exp);
         if (sym.sym != SEMICN) err->grammarError(symbol, SEMICN);
         else pushSymbol();
+
         out.emplace_back("<Stmt>");
-        return expStmt;
+        return new ExpStmt(e);
     } else if (sym.sym == LBRACE) {
-        Block* blk = _Block();
+        Block* blk = block();
+
         out.emplace_back("<Stmt>");
         return blk;
     } else if (sym.sym == IFTK) {
-        Symbol name = sym;
+        Symbol tkn = sym;
+        Exp* condExp = nullptr;
+        Stmt *ifStmt = nullptr, *elseStmt = nullptr;
+
         pushSymbol();
         if (sym.sym != LPARENT) output();
         pushSymbol();
-        Exp* e = _Cond();
-        if (sym.sym != RPARENT) err->grammarError(name, RPARENT);
+
+        condExp = cond();
+        if (sym.sym != RPARENT) err->grammarError(tkn, RPARENT);
         else pushSymbol();
-        Stmt* ifStmt = _Stmt();
-        auto* condStmt = new CondStmt(name, e, ifStmt);
+
+        ifStmt = stmt();
         if (sym.sym == ELSETK) {
             pushSymbol();
-             condStmt->addElse(_Stmt());
+            elseStmt = stmt();
         }
+
         out.emplace_back("<Stmt>");
-        return condStmt;
+        return new CondStmt(tkn, condExp, ifStmt, elseStmt);
     } else if (sym.sym == WHILETK) {
-        Symbol name = sym;
+        Symbol tkn = sym;
+        Exp* condExp = nullptr;
+        Stmt* whileStmt = nullptr;
+
         pushSymbol();
         if (sym.sym != LPARENT) output();
         pushSymbol();
-        Exp* e = _Cond();
-        if (sym.sym != RPARENT) err->grammarError(name, RPARENT);
+
+        condExp = cond();
+        if (sym.sym != RPARENT) err->grammarError(tkn, RPARENT);
         else pushSymbol();
-        Stmt* whileStmt = _Stmt();
-        auto* condStmt = new CondStmt(name, e, whileStmt);
+
+        whileStmt = stmt();
+
         out.emplace_back("<Stmt>");
-        return condStmt;
+        return new CondStmt(tkn, condExp, whileStmt);
     } else if (sym.sym == BREAKTK || sym.sym == CONTINUETK) {
-        Symbol name = sym;
+        Symbol tkn = sym;
+
         pushSymbol();
         if (sym.sym != SEMICN) err->grammarError(symbol, SEMICN);
         else pushSymbol();
+
         out.emplace_back("<Stmt>");
-        return new LoopStmt(name);
+        return new LoopStmt(tkn);
     } else if (sym.sym == RETURNTK) {
-        auto* returnStmt = new ReturnStmt(sym);
+        Symbol tkn = sym;
+        Exp* returnExp = nullptr;
+
         pushSymbol();
-        if (sym.sym != SEMICN && isExp()) returnStmt->addExp(_Exp());
+        if (sym.sym != SEMICN && isExp()) returnExp = exp();
         if (sym.sym != SEMICN) err->grammarError(symbol, SEMICN);
         else pushSymbol();
+
         out.emplace_back("<Stmt>");
-        return returnStmt;
+        return new ReturnStmt(tkn, returnExp);
     } else if (sym.sym == PRINTFTK) {
-        auto* expStmt = new ExpStmt();
-        auto* exp = new CallExp(sym);
+        Symbol idt;
+        vector<Exp*> rParams;
+
+        idt = sym;
         pushSymbol();
         if (sym.sym != LPARENT) output();
         symbol = sym;
         pushSymbol();
-        auto* formatString = new FormatString(_FormatString());
-        exp->addParam(formatString);
+
+        rParams.push_back(new FormatString(formatString()));
         while (sym.sym == COMMA) {
             pushSymbol();
-            exp->addParam(_Exp());
+            rParams.push_back(exp());
         }
+
         if (sym.sym != RPARENT) err->grammarError(symbol, RPARENT);
         else pushSymbol();
+
         if (sym.sym != SEMICN) err->grammarError(sym, SEMICN);
         else pushSymbol();
+
         out.emplace_back("<Stmt>");
-        expStmt->addExp(exp);
-        return expStmt;
+        return new ExpStmt(new CallExp(idt, rParams));
     } else {
         output();
     }
     return nullptr;
 }
 
-Exp* GrammarAnalyzer::_Exp() {
-    Exp* node = _AddExp();
+Exp* GrammarAnalyzer::exp() {
+    Exp* node = addExp();
+
     out.emplace_back("<Exp>");
     return node;
 }
 
-Exp* GrammarAnalyzer::_Cond() {
-    Exp *e = _LOrExp();
+Exp* GrammarAnalyzer::cond() {
+    Exp *e = lOrExp();
     e->addCond();
+
     out.emplace_back("<Cond>");
     return e;
 }
 
-UnaryExp* GrammarAnalyzer::_LVal() {
-    Symbol ident = _Ident();
-    LVal* node = new LVal(ident);
+UnaryExp* GrammarAnalyzer::lVal() {
+    Symbol idt = ident();
+    vector<Exp*> dims;
+
     while (sym.sym == LBRACK) {
         pushSymbol();
         Symbol symbol = sym;
-        node->addDim(_Exp());
+        dims.push_back(exp());
         if (sym.sym != RBRACK) err->grammarError(symbol, RBRACK);
         else pushSymbol();
     }
     isLVal = true;
+
     out.emplace_back("<LVal>");
-    return node;
+    return new LVal(idt, dims);
 }
 
-UnaryExp* GrammarAnalyzer::_PrimaryExp() {
+UnaryExp* GrammarAnalyzer::primaryExp() {
     if (sym.sym == LPARENT) {
+        Exp* e = nullptr;
+
         Symbol symbol = sym;
         pushSymbol();
-        auto* node = new UnaryExp();
-        node->setExp(_Exp());
+
+        e = exp();
         if (sym.sym != RPARENT) err->grammarError(symbol, RPARENT);
         else pushSymbol();
+
         out.emplace_back("<PrimaryExp>");
-        return node;
+        return new UnaryExp(e);
     } else if (sym.sym == IDENFR) {
         out.emplace_back("<PrimaryExp>");
-        return _LVal();
+        return lVal();
     } else if (sym.sym == INTCON) {
         out.emplace_back("<PrimaryExp>");
-        return _Number();
+        return number();
     } else {
         output();
     }
     return nullptr;
 }
 
-UnaryExp* GrammarAnalyzer::_Number() {
+UnaryExp* GrammarAnalyzer::number() {
+    Symbol num;
+
     if (sym.sym != INTCON) output();
-    auto* num = new UnaryExp();
-    num->addSym(sym);
+    num = sym;
     pushSymbol();
+
     out.emplace_back("<Number>");
-    return num;
+    return new UnaryExp(num);
 }
 
-UnaryExp* GrammarAnalyzer::_UnaryExp() {
+UnaryExp* GrammarAnalyzer::unaryExp() {
     if (sym.sym == LPARENT || sym.sym == INTCON) {
         out.emplace_back("<UnaryExp>");
-        return _PrimaryExp();
+        return primaryExp();
     } else if (sym.sym == IDENFR) {
-        Symbol ident = sym;
+        Symbol idt = sym;
+        vector<Exp*> rParams;
+
         pushSymbol();
         if (sym.sym == LPARENT) {
             Symbol symbol = sym;
-            auto* f = new CallExp(ident);
             pushSymbol();
-            if (sym.sym != RPARENT && isExp()) {
-                vector<Exp*> v = _FuncRParams();
-                for (auto x : v) f->addParam(x);
-            }
+            if (sym.sym != RPARENT && isExp())
+                rParams = funcRParams();
+
             if (sym.sym != RPARENT) err->grammarError(symbol, RPARENT);
             else pushSymbol();
+
             out.emplace_back("<UnaryExp>");
-            return f;
+            return new CallExp(idt, rParams);
         } else {
             out.pop_back();
             ptr -= 2;
             sym = nextSymbol();
+
             out.emplace_back("<UnaryExp>");
-            return _PrimaryExp();
+            return primaryExp();
         }
     } else if (sym.sym == PLUS || sym.sym == MINU || sym.sym == NOT) {
-        Symbol op = _UnaryOp();
-        UnaryExp* node = _UnaryExp();
-        node->addOp(op.val);
+        Symbol op = unaryOp();
+        UnaryExp* e = unaryExp();
+
         out.emplace_back("<UnaryExp>");
-        return node;
+        return new UnaryExp(op, e);
     } else {
         output();
     }
     return nullptr;
 }
 
-Symbol GrammarAnalyzer::_UnaryOp() {
+Symbol GrammarAnalyzer::unaryOp() {
     Symbol op = sym;
     if (sym.sym == PLUS || sym.sym == MINU || sym.sym == NOT) {
         pushSymbol();
@@ -536,114 +630,129 @@ Symbol GrammarAnalyzer::_UnaryOp() {
     return op;
 }
 
-vector<Exp*> GrammarAnalyzer::_FuncRParams() {
-    vector<Exp*> v;
-    v.push_back(_Exp());
+vector<Exp*> GrammarAnalyzer::funcRParams() {
+    vector<Exp*> rParams;
+
+    rParams.push_back(exp());
     while (sym.sym == COMMA) {
         pushSymbol();
-        v.push_back(_Exp());
+        rParams.push_back(exp());
     }
+
     out.emplace_back("<FuncRParams>");
-    return v;
+    return rParams;
 }
 
-Exp* GrammarAnalyzer::_MulExp() {
-    Exp* left = _UnaryExp();
+Exp* GrammarAnalyzer::mulExp() {
+    Exp *lhs = nullptr, *rhs = nullptr;
+    Symbol op;
+
+    lhs = unaryExp();
     while (sym.sym == MULT || sym.sym == DIV || sym.sym == MOD) {
-        auto* op = new BinaryExp();
-        op->setLhs(left);
-        op->setVal(sym);
+        op = sym;
+        pushSymbol();
+        rhs = unaryExp();
         out.emplace_back("<MulExp>");
-        pushSymbol();
-        op->setRhs(_UnaryExp());
-        left = op;
+        lhs = new BinaryExp(lhs, op, rhs);
     }
+
     out.emplace_back("<MulExp>");
-    return left;
+    return lhs;
 }
 
-Exp* GrammarAnalyzer::_AddExp() {
-    Exp* left = _MulExp();
+Exp* GrammarAnalyzer::addExp() {
+    Exp *lhs = nullptr, *rhs = nullptr;
+    Symbol op;
+
+    lhs = mulExp();
     while (sym.sym == PLUS || sym.sym == MINU) {
-        auto* op = new BinaryExp();
-        op->setLhs(left);
-        op->setVal(sym);
+        op = sym;
+        pushSymbol();
+        rhs = mulExp();
         out.emplace_back("<AddExp>");
-        pushSymbol();
-        op->setRhs(_MulExp());
-        left = op;
+        lhs = new BinaryExp(lhs, op, rhs);
     }
+
     out.emplace_back("<AddExp>");
-    return left;
+    return lhs;
 }
 
-Exp* GrammarAnalyzer::_RelExp() {
-    Exp* left = _AddExp();
+Exp* GrammarAnalyzer::relExp() {
+    Exp *lhs = nullptr, *rhs = nullptr;
+    Symbol op;
+
+    lhs = addExp();
     while (sym.sym == LSS || sym.sym == LEQ || sym.sym == GRE || sym.sym == GEQ) {
-        auto* op = new BinaryExp();
-        op->setLhs(left);
-        op->setVal(sym);
+        op = sym;
+        pushSymbol();
+        rhs = addExp();
         out.emplace_back("<RelExp>");
-        pushSymbol();
-        op->setRhs(_AddExp());
-        left = op;
+        lhs = new BinaryExp(lhs, op, rhs);
     }
+
     out.emplace_back("<RelExp>");
-    return left;
+    return lhs;
 }
 
-Exp* GrammarAnalyzer::_EqExp() {
-    Exp* left = _RelExp();
+Exp* GrammarAnalyzer::eqExp() {
+    Exp *lhs = nullptr, *rhs = nullptr;
+    Symbol op;
+
+    lhs = relExp();
     while (sym.sym == EQL || sym.sym == NEQ) {
-        auto* op = new BinaryExp();
-        op->setLhs(left);
-        op->setVal(sym);
+        op = sym;
+        pushSymbol();
+        rhs = relExp();
         out.emplace_back("<EqExp>");
-        pushSymbol();
-        op->setRhs(_RelExp());
-        left = op;
+        lhs = new BinaryExp(lhs, op, rhs);
     }
+
     out.emplace_back("<EqExp>");
-    return left;
+    return lhs;
 }
 
-Exp* GrammarAnalyzer::_LAndExp() {
-    Exp* left = _EqExp();
+Exp* GrammarAnalyzer::lAndExp() {
+    Exp *lhs = nullptr, *rhs = nullptr;
+    Symbol op;
+
+    lhs = eqExp();
     while (sym.sym == AND) {
-        auto* op = new BinaryExp();
-        op->setLhs(left);
-        op->setVal(sym);
+        op = sym;
+        pushSymbol();
+        rhs = eqExp();
         out.emplace_back("<LAndExp>");
-        pushSymbol();
-        op->setRhs(_EqExp());
-        left = op;
+        lhs = new BinaryExp(lhs, op, rhs);
     }
+
     out.emplace_back("<LAndExp>");
-    return left;
+    return lhs;
 }
 
-Exp* GrammarAnalyzer::_LOrExp() {
-    Exp* left = _LAndExp();
+Exp* GrammarAnalyzer::lOrExp() {
+    Exp *lhs = nullptr, *rhs = nullptr;
+    Symbol op;
+
+    lhs = lAndExp();
     while (sym.sym == OR) {
-        auto* op = new BinaryExp();
-        op->setLhs(left);
-        op->setVal(sym);
-        out.emplace_back("<LOrExp>");
+        op = sym;
         pushSymbol();
-        op->setRhs(_LAndExp());
-        left = op;
+        rhs = lAndExp();
+        out.emplace_back("<LOrExp>");
+        lhs = new BinaryExp(lhs, op, rhs);
     }
+
     out.emplace_back("<LOrExp>");
-    return left;
+    return lhs;
 }
 
-Exp* GrammarAnalyzer::_ConstExp() {
-    Exp* node = _AddExp();
-    out.push_back("<ConstExp>");
+Exp* GrammarAnalyzer::constExp() {
+    Exp* node = addExp();
+
+    out.emplace_back("<ConstExp>");
     return node;
 }
 
-Symbol GrammarAnalyzer::_Ident() {
+Symbol GrammarAnalyzer::ident() {
     if (sym.sym == IDENFR) {
         Symbol s = sym;
         pushSymbol();
@@ -651,10 +760,10 @@ Symbol GrammarAnalyzer::_Ident() {
     } else {
         output();
     }
-    return Symbol();
+    return {};
 }
 
-Symbol GrammarAnalyzer::_FormatString() {
+Symbol GrammarAnalyzer::formatString() {
     if (sym.sym == STRCON) {
         err->formatStringError(sym);
         Symbol name = sym;
@@ -663,12 +772,12 @@ Symbol GrammarAnalyzer::_FormatString() {
     } else {
         output();
     }
-    return Symbol();
+    return {};
 }
 
 void GrammarAnalyzer::output() {
     ofstream f("output.txt");
-    for (auto x : out) {
+    for (const auto& x : out) {
         f << x << endl;
     }
     exit(0);
