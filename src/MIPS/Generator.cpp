@@ -214,8 +214,8 @@ void Generator::genAssignInst(AssignInst *inst) {
     } else {
         auto lid = to_string(lhs->getId() - 1 << 2);
         auto rid = to_string(rhs->getId() - 1 << 2);
-        mips.emplace_back(tab + "lw $t0, " + lid + "($sp)");
-        mips.emplace_back(tab + "sw $t0, " + rid + "($sp)");
+        mips.emplace_back(tab + "lw $t0, " + rid + "($sp)");
+        mips.emplace_back(tab + "sw $t0, " + lid + "($sp)");
     }
 }
 
