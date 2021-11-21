@@ -147,8 +147,22 @@ void Generator::genBinaryInst(BinaryInst* inst) {
         mips.emplace_back(tab + "sw $t0, " + id + "($sp)");
     } else if (left) {
         // only have 0 - x
+        mips.emplace_back("li $t0, " + to_string(left->getValue()));
         loadVar(rhs, 1);
-        mips.emplace_back(tab + "subu $t0, $0, $t1");
+        switch(inst->op) {
+            case Add: mips.emplace_back(tab + "addu $t0, $t0, $t1"); break;
+            case Sub: mips.emplace_back(tab + "subu $t0, $t0, $t1"); break;
+            case Mul: mips.emplace_back(tab + "mul $t0, $t0, $t1"); break;
+            case Div: mips.emplace_back(tab + "div $t0, $t0, $t1"); break;
+            case Mod:
+                mips.emplace_back(tab + "div $t0, $t1");
+                mips.emplace_back(tab + "mfhi $t0");
+                break;
+            case And: mips.emplace_back(tab + "and $t0, $t0, $t1"); break;
+            case Or:  mips.emplace_back(tab + "or $t0, $t0, $t1"); break;
+            case Slt: case Sle: case Sgt: case Sge: case Seq: case Sne: default:
+                break;
+        }
         // save it to stack
         mips.emplace_back(tab + "sw $t0, " + id + "($sp)");
     } else if (right) {
@@ -283,6 +297,22 @@ void Generator::genCallInst(CallInst *inst) {
         int arg = inst->func->getVarId() - 1;
         auto args = to_string(arg << 2);
         auto label = to_string(inst->func->getEntryBlock()->getId());
+        int id = 0;
+        for (auto x : inst->params) {
+            auto str_id = to_string(4*(id - arg));
+            if (auto var = dynamic_cast<Constant*>(x)) {
+                auto val = to_string(var->getValue());
+                mips.emplace_back(tab + "li $t0, " + val);
+            } else if (x->isGlobal()) {
+                auto var = to_string(x->getId());
+                mips.emplace_back(tab + "lw $t0, global_" + var);
+            } else {
+                auto var = to_string(x->getId() - 1 << 2);
+                mips.emplace_back(tab + "lw $t0, " + var + "($sp)");
+            }
+            mips.emplace_back(tab + "sw $t0, " + str_id + "($sp)");
+            id++;
+        }
         if (arg) mips.emplace_back(tab + "addiu $sp, $sp, -" + args);
         mips.emplace_back(tab + "jal label_" + label);
         if (arg) mips.emplace_back(tab + "addiu $sp, $sp, " + args);
@@ -293,7 +323,9 @@ void Generator::genCallInst(CallInst *inst) {
 
 void Generator::genDeclInst(DeclInst *inst) {
     auto init = inst->getInit();
-    if (init == nullptr) {
+    if (auto param = dynamic_cast<IrParam*>(inst->getVar())) {
+        // do nothing
+    } else if (init == nullptr) {
         auto var = inst->getVar();
         auto id = to_string(var->getId() - 1 << 2);
         mips.emplace_back(tab + "sw $0, " + id + "($sp)");
