@@ -1,8 +1,10 @@
 #include <bits/stdc++.h>
-#include "LexicalAnalyzer.h"
-#include "GrammarAnalyzer.h"
+#include "FrontEnd/LexicalAnalyzer.h"
+#include "FrontEnd/GrammarAnalyzer.h"
 #include "ErrorHandling.h"
 #include "Ast.h"
+#include "MIPS/Generator.h"
+
 using namespace std;
 
 int main () {
@@ -19,8 +21,12 @@ int main () {
     LexicalAnalyzer lexical(buffer);
     GrammarAnalyzer grammar(lexical.getSymbols(), errorHandling);
     Ast ast(grammar.getProgram(), errorHandling);
-    ast.traverse();
-    errorHandling->output();
+    // ast.traverse();
+    // errorHandling->output();
+    auto module = ast.generateCode();
+    module->show();
+    Generator g(module);
+    g.show();
 
     return 0;
 }

@@ -93,3 +93,7 @@ void Table::pushFunc(Func* func) {
     if (containsFunc(func)) err->identRepeat(func->getIdent());
     else funcTable.back().insert(make_pair(func->getIdent().val, func));
 }
+
+bool Table::isGlobal() {
+    return declTable.size() == 1;
+}

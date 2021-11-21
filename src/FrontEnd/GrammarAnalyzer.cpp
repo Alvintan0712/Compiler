@@ -41,28 +41,27 @@ Symbol GrammarAnalyzer::viewNextSymbol(int i) {
 }
 
 Program* GrammarAnalyzer::compUnit() {
-    vector<Decl*> decls;
-    vector<Func*> funcs;
+    vector<ProgramItem*> items;
 
     while (sym.sym == INTTK || sym.sym == CONSTTK) {
         if (sym.sym != CONSTTK && (viewNextSymbol().sym != IDENFR || viewNextSymbol(1).sym == LPARENT))
             break;
         vector<Decl*> v = decl();
-        decls.insert(decls.end(), v.begin(), v.end());
+        items.insert(items.end(), v.begin(), v.end());
     }
 
     while (sym.sym == INTTK || sym.sym == VOIDTK) {
         if (viewNextSymbol().sym == MAINTK)
             break;
         Func* f = funcDef();
-        funcs.push_back(f);
+        items.push_back(f);
     }
 
     if (sym.sym != INTTK) output();
-    funcs.push_back(mainFuncDef());
+    items.push_back(mainFuncDef());
 
     out.emplace_back("<CompUnit>");
-    return new Program(decls, funcs);
+    return new Program(items);
 }
 
 vector<Decl*> GrammarAnalyzer::decl() {
@@ -583,7 +582,7 @@ UnaryExp* GrammarAnalyzer::unaryExp() {
     if (sym.sym == LPARENT || sym.sym == INTCON) {
         out.emplace_back("<UnaryExp>");
         return primaryExp();
-    } else if (sym.sym == IDENFR) {
+    } else if (sym.sym == IDENFR || sym.sym == GETINTTK) {
         Symbol idt = sym;
         vector<Exp*> rParams;
 

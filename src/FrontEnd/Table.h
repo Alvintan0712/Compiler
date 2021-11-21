@@ -9,7 +9,7 @@
 #include <vector>
 #include <map>
 #include "Symbol.h"
-#include "Ast.h"
+#include "../Ast.h"
 
 class Decl;
 class LVal;
@@ -29,6 +29,7 @@ public:
     void pushFunc(Func* func);
     void pushBlock();
     void popBlock();
+    bool isGlobal();
 private:
     ErrorHandling* err;
     std::vector<std::map<std::string, Decl*>> declTable;

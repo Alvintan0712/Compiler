@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "Ast.h"
+#include "../Ast.h"
 #include "Symbol.h"
-#include "ErrorHandling.h"
+#include "../ErrorHandling.h"
 
 class GrammarAnalyzer {
 public:

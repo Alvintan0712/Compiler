@@ -4,12 +4,14 @@
 
 #include <iostream>
 #include "Ast.h"
-#include "Table.h"
+#include "FrontEnd/Table.h"
+#include "IR/IrBuilder.h"
 
 using namespace std;
 
 Table table;
 ErrorHandling* errorHandling;
+Context *Ast::ctx;
 BlockItem::BlockItem() {
 
 }
@@ -18,11 +20,19 @@ void BlockItem::traverse(int lev) {
 
 }
 
+void BlockItem::generateCode() {
+
+}
+
 ProgramItem::ProgramItem() {
 
 }
 
 void ProgramItem::traverse(int lev) {
+
+}
+
+void ProgramItem::generateCode() {
 
 }
 
@@ -35,7 +45,7 @@ Decl::Decl(Type bType, Symbol ident) {
     this->ident = move(ident);
 }
 
-Decl::Decl(Type bType, Symbol ident, std::vector<Exp *> initVal={}) {
+Decl::Decl(Type bType, Symbol ident, std::vector<Exp *> initVal) {
     this->bType = move(bType);
     this->ident = move(ident);
     this->initVal.insert(this->initVal.end(), initVal.begin(), initVal.end());
@@ -101,6 +111,50 @@ void Decl::traverse(int lev) {
     if (!bType.getParam()) cout << ";" << endl;
 }
 
+bool Decl::hasInit() {
+    return !initVal.empty();
+}
+
+void Decl::generateCode() {
+    table.pushDecl(this);
+    if (isConst()) {
+        Ast::ctx->addConst(this);
+        return;
+    }
+
+    bool isGlobal = Ast::ctx->table->isGlobal();
+    if (isGlobal) {
+        int id = Ast::ctx->irBuilder->genGlobal();
+        auto var = new Variable(id, true, bType);
+        auto decl = new DeclInst(var);
+        if (hasInit()) {
+            if (initVal.size() == 1) {
+                decl->addInit(new Constant(initVal[0]->evalInt()));
+            } else {
+                // TODO array initial
+            }
+        }
+        Ast::ctx->module->addDecl(this, decl);
+    } else {
+        IrFunc* irFunc = Ast::ctx->func;
+        int id = irFunc->genVar();
+        Variable* var;
+        if (Ast::ctx->isParam) var = new IrParam(id, this);
+        else var = new Variable(id, false, bType);
+        auto decl = new DeclInst(var);
+        if (hasInit()) {
+            if (initVal.size() == 1) {
+                initVal[0]->generateCode();
+                decl->addInit(initVal[0]->getVar());
+            } else {
+                // TODO array init
+            }
+        }
+        irFunc->addDecl(this, decl);
+        Ast::ctx->blk->addInst(decl);
+    }
+}
+
 Func::Func() {
     block = nullptr;
 }
@@ -155,6 +209,29 @@ void Func::traverse(int lev) {
     table.popBlock();
 }
 
+void Func::generateCode() {
+    table.pushFunc(this);
+    table.pushBlock();
+
+    auto irFunc = new IrFunc(this);
+    int  id  = Ast::ctx->irBuilder->genLabel();
+    auto blk = new BasicBlock(id);
+    irFunc->addBlock(blk);
+    Ast::ctx->addLabel(id, blk);
+    Ast::ctx->func = irFunc;
+    Ast::ctx->blk  = irFunc->getEntryBlock();
+    Ast::ctx->isParam = true;
+    for (auto x : fParams) x->generateCode();
+    Ast::ctx->isParam = false;
+    block->generateCode();
+    auto instr = Ast::ctx->blk->getLastInst();
+    auto retInstr = dynamic_cast<ReturnInst*>(instr);
+    if (!retInstr) Ast::ctx->blk->addInst(new ReturnInst());
+
+    Ast::ctx->module->addFunc(irFunc);
+    table.popBlock();
+}
+
 BinaryExp::BinaryExp() {
     lhs = nullptr;
     rhs = nullptr;
@@ -166,8 +243,16 @@ BinaryExp::BinaryExp(Exp *lhs, Symbol op, Exp *rhs) {
     this->rhs = rhs;
 }
 
-Symbol BinaryExp::getVal() {
+Symbol BinaryExp::getOp() {
     return op;
+}
+
+Exp *BinaryExp::getLhs() {
+    return lhs;
+}
+
+Exp *BinaryExp::getRhs() {
+    return rhs;
 }
 
 void BinaryExp::traverse(int lev) {
@@ -213,13 +298,24 @@ int BinaryExp::evalInt() {
     return 0;
 }
 
-Program::Program() {
+void BinaryExp::generateCode() {
+    lhs->generateCode();
+    rhs->generateCode();
+    int id = Ast::ctx->expStmt->genVar();
+    auto var = new Variable(id, false, evalType());
+    auto inst = new BinaryInst(var, this);
 
+    this->addVar(var);
+    Ast::ctx->blk->addInst(inst);
 }
 
-Program::Program(std::vector<Decl *> decls, std::vector<Func *> funcs) {
-    this->program_items.insert(this->program_items.end(), decls.begin(), decls.end());
-    this->program_items.insert(this->program_items.end(), funcs.begin(), funcs.end());
+Program::Program() {
+    this->err = nullptr;
+}
+
+Program::Program(std::vector<ProgramItem *> items) {
+    this->err = nullptr;
+    this->program_items.insert(this->program_items.end(), items.begin(), items.end());
 }
 
 void Program::addError(ErrorHandling* error) {
@@ -229,12 +325,17 @@ void Program::addError(ErrorHandling* error) {
 void Program::traverse(int lev) {
     table.pushBlock();
     for (auto node : program_items) {
-        if (Decl* decl = dynamic_cast<Decl*>(node)) {
-            decl->traverse(lev);
-        } else if (Func* func = dynamic_cast<Func*>(node)) {
-            func->traverse(lev);
-        }
+        node->traverse(lev);
     }
+    table.popBlock();
+}
+
+void Program::generateCode() {
+    table.pushBlock();
+    for (auto node : program_items) {
+        node->generateCode();
+    }
+    table.popBlock();
 }
 
 Block::Block() {
@@ -320,6 +421,18 @@ void Block::traverse(int lev) {
     cout << "}" << endl;
 }
 
+void Block::generateCode() {
+    for (auto x : block_items) {
+        if (auto blk = dynamic_cast<Block*>(x)) {
+            table.pushBlock();
+            blk->generateCode();
+            table.popBlock();
+        } else {
+            x->generateCode();
+        }
+    }
+}
+
 CallExp::CallExp() {
 
 }
@@ -376,6 +489,7 @@ void CallExp::traverse(int lev) {
 }
 
 Type CallExp::evalType() {
+    if (isGetInt()) return Type(Symbol(INTTK, "int", ident.row, ident.col));
     Func* func = table.findFunc(this);
     return func->getType();
 }
@@ -385,18 +499,104 @@ int CallExp::evalInt() {
     return 0;
 }
 
+std::vector<Variable*> split(std::vector<Exp*> rParams) {
+    auto fstring = dynamic_cast<FormatString*>(rParams[0]);
+    auto str = fstring->getSym().val;
+    str = str.substr(1, str.size() - 2);
+    int start = 0, end = str.find("%d");
+    vector<Variable*> v;
+    int i = 1;
+    if (end == -1) {
+        Ast::ctx->module->addStr(str);
+        v.push_back(new IrParam(new Constant(str)));
+    } else {
+        while (end != -1) {
+            auto s = str.substr(start, end - start);
+            if (!s.empty()) {
+                Ast::ctx->module->addStr(s);
+                v.push_back(new IrParam(new Constant(s)));
+            }
+            rParams[i]->generateCode();
+            auto var = rParams[i++]->getVar();
+            if (auto constant = dynamic_cast<Constant *>(var)) {
+                v.push_back(new IrParam(constant));
+            } else {
+                v.push_back(new IrParam(var));
+            }
+
+            start = end + 2;
+            end = str.find("%d", start);
+            if (end == -1 && start < str.size()) {
+                Ast::ctx->module->addStr(str.substr(start));
+                v.push_back(new IrParam(new Constant(str.substr(start))));
+            }
+        }
+    }
+
+    return v;
+}
+
+void CallExp::generateCode() {
+    if (isPrintf()) {
+        auto p = split(rParams);
+        auto inst = new CallInst(ident, p);
+        Ast::ctx->blk->addInst(inst);
+    } else if (isGetInt()) {
+        auto inst = new CallInst(ident);
+        Ast::ctx->blk->addInst(inst);
+
+        int id = Ast::ctx->func->genVar();
+        auto var = new Variable(id, false, this->evalType());
+        Ast::ctx->blk->addInst(new GetReturnInst(var));
+        this->addVar(var);
+    } else {
+        std::vector<Variable*> p;
+        auto func = Ast::ctx->module->getFunc(ident.val);
+
+        if (rParams.empty()) {
+            auto inst = new CallInst(func);
+            Ast::ctx->blk->addInst(inst);
+        } else {
+            for (auto x : rParams) {
+                x->generateCode();
+                auto var = x->getVar();
+                p.push_back(var);
+            }
+            auto inst = new CallInst(func, p);
+            Ast::ctx->blk->addInst(inst);
+        }
+        if (func->getType().getType().sym != VOIDTK) {
+            int id = Ast::ctx->func->genVar();
+            auto var = new Variable(id, false, this->evalType());
+            Ast::ctx->blk->addInst(new GetReturnInst(var));
+            this->addVar(var);
+        }
+    }
+}
+
 ExpStmt::ExpStmt() {
     exp = nullptr;
 }
 
 ExpStmt::ExpStmt(Exp *e) {
     this->exp = e;
+    this->varId = 1;
+}
+
+int ExpStmt::genVar() {
+    if (Ast::ctx->table->isGlobal()) return varId++;
+    else return Ast::ctx->func->genVar();
 }
 
 void ExpStmt::traverse(int lev) {
     for (int i = 0; i < lev; i++) cout << "    ";
     exp->traverse(lev);
     cout << ";" << endl;
+}
+
+void ExpStmt::generateCode() {
+    Ast::ctx->expStmt = this;
+    exp->generateCode();
 }
 
 UnaryExp::UnaryExp() {
@@ -453,7 +653,43 @@ int UnaryExp::evalInt() {
         if (sym.sym == INTCON) return stoi(sym.val);
         else return exp->evalInt();
     }
+    if (op->sym == PLUS) {
+        return exp->evalInt();
+    } else if (op->sym == MINU) {
+        return -1 * exp->evalInt();
+    } else if (op->sym == NOT) {
+        return !exp->evalInt();
+    }
     return 0;
+}
+
+void UnaryExp::generateCode() {
+    // TODO
+    if (op == nullptr) {
+        if (sym.sym == INTCON) {
+            this->addVar(new Constant(stoi(sym.val)));
+        } else {
+            exp->generateCode();
+            this->addVar(exp->getVar());
+        }
+    } else {
+        if (op->sym == PLUS) {
+            exp->generateCode();
+            this->addVar(exp->getVar());
+        } else if (op->sym == MINU) {
+            exp->generateCode();
+            int id = Ast::ctx->expStmt->genVar();
+            auto var = new Variable(id, false, evalType());
+            this->addVar(var);
+            Ast::ctx->blk->addInst(new BinaryInst(var, Sub, exp));
+        } else if (op->sym == NOT) {
+            exp->generateCode();
+            int id = Ast::ctx->expStmt->genVar();
+            auto var = new Variable(id, false, evalType());
+            this->addVar(var);
+            // TODO
+        }
+    }
 }
 
 Stmt::Stmt() {
@@ -461,6 +697,10 @@ Stmt::Stmt() {
 }
 
 void Stmt::traverse(int lev) {
+
+}
+
+void Stmt::generateCode() {
 
 }
 
@@ -511,38 +751,75 @@ int LVal::evalInt() {
     if (decl->getType().getConst()) {
         if (dims.empty()) return decl->getInitVal()[0];
         else {
-            int i = 0, last = 1;
-            for (auto x : dims) i = last*i + x->evalInt();
+            auto d = decl->getDims();
+            int offset = 0;
+            for (int i = 0; i < dims.size(); i++) {
+                offset = offset * d[i] + dims[i]->evalInt();
+            }
+            return decl->getInitVal()[offset];
         }
-    } else {
-        cout << "only const can eval" << endl;
-        return 0;
+    } else if (Ast::ctx->table->isGlobal()) {
+        if (dims.empty()) return decl->getInitVal()[0];
+        else {
+            auto d = decl->getDims();
+            int offset = 0;
+            for (int i = 0; i < dims.size(); i++) {
+                offset = offset * d[i] + dims[i]->evalInt();
+            }
+            return decl->getInitVal()[offset];
+        }
     }
     return 0;
 }
 
+void LVal::generateCode() {
+    Decl* decl = table.findDecl(this);
+    if (decl->isConst()) {
+        this->addVar(Ast::ctx->const_map[decl]);
+    } else if (Ast::ctx->func && Ast::ctx->func->getVar(decl)) {
+        auto var = Ast::ctx->func->getVar(decl);
+        this->addVar(var);
+    } else {
+        auto var = Ast::ctx->module->getGlobal(decl);
+        this->addVar(var);
+    }
+}
+
 Exp::Exp() {
     cond = false;
+    var  = nullptr;
 }
 
 void Exp::addCond() {
     cond = true;
 }
 
-bool Exp::isCond() {
+bool Exp::isCond() const {
     return cond;
+}
+
+int Exp::evalInt() {
+    return 0;
+}
+
+Type Exp::evalType() {
+    return {};
 }
 
 void Exp::traverse(int lev) {
 
 }
 
-Type Exp::evalType() {
-    return Type();
+void Exp::generateCode() {
+
 }
 
-int Exp::evalInt() {
-    return 0;
+void Exp::addVar(Variable *var) {
+    this->var = var;
+}
+
+Variable *Exp::getVar() {
+    return var;
 }
 
 AssignExp::AssignExp() {
@@ -576,6 +853,13 @@ Type AssignExp::evalType() {
 int AssignExp::evalInt() {
     cout << "only const can eval" << endl;
     return rhs->evalInt();
+}
+
+void AssignExp::generateCode() {
+    lhs->generateCode();
+    rhs->generateCode();
+    this->addVar(lhs->getVar());
+    Ast::ctx->blk->addInst(new AssignInst(lhs->getVar(), rhs->getVar()));
 }
 
 CondStmt::CondStmt() {
@@ -623,6 +907,10 @@ void CondStmt::traverse(int lev) {
     table.popBlock();
 }
 
+void CondStmt::generateCode() {
+    // TODO
+}
+
 LoopStmt::LoopStmt() {
 
 }
@@ -638,6 +926,10 @@ Symbol LoopStmt::getSym() {
 void LoopStmt::traverse(int lev) {
     for (int i = 0; i < lev; i++) cout << "    ";
     cout << sym.val << ";" << endl;
+}
+
+void LoopStmt::generateCode() {
+    // TODO
 }
 
 ReturnStmt::ReturnStmt() {
@@ -669,12 +961,21 @@ void ReturnStmt::traverse(int lev) {
     }
 }
 
+void ReturnStmt::generateCode() {
+    if (exp) {
+        exp->generateCode();
+        Ast::ctx->blk->addInst(new ReturnInst(exp->getVar()));
+    } else {
+        Ast::ctx->blk->addInst(new ReturnInst());
+    }
+}
+
 FormatString::FormatString() {
 
 }
 
 FormatString::FormatString(Symbol str) {
-    sym = str;
+    sym = std::move(str);
 }
 
 Symbol FormatString::getSym() {
@@ -683,6 +984,10 @@ Symbol FormatString::getSym() {
 
 void FormatString::traverse(int lev) {
     cout << sym.val;
+}
+
+void FormatString::generateCode() {
+    // TODO
 }
 
 Ast::Ast() {
@@ -695,9 +1000,17 @@ Ast::Ast(Program* p, ErrorHandling* err) {
     program = p;
     errorHandling = err;
     table.addError(err);
+    ctx = new Context();
+    ctx->module = new Module();
+    ctx->table = &table;
 }
 
 void Ast::traverse() {
     program->addError(errorHandling);
     program->traverse(0);
+}
+
+Module* Ast::generateCode() {
+    program->generateCode();
+    return ctx->module;
 }

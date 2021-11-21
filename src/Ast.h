@@ -7,17 +7,24 @@
 
 #include <vector>
 #include <string>
-#include "Symbol.h"
 #include "ErrorHandling.h"
-#include "Type.h"
+#include "FrontEnd/Type.h"
+#include "IR/Context.h"
+#include "IR/Module.h"
 
+class Module;
+class Context;
 class Program;
+class Variable;
 class Ast {
 public:
     Ast();
     explicit Ast(Program* p, ErrorHandling* err);
 
     void traverse();
+
+    static Context* ctx;
+    Module* generateCode();
 private:
     Program* program;
 };
@@ -27,6 +34,7 @@ public:
     ProgramItem();
 
     virtual void traverse(int lev);
+    virtual void generateCode();
 };
 
 class BlockItem {
@@ -34,6 +42,7 @@ public:
     BlockItem();
 
     virtual void traverse(int lev);
+    virtual void generateCode();
 };
 
 class Exp;
@@ -51,8 +60,10 @@ public:
     Symbol getIdent();
     std::vector<int> getDims();
     std::vector<int> getInitVal();
+    bool hasInit();
 
     void traverse(int lev) override;
+    void generateCode() override;
 private:
     Type bType;
     Symbol ident;
@@ -63,7 +74,8 @@ class Stmt : public BlockItem {
 public:
     Stmt();
 
-    virtual void traverse(int lev);
+    void traverse(int lev) override;
+    void generateCode() override;
 };
 
 class ReturnStmt;
@@ -80,6 +92,7 @@ public:
     std::vector<LoopStmt*> evalLoop();
     void checkLoop();
     void traverse(int lev) override;
+    void generateCode() override;
 private:
     std::vector<BlockItem*> block_items;
     Symbol lBrace, rBrace;
@@ -98,6 +111,7 @@ public:
     void checkLoop();
     void checkReturn();
     void traverse(int lev) override;
+    void generateCode() override;
 private:
     Symbol ident;
     Block *block;
@@ -109,14 +123,18 @@ class Exp {
 public:
     Exp();
 
-    bool isCond();
+    bool isCond() const;
     void addCond();
+    virtual void addVar(Variable* var);
+    virtual Variable* getVar();
 
     virtual int evalInt();
     virtual Type evalType();
     virtual void traverse(int lev);
+    virtual void generateCode();
 private:
     bool cond;
+    Variable* var;
 };
 
 class ExpStmt : public Stmt {
@@ -124,8 +142,11 @@ public:
     ExpStmt();
     explicit ExpStmt(Exp *e);
 
+    int genVar();
     void traverse(int lev) override;
+    void generateCode() override;
 private:
+    int varId;
     Exp* exp;
 };
 
@@ -139,6 +160,7 @@ public:
     Stmt* getElseStmt();
 
     void traverse(int lev) override;
+    void generateCode() override;
 private:
     Symbol token;
     Exp* condExp;
@@ -154,6 +176,7 @@ public:
     Symbol getSym();
 
     void traverse(int lev) override;
+    void generateCode() override;
 private:
     Symbol sym;
 };
@@ -167,6 +190,7 @@ public:
     Symbol getSymbol();
 
     void traverse(int lev) override;
+    void generateCode() override;
 private:
     Exp* exp;
     Symbol sym;
@@ -186,6 +210,7 @@ public:
     virtual void traverse(int lev);
     virtual Type evalType();
     virtual int evalInt();
+    virtual void generateCode();
 private:
     Symbol *op, sym;
     Exp* exp;
@@ -196,11 +221,14 @@ public:
     BinaryExp();
     BinaryExp(Exp* lhs, Symbol op, Exp* rhs);
 
-    Symbol getVal();
+    Symbol getOp();
+    Exp* getLhs();
+    Exp* getRhs();
 
     virtual int evalInt();
     virtual Type evalType();
     virtual void traverse(int lev);
+    virtual void generateCode();
 private:
     Symbol op;
     Exp *lhs, *rhs;
@@ -214,6 +242,7 @@ public:
     Symbol getSym();
 
     void traverse(int lev) override;
+    void generateCode() override;
 private:
     Symbol sym;
 };
@@ -228,6 +257,7 @@ public:
     int evalInt() override;
     Type evalType() override;
     void traverse(int lev) override;
+    void generateCode() override;
 private:
     Symbol ident;
     std::vector<Exp*> dims;
@@ -242,6 +272,7 @@ public:
     int evalInt() override;
     Type evalType() override;
     void traverse(int lev) override;
+    void generateCode() override;
 private:
     LVal* lhs;
     Exp* rhs;
@@ -263,6 +294,7 @@ public:
     int evalInt() override;
     Type evalType() override;
     void traverse(int lev) override;
+    void generateCode() override;
 private:
     Symbol ident;
     std::vector<Exp*> rParams;
@@ -271,11 +303,12 @@ private:
 class Program {
 public:
     Program();
-    Program(std::vector<Decl*> decls, std::vector<Func*> funcs);
+    explicit Program(std::vector<ProgramItem*> items);
 
     void addError(ErrorHandling* error);
 
     void traverse(int lev);
+    void generateCode();
     ErrorHandling* err;
 private:
     std::vector<ProgramItem*> program_items;

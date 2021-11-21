@@ -5,7 +5,7 @@
 #ifndef SRC_ERRORHANDLING_H
 #define SRC_ERRORHANDLING_H
 
-#include "Symbol.h"
+#include "FrontEnd/Symbol.h"
 #include <vector>
 
 enum ERROR {

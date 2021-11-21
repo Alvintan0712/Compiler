@@ -21,16 +21,19 @@ public:
 
     bool getConst();
     bool getParam();
-    bool getPointer();
+    bool getPointer() const;
     int getDim() const;
     Symbol getType() const;
     std::vector<int> getDims() const;
+    std::string getString() const;
 
     void addDim(int dim);
 private:
     Symbol type;
     bool isConst, isParam, isPointer;
     std::vector<int> dims;
+
+    bool checkDim(const Type& t);
 };
 
 

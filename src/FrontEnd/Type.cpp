@@ -49,15 +49,40 @@ bool Type::getParam() {
     return isParam;
 }
 
-bool Type::getPointer() {
+bool Type::getPointer() const {
     return isPointer;
 }
 
 bool Type::operator==(const Type& t) {
-    return type == t.getType() && dims.size() == t.getDims().size();
+    return type == t.getType() && checkDim(t);
 }
 
 bool Type::operator!=(const Type& t) {
-    return type != t.getType() || getDim() != t.getDim();
+    return type != t.getType() || !checkDim(t);
+}
+
+bool Type::checkDim(const Type& t) {
+    if (getDim() != t.getDim()) return false;
+    int n = getDim();
+    if (getPointer() || t.getPointer()) {
+        auto v = getDims();
+        auto w = t.getDims();
+        for (int i = 1; i < n; i++)
+            if (v[i] != w[i])
+                return false;
+    } else {
+        auto v = getDims();
+        auto w = t.getDims();
+        for (int i = 0; i < n; i++)
+            if (v[i] != w[i])
+                return false;
+    }
+    return true;
+}
+
+string Type::getString() const {
+    string dim_string = isPointer ? "[]" : "";
+    for (auto x : dims) dim_string += "[" + to_string(x) + "]";
+    return type.val;
 }
 
