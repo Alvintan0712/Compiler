@@ -292,14 +292,12 @@ void Generator::genCallInst(CallInst *inst) {
             }
         }
     } else {
-        mips.emplace_back(tab + "addiu $sp, $sp, -4");
-        mips.emplace_back(tab + "sw $ra, ($sp)");
         int arg = inst->func->getVarId() - 1;
         auto args = to_string(arg << 2);
         auto label = to_string(inst->func->getEntryBlock()->getId());
         int id = 0;
         for (auto x : inst->params) {
-            auto str_id = to_string(4*(id - arg));
+            auto str_id = to_string(4*(id - arg - 1));
             if (auto var = dynamic_cast<Constant*>(x)) {
                 auto val = to_string(var->getValue());
                 mips.emplace_back(tab + "li $t0, " + val);
@@ -313,6 +311,8 @@ void Generator::genCallInst(CallInst *inst) {
             mips.emplace_back(tab + "sw $t0, " + str_id + "($sp)");
             id++;
         }
+        mips.emplace_back(tab + "addiu $sp, $sp, -4");
+        mips.emplace_back(tab + "sw $ra, ($sp)");
         if (arg) mips.emplace_back(tab + "addiu $sp, $sp, -" + args);
         mips.emplace_back(tab + "jal label_" + label);
         if (arg) mips.emplace_back(tab + "addiu $sp, $sp, " + args);
