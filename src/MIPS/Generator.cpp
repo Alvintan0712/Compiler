@@ -196,21 +196,32 @@ void Generator::genAssignInst(AssignInst *inst) {
     auto lhs = inst->lhs;
     auto rhs = inst->rhs;
 
-    if (lhs->isGlobal() && rhs->isGlobal()) {
-        auto lid = to_string(lhs->getId() - 1 << 1);
-        auto rid = to_string(lhs->getId() - 1 << 1);
-        mips.emplace_back(tab + "lw $t0, global_" + lid);
-        mips.emplace_back(tab + "sw $t0, global_" + rid);
+    if (auto constant = dynamic_cast<Constant*>(rhs)) {
+        auto val = to_string(constant->getValue());
+        if (lhs->isGlobal()) {
+            auto lid = to_string(lhs->getId());
+            mips.emplace_back(tab + "li $t0, " + val);
+            mips.emplace_back(tab + "sw $t0, global_" + lid);
+        } else {
+            auto lid = to_string(lhs->getId() - 1 << 2);
+            mips.emplace_back(tab + "li $t0, " + val);
+            mips.emplace_back(tab + "sw $t0, " + lid + "($sp)");
+        }
+    } else if (lhs->isGlobal() && rhs->isGlobal()) {
+        auto lid = to_string(lhs->getId());
+        auto rid = to_string(rhs->getId());
+        mips.emplace_back(tab + "lw $t0, global_" + rid);
+        mips.emplace_back(tab + "sw $t0, global_" + lid);
     } else if (lhs->isGlobal()) {
         auto lid = to_string(lhs->getId());
         auto rid = to_string(rhs->getId() - 1 << 2);
-        mips.emplace_back(tab + "lw $t0, global_" + lid);
-        mips.emplace_back(tab + "sw $t0, " + rid + "($sp)");
+        mips.emplace_back(tab + "lw $t0, " + rid + "($sp)");
+        mips.emplace_back(tab + "sw $t0, global_" + lid);
     } else if (rhs->isGlobal()) {
         auto lid = to_string(lhs->getId() - 1 << 2);
         auto rid = to_string(rhs->getId());
-        mips.emplace_back(tab + "lw $t0, " + lid + "($sp)");
-        mips.emplace_back(tab + "sw $t0, global_" + rid);
+        mips.emplace_back(tab + "lw $t0, global_" + rid);
+        mips.emplace_back(tab + "sw $t0, " + lid + "($sp)");
     } else {
         auto lid = to_string(lhs->getId() - 1 << 2);
         auto rid = to_string(rhs->getId() - 1 << 2);
