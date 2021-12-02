@@ -36,7 +36,6 @@ BinaryInst::BinaryInst(Variable* var, BinaryExp *exp) : Inst() {
         case OR:   this->op = Or;  break;
         default:   /* bug */       break;
     }
-    //TODO define lhs rhs
     this->var = var;
     lhs = exp->getLhs()->getVar();
     rhs = exp->getRhs()->getVar();
@@ -56,7 +55,8 @@ std::string BinaryInst::show() {
 }
 
 AssignInst::AssignInst() : Inst() {
-
+    this->lhs = nullptr;
+    this->rhs = nullptr;
 }
 
 AssignInst::AssignInst(Variable *lhs, Variable *rhs) : Inst() {
@@ -72,15 +72,27 @@ BranchInst::BranchInst() : Inst() {
 
 }
 
-BranchInst::BranchInst(BranchInst::BranchOp op, int lhs, int rhs) : Inst() {
+BranchInst::BranchInst(BranchOp op, Variable* var, int label_id) : Inst() {
     this->op = op;
-    this->lhs = lhs;
-    this->rhs = rhs;
+    this->var = var;
+    this->label_id = label_id;
 }
 
 std::string BranchInst::show() {
-    //TODO
-    return Inst::show();
+    std::string out[] = {"Br", "Blt", "Ble", "Bgt", "Bge", "Beq", "Bne", "Bnez", "Beqz"};
+    return out[op] + " " + var->show() + ", label_" + std::to_string(label_id);
+}
+
+JumpInst::JumpInst() {
+    this->label_id = 0;
+}
+
+JumpInst::JumpInst(int label_id) {
+    this->label_id = label_id;
+}
+
+std::string JumpInst::show() {
+    return "Jump label_" + std::to_string(label_id);
 }
 
 ReturnInst::ReturnInst() : Inst() {

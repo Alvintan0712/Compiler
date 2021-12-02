@@ -7,11 +7,11 @@
 using namespace std;
 
 IrFunc::IrFunc() {
-    varId = 1;
+    varId = 0;
 }
 
 IrFunc::IrFunc(Func *func) {
-    varId = 1;
+    varId = 0;
     returnType = func->getType();
     funcName   = func->getIdent().val;
 }
@@ -44,7 +44,7 @@ std::vector<IrParam *> IrFunc::getParams() {
     return params;
 }
 
-int IrFunc::getVarId() {
+int IrFunc::getVarId() const {
     return varId;
 }
 
@@ -61,7 +61,6 @@ std::string IrFunc::show() {
     string f  = ty + " " + funcName + "()";
     string p;
     for (auto x : params) p += x->show() + "\n";
-    // TODO show block
     string b;
     for (BasicBlock* blk = blocks.head; blk; blk = blk->next) {
         b += blk->show();

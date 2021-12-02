@@ -28,7 +28,7 @@ public:
     void addVar(Decl* decl, Variable* v);
     int genVar();
 
-    int getVarId();
+    int getVarId() const;
     Type getType();
     std::string getName();
     Variable* getVar(Decl* decl);

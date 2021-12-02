@@ -7,7 +7,6 @@
 
 #include "BasicBlock.h"
 #include "../FrontEnd/Table.h"
-#include "IrBuilder.h"
 #include "../Ast.h"
 
 class Table;
@@ -24,16 +23,21 @@ public:
     Table* table;
     IrFunc* func;
     Module* module;
-    BasicBlock* blk;
+    BasicBlock *blk, *cond_blk, *end_blk;
     ExpStmt* expStmt;
-    IrBuilder* irBuilder;
     bool isParam;
+    bool isCond;
 
     void addConst(Decl* decl);
     void addLabel(int id, BasicBlock* blk);
+    int genGlobal();
+    int genLabel();
+    IrFunc* getFunc(const std::string& name);
 
     std::map<Decl*, Constant*> const_map;
     std::map<int, BasicBlock*> labels;
+private:
+    int global_id, label_id;
 };
 
 

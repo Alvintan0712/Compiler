@@ -96,7 +96,6 @@ public:
 private:
     std::vector<BlockItem*> block_items;
     Symbol lBrace, rBrace;
-    bool loop;
 };
 
 class Func : public ProgramItem {

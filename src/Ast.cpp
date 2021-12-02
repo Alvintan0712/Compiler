@@ -3,9 +3,9 @@
 //
 
 #include <iostream>
+#include <utility>
 #include "Ast.h"
 #include "FrontEnd/Table.h"
-#include "IR/IrBuilder.h"
 
 using namespace std;
 
@@ -122,35 +122,25 @@ void Decl::generateCode() {
         return;
     }
 
+    Variable* var;
     bool isGlobal = Ast::ctx->table->isGlobal();
-    if (isGlobal) {
-        int id = Ast::ctx->irBuilder->genGlobal();
-        auto var = new Variable(id, true, bType);
-        auto decl = new DeclInst(var);
-        if (hasInit()) {
-            if (initVal.size() == 1) {
-                decl->addInit(new Constant(initVal[0]->evalInt()));
-            } else {
-                // TODO array initial
-            }
+    int id = isGlobal ? Ast::ctx->genGlobal() : Ast::ctx->func->genVar();
+    if (Ast::ctx->isParam) var = new IrParam(id, this);
+    else var = new Variable(id, isGlobal, bType);
+    auto decl = new DeclInst(var);
+
+    if (hasInit()) {
+        if (initVal.size() == 1) {
+            decl->addInit(new Constant(initVal[0]->evalInt()));
+        } else {
+            // TODO: array initial
         }
+    }
+
+    if (isGlobal) {
         Ast::ctx->module->addDecl(this, decl);
     } else {
-        IrFunc* irFunc = Ast::ctx->func;
-        int id = irFunc->genVar();
-        Variable* var;
-        if (Ast::ctx->isParam) var = new IrParam(id, this);
-        else var = new Variable(id, false, bType);
-        auto decl = new DeclInst(var);
-        if (hasInit()) {
-            if (initVal.size() == 1) {
-                initVal[0]->generateCode();
-                decl->addInit(initVal[0]->getVar());
-            } else {
-                // TODO array init
-            }
-        }
-        irFunc->addDecl(this, decl);
+        Ast::ctx->func->addDecl(this, decl);
         Ast::ctx->blk->addInst(decl);
     }
 }
@@ -213,22 +203,28 @@ void Func::generateCode() {
     table.pushFunc(this);
     table.pushBlock();
 
-    auto irFunc = new IrFunc(this);
-    int  id  = Ast::ctx->irBuilder->genLabel();
-    auto blk = new BasicBlock(id);
-    irFunc->addBlock(blk);
-    Ast::ctx->addLabel(id, blk);
+    auto irFunc    = new IrFunc(this);
+    int  label_id  = Ast::ctx->genLabel();
+    auto entry_blk = new BasicBlock(label_id);
+    irFunc->addBlock(entry_blk);
+    Ast::ctx->addLabel(label_id, entry_blk);
+
     Ast::ctx->func = irFunc;
-    Ast::ctx->blk  = irFunc->getEntryBlock();
+    // generate function parameters
     Ast::ctx->isParam = true;
     for (auto x : fParams) x->generateCode();
     Ast::ctx->isParam = false;
+
+    Ast::ctx->blk  = irFunc->getEntryBlock();
     block->generateCode();
     auto instr = Ast::ctx->blk->getLastInst();
     auto retInstr = dynamic_cast<ReturnInst*>(instr);
+    // if block don't have return instruction, add return instruction on IR
     if (!retInstr) Ast::ctx->blk->addInst(new ReturnInst());
 
     Ast::ctx->module->addFunc(irFunc);
+    Ast::ctx->blk = nullptr;
+    Ast::ctx->func = nullptr;
     table.popBlock();
 }
 
@@ -304,9 +300,13 @@ void BinaryExp::generateCode() {
     int id = Ast::ctx->expStmt->genVar();
     auto var = new Variable(id, false, evalType());
     auto inst = new BinaryInst(var, this);
-
+    auto sym = this->op.sym;
     this->addVar(var);
     Ast::ctx->blk->addInst(inst);
+    if (sym == LSS || sym == LEQ || sym == EQL || sym == NEQ || sym == GRE || sym == GEQ) {
+        // TODO: add next label id
+        Ast::ctx->blk->addInst(new BranchInst(Beqz, var, Ast::ctx->end_blk->getId()));
+    }
 }
 
 Program::Program() {
@@ -339,7 +339,6 @@ void Program::generateCode() {
 }
 
 Block::Block() {
-    loop = false;
 }
 
 Block::Block(Symbol lBrace, vector<BlockItem*> items, Symbol rBrace) {
@@ -438,11 +437,11 @@ CallExp::CallExp() {
 }
 
 CallExp::CallExp(Symbol ident) {
-    this->ident = ident;
+    this->ident = move(ident);
 }
 
 CallExp::CallExp(Symbol ident, vector<Exp*> rParams) {
-    this->ident = ident;
+    this->ident = move(ident);
     this->rParams.insert(this->rParams.end(), rParams.begin(), rParams.end());
 }
 
@@ -502,11 +501,12 @@ int CallExp::evalInt() {
 std::vector<Variable*> split(std::vector<Exp*> rParams) {
     auto fstring = dynamic_cast<FormatString*>(rParams[0]);
     auto str = fstring->getSym().val;
+    // remove ""
     str = str.substr(1, str.size() - 2);
-    int start = 0, end = str.find("%d");
+    int start = 0, end = (int) str.find("%d");
     vector<Variable*> v;
     int i = 1;
-    if (end == -1) {
+    if (end == -1) {  // if fstring don't have %d
         Ast::ctx->module->addStr(str);
         v.push_back(new IrParam(new Constant(str)));
     } else {
@@ -525,7 +525,7 @@ std::vector<Variable*> split(std::vector<Exp*> rParams) {
             }
 
             start = end + 2;
-            end = str.find("%d", start);
+            end = (int) str.find("%d", start);
             if (end == -1 && start < str.size()) {
                 Ast::ctx->module->addStr(str.substr(start));
                 v.push_back(new IrParam(new Constant(str.substr(start))));
@@ -537,34 +537,30 @@ std::vector<Variable*> split(std::vector<Exp*> rParams) {
 }
 
 void CallExp::generateCode() {
-    if (isPrintf()) {
+    if (isPrintf()) { //  printf()
         auto p = split(rParams);
         auto inst = new CallInst(ident, p);
         Ast::ctx->blk->addInst(inst);
-    } else if (isGetInt()) {
-        auto inst = new CallInst(ident);
-        Ast::ctx->blk->addInst(inst);
-
+    } else if (isGetInt()) { //  getint()
+        Ast::ctx->blk->addInst(new CallInst(ident));
         int id = Ast::ctx->func->genVar();
         auto var = new Variable(id, false, this->evalType());
         Ast::ctx->blk->addInst(new GetReturnInst(var));
         this->addVar(var);
-    } else {
-        std::vector<Variable*> p;
-        auto func = Ast::ctx->module->getFunc(ident.val);
-
-        if (rParams.empty()) {
-            auto inst = new CallInst(func);
-            Ast::ctx->blk->addInst(inst);
+    } else { //  other function
+        std::vector<Variable*> params;
+        auto func = Ast::ctx->getFunc(ident.val);
+        if (rParams.empty()) { //  if function don't have parameters
+            Ast::ctx->blk->addInst(new CallInst(func));
         } else {
             for (auto x : rParams) {
                 x->generateCode();
                 auto var = x->getVar();
-                p.push_back(var);
+                params.push_back(var);
             }
-            auto inst = new CallInst(func, p);
-            Ast::ctx->blk->addInst(inst);
+            Ast::ctx->blk->addInst(new CallInst(func, params));
         }
+        //  if this function has return value
         if (func->getType().getType().sym != VOIDTK) {
             int id = Ast::ctx->func->genVar();
             auto var = new Variable(id, false, this->evalType());
@@ -576,11 +572,12 @@ void CallExp::generateCode() {
 
 ExpStmt::ExpStmt() {
     exp = nullptr;
+    this->varId = 0;
 }
 
 ExpStmt::ExpStmt(Exp *e) {
     this->exp = e;
-    this->varId = 1;
+    this->varId = 0;
 }
 
 int ExpStmt::genVar() {
@@ -664,9 +661,8 @@ int UnaryExp::evalInt() {
 }
 
 void UnaryExp::generateCode() {
-    // TODO
     if (op == nullptr) {
-        if (sym.sym == INTCON) {
+        if (sym.sym == INTCON) { //  this Exp is integer
             this->addVar(new Constant(stoi(sym.val)));
         } else {
             exp->generateCode();
@@ -737,7 +733,7 @@ Type LVal::evalType() {
 
     Type type = Type(tkn);
 
-    int n = declDim.size();
+    int n = (int) declDim.size();
     int lValDim = n - dims.size();
     for (int i = 0; i < lValDim; i++) {
         type.addDim(declDim[n - i - 1]);
@@ -908,7 +904,45 @@ void CondStmt::traverse(int lev) {
 }
 
 void CondStmt::generateCode() {
-    // TODO
+    if (token.sym == WHILETK) {
+        // TODO: implement while instruction
+        // create condition block body
+        int label_id = Ast::ctx->genLabel();
+        auto cond_blk = new BasicBlock(label_id);
+        Ast::ctx->cond_blk = cond_blk;
+        Ast::ctx->addLabel(label_id, cond_blk);
+
+        // create end while block
+        int end_label_id = Ast::ctx->genLabel();
+        auto end_blk = new BasicBlock(end_label_id);
+        Ast::ctx->end_blk = end_blk;
+
+        // condition block
+        Ast::ctx->blk = cond_blk;
+        Ast::ctx->func->addBlock(cond_blk);
+        // TODO: implement && and ||
+        condExp->generateCode();
+        Ast::ctx->blk->addInst(new BranchInst(Beqz, condExp->getVar(), end_label_id));
+
+        // while block body
+        label_id = Ast::ctx->genLabel();
+        auto body_blk = new BasicBlock(label_id);
+        Ast::ctx->blk = body_blk;
+        Ast::ctx->func->addBlock(body_blk);
+        ifStmt->generateCode();
+        Ast::ctx->blk->addInst(new JumpInst(cond_blk->getId()));
+
+        // while end body
+        Ast::ctx->cond_blk = nullptr;
+        Ast::ctx->end_blk  = nullptr;
+        Ast::ctx->func->addBlock(end_blk);
+        Ast::ctx->blk = end_blk;
+    } else if (token.sym == IFTK) {
+        // TODO: implement if instructions
+        
+    } else {
+        // bug
+    }
 }
 
 LoopStmt::LoopStmt() {

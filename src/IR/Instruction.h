@@ -50,19 +50,30 @@ public:
     std::string show() override;
 };
 
+enum BranchOp {
+    Br, Blt, Ble, Bgt, Bge, Beq, Bne, Bnez, Beqz
+};
+
 class BranchInst : public Inst {
 public:
-    enum BranchOp {
-        Br, Blt, Ble, Bgt, Bge, Beq, Bne
-    };
-
     BranchInst();
-    BranchInst(BranchOp op, int lhs, int rhs);
+    BranchInst(BranchOp op, Variable* var, int label_id);
 
     std::string show() override;
 private:
     BranchOp op;
-    int lhs, rhs;
+    Variable* var;
+    int label_id;
+};
+
+class JumpInst : public Inst {
+public:
+    JumpInst();
+    JumpInst(int label_id);
+
+    std::string show() override;
+private:
+    int label_id;
 };
 
 class ReturnInst : public Inst {
