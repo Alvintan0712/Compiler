@@ -101,6 +101,15 @@ public:
     std::string show() override;
 };
 
+class NotInst : public Inst {
+public:
+    Variable* var;
+    NotInst();
+    NotInst(Variable* var);
+
+    std::string show() override;
+};
+
 class LoadInst : public Inst {
 public:
     LoadInst();

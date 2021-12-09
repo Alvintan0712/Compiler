@@ -38,11 +38,9 @@ void Module::show() {
     ofstream f("ir.txt");
     for (auto x : decls) {
         f << x->show() << endl;
-        cout << x->show() << endl;
     }
     for (auto x : irFuncs) {
         f << x->show() << endl;
-        cout << x->show() << endl;
     }
 }
 

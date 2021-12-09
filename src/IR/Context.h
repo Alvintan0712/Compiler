@@ -14,7 +14,6 @@ class IrFunc;
 class Module;
 class ExpStmt;
 class Constant;
-class IrBuilder;
 class BasicBlock;
 class Context {
 public:
@@ -23,7 +22,7 @@ public:
     Table* table;
     IrFunc* func;
     Module* module;
-    BasicBlock *blk, *cond_blk, *body_blk, *else_blk, *end_blk;
+    BasicBlock *blk, *if_blk, *while_blk, *body_blk, *else_blk, *while_end_blk, *if_end_blk;
     ExpStmt* expStmt;
     bool isParam;
     bool isCond;

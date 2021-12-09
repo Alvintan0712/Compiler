@@ -65,6 +65,7 @@ private:
     void genGetReturnInst(GetReturnInst* inst);
     void genBranchInst(BranchInst* inst);
     void genJumpInst(JumpInst* inst);
+    void genNotInst(NotInst* inst);
 };
 
 

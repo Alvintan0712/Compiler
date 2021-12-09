@@ -314,7 +314,7 @@ void Generator::genCallInst(CallInst *inst) {
         auto label = to_string(inst->func->getEntryBlock()->getId());
         int id = 0;
         for (auto x : inst->params) {
-            auto str_id = to_string(4*(id - arg));
+            auto str_id = to_string(4*(id - arg - 1));
             if (auto var = dynamic_cast<Constant*>(x)) {
                 loadConst(var, 0);
             } else {
@@ -384,6 +384,16 @@ void Generator::genJumpInst(JumpInst* inst) {
     mips.emplace_back(tab + "j label_" + id);
 }
 
+void Generator::genNotInst(NotInst *inst) {
+    if (auto constant = dynamic_cast<Constant*>(inst->var)) {
+        loadConst(constant, 0);
+    } else {
+        loadVar(inst->var, 0);
+    }
+    mips.emplace_back(tab + "seq $t0, $t0, 0");
+    assign(inst->var, 0);
+}
+
 void Generator::genInst(IrFunc* func, Inst *inst) {
     if (auto binaryInst = dynamic_cast<BinaryInst*>(inst)) {
         genBinaryInst(binaryInst);
@@ -405,6 +415,8 @@ void Generator::genInst(IrFunc* func, Inst *inst) {
         genDeclInst(declInst);
     } else if (auto getReturnInst = dynamic_cast<GetReturnInst*>(inst)) {
         genGetReturnInst(getReturnInst);
+    } else if (auto notInst = dynamic_cast<NotInst*>(inst)) {
+        genNotInst(notInst);
     }
 }
 

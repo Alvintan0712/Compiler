@@ -157,6 +157,19 @@ std::string CallInst::show() {
     return "";
 }
 
+NotInst::NotInst() {
+    this->var = nullptr;
+}
+
+NotInst::NotInst(Variable *var) {
+    this->var = var;
+}
+
+std::string NotInst::show() {
+    auto str = "%" + std::to_string(var->getId());
+    return str + " = !" + str;
+}
+
 LoadInst::LoadInst() : Inst() {
 
 }

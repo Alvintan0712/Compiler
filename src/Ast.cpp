@@ -204,6 +204,7 @@ void Func::generateCode() {
     table.pushBlock();
 
     auto irFunc    = new IrFunc(this);
+    Ast::ctx->module->addFunc(irFunc);
     int  label_id  = Ast::ctx->genLabel();
     auto entry_blk = new BasicBlock(label_id);
     irFunc->addBlock(entry_blk);
@@ -212,17 +213,17 @@ void Func::generateCode() {
     Ast::ctx->func = irFunc;
     // generate function parameters
     Ast::ctx->isParam = true;
-    for (auto x : fParams) x->generateCode();
+    Ast::ctx->blk = irFunc->getEntryBlock();
+    for (auto x : fParams)
+        x->generateCode();
     Ast::ctx->isParam = false;
 
-    Ast::ctx->blk  = irFunc->getEntryBlock();
     block->generateCode();
     auto instr = Ast::ctx->blk->getLastInst();
     auto retInstr = dynamic_cast<ReturnInst*>(instr);
     // if block don't have return instruction, add return instruction on IR
     if (!retInstr) Ast::ctx->blk->addInst(new ReturnInst());
 
-    Ast::ctx->module->addFunc(irFunc);
     Ast::ctx->blk = nullptr;
     Ast::ctx->func = nullptr;
     table.popBlock();
@@ -681,10 +682,8 @@ void UnaryExp::generateCode() {
             Ast::ctx->blk->addInst(new BinaryInst(var, Sub, exp));
         } else if (op->sym == NOT) {
             exp->generateCode();
-            int id = Ast::ctx->expStmt->genVar();
-            auto var = new Variable(id, false, evalType());
-            this->addVar(var);
-            // TODO
+            Ast::ctx->blk->addInst(new NotInst(exp->getVar()));
+            this->addVar(exp->getVar());
         }
     }
 }
@@ -904,18 +903,22 @@ void CondStmt::traverse(int lev) {
     table.popBlock();
 }
 
-#define COND 1
+#define WHILE 0
+#define IF 1
 #define BODY 2
 #define ELSE 3
-#define END 4
+#define WHILE_END 4
+#define IF_END 5
 
 BasicBlock* setupBlock(int id, int type) {
     auto blk = new BasicBlock(id);
     switch(type) {
-        case COND: Ast::ctx->cond_blk = blk; break;
-        case BODY: Ast::ctx->body_blk = blk; break;
-        case ELSE: Ast::ctx->else_blk = blk; break;
-        case END:  Ast::ctx->end_blk = blk; break;
+        case WHILE:     Ast::ctx->while_blk = blk;     break;
+        case IF:        Ast::ctx->if_blk = blk;        break;
+        case BODY:      Ast::ctx->body_blk = blk;      break;
+        case ELSE:      Ast::ctx->else_blk = blk;      break;
+        case IF_END:    Ast::ctx->if_end_blk = blk;    break;
+        case WHILE_END: Ast::ctx->while_end_blk = blk; break;
         default: break;
     }
     Ast::ctx->addLabel(id, blk);
@@ -925,53 +928,53 @@ BasicBlock* setupBlock(int id, int type) {
 void CondStmt::generateCode() {
     if (token.sym == WHILETK) {
         // TODO: implement while instruction
-        int cond_label_id = Ast::ctx->genLabel();
-        auto cond_blk = setupBlock(cond_label_id, COND);
-        Ast::ctx->func->addBlock(cond_blk);
+        int while_label_id = Ast::ctx->genLabel();
+        auto while_blk = setupBlock(while_label_id, WHILE);
+        Ast::ctx->func->addBlock(while_blk);
 
         int body_label_id = Ast::ctx->genLabel();
         auto body_blk = setupBlock(body_label_id, BODY);
 
-        int end_label_id = Ast::ctx->genLabel();
-        auto end_blk = setupBlock(end_label_id, END);
+        int while_end_label_id = Ast::ctx->genLabel();
+        auto while_end_blk = setupBlock(while_end_label_id, WHILE_END);
 
-        // condition block
-        Ast::ctx->blk = cond_blk;
+        // while condition block
+        Ast::ctx->blk = while_blk;
         // TODO: implement && and ||
         condExp->generateCode();
-        Ast::ctx->blk->addInst(new BranchInst(Beqz, condExp->getVar(), end_label_id));
+        Ast::ctx->blk->addInst(new BranchInst(Beqz, condExp->getVar(), while_end_label_id));
 
         // while block body
         Ast::ctx->blk = body_blk;
         Ast::ctx->func->addBlock(body_blk);
         ifStmt->generateCode();
-        Ast::ctx->blk->addInst(new JumpInst(cond_label_id));
+        Ast::ctx->blk->addInst(new JumpInst(while_label_id));
 
         // while end body
-        Ast::ctx->cond_blk = nullptr;
+        Ast::ctx->while_blk = nullptr;
         Ast::ctx->body_blk = nullptr;
-        Ast::ctx->end_blk  = nullptr;
-        Ast::ctx->func->addBlock(end_blk);
-        Ast::ctx->blk = end_blk;
+        Ast::ctx->while_end_blk = nullptr;
+        Ast::ctx->func->addBlock(while_end_blk);
+        Ast::ctx->blk = while_end_blk;
     } else if (token.sym == IFTK) {
         // TODO: implement if instructions
-        int cond_label_id = Ast::ctx->genLabel();
-        auto cond_blk = setupBlock(cond_label_id, COND);
-        Ast::ctx->func->addBlock(cond_blk);
+        int if_label_id = Ast::ctx->genLabel();
+        auto if_blk = setupBlock(if_label_id, IF);
+        Ast::ctx->func->addBlock(if_blk);
 
         int body_label_id = Ast::ctx->genLabel();
         auto body_blk = setupBlock(body_label_id, BODY);
 
         int else_label_id = 0, end_label_id = 0;
-        BasicBlock *else_blk = nullptr, *end_blk = nullptr;
+        BasicBlock *else_blk = nullptr, *if_end_blk = nullptr;
         if (elseStmt) {
             else_label_id = Ast::ctx->genLabel();
             else_blk = setupBlock(else_label_id, ELSE);
         }
         end_label_id = Ast::ctx->genLabel();
-        end_blk = setupBlock(end_label_id, END);
+        if_end_blk = setupBlock(end_label_id, IF_END);
 
-        Ast::ctx->blk = cond_blk;
+        Ast::ctx->blk = if_blk;
         condExp->generateCode();
         int next_label_id = else_blk ? else_label_id : end_label_id;
         Ast::ctx->blk->addInst(new BranchInst(Beqz, condExp->getVar(), next_label_id));
@@ -985,11 +988,11 @@ void CondStmt::generateCode() {
             elseStmt->generateCode();
             Ast::ctx->blk->addInst(new JumpInst(end_label_id));
         }
-        Ast::ctx->cond_blk = nullptr;
+        Ast::ctx->if_blk = nullptr;
         Ast::ctx->body_blk = nullptr;
-        Ast::ctx->end_blk  = nullptr;
-        Ast::ctx->func->addBlock(end_blk);
-        Ast::ctx->blk = end_blk;
+        Ast::ctx->if_end_blk = nullptr;
+        Ast::ctx->func->addBlock(if_end_blk);
+        Ast::ctx->blk = if_end_blk;
     } else {
         // bug
     }
@@ -1015,9 +1018,9 @@ void LoopStmt::traverse(int lev) {
 void LoopStmt::generateCode() {
     // TODO
     if (sym.sym == BREAKTK) {
-        Ast::ctx->blk->addInst(new JumpInst(Ast::ctx->end_blk->getId()));
+        Ast::ctx->blk->addInst(new JumpInst(Ast::ctx->while_end_blk->getId()));
     } else if (sym.sym == CONTINUETK) {
-        Ast::ctx->blk->addInst(new JumpInst(Ast::ctx->cond_blk->getId()));
+        Ast::ctx->blk->addInst(new JumpInst(Ast::ctx->while_blk->getId()));
     } else {
         // bug
     }

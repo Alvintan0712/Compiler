@@ -7,8 +7,10 @@
 Context::Context() {
     this->blk = nullptr;
     this->body_blk = nullptr;
-    this->end_blk = nullptr;
-    this->cond_blk = nullptr;
+    this->while_end_blk = nullptr;
+    this->if_end_blk = nullptr;
+    this->if_blk = nullptr;
+    this->while_blk = nullptr;
     this->func = nullptr;
     this->table = nullptr;
     this->module = nullptr;
