@@ -56,24 +56,24 @@ enum BranchOp {
 
 class BranchInst : public Inst {
 public:
+    BranchOp op;
+    Variable* var;
+    int label_id;
+
     BranchInst();
     BranchInst(BranchOp op, Variable* var, int label_id);
 
     std::string show() override;
-private:
-    BranchOp op;
-    Variable* var;
-    int label_id;
 };
 
 class JumpInst : public Inst {
 public:
+    int label_id;
+
     JumpInst();
     JumpInst(int label_id);
 
     std::string show() override;
-private:
-    int label_id;
 };
 
 class ReturnInst : public Inst {
