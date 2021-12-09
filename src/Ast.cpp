@@ -204,9 +204,9 @@ void Func::generateCode() {
     table.pushBlock();
 
     auto irFunc    = new IrFunc(this);
-    Ast::ctx->module->addFunc(irFunc);
     int  label_id  = Ast::ctx->genLabel();
     auto entry_blk = new BasicBlock(label_id);
+    Ast::ctx->module->addFunc(irFunc);
     irFunc->addBlock(entry_blk);
     Ast::ctx->addLabel(label_id, entry_blk);
 

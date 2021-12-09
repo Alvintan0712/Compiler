@@ -207,7 +207,7 @@ void Generator::genBinaryInst(BinaryInst* inst) {
             case Mul: mips.emplace_back(tab + "mul $t0, $t0, " + x); break;
             case Div: mips.emplace_back(tab + "div $t0, $t0, " + x); break;
             case Mod:
-                mips.emplace_back(tab + "div $t0, " + x);
+                mips.emplace_back(tab + "div $t0, $t0, " + x);
                 mips.emplace_back(tab + "mfhi $t0");
                 break;
             case And: mips.emplace_back(tab + "and $t0, $t0, " + x); break;
