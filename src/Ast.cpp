@@ -305,7 +305,7 @@ void BinaryExp::generateCode() {
     Ast::ctx->blk->addInst(inst);
     if (sym == LSS || sym == LEQ || sym == EQL || sym == NEQ || sym == GRE || sym == GEQ) {
         // TODO: add next label id
-        Ast::ctx->blk->addInst(new BranchInst(Beqz, var, Ast::ctx->end_blk->getId()));
+        // Ast::ctx->blk->addInst(new BranchInst(Beqz, var, Ast::ctx->end_blk->getId()));
     }
 }
 
@@ -339,6 +339,7 @@ void Program::generateCode() {
 }
 
 Block::Block() {
+
 }
 
 Block::Block(Symbol lBrace, vector<BlockItem*> items, Symbol rBrace) {
@@ -903,43 +904,92 @@ void CondStmt::traverse(int lev) {
     table.popBlock();
 }
 
+#define COND 1
+#define BODY 2
+#define ELSE 3
+#define END 4
+
+BasicBlock* setupBlock(int id, int type) {
+    auto blk = new BasicBlock(id);
+    switch(type) {
+        case COND: Ast::ctx->cond_blk = blk; break;
+        case BODY: Ast::ctx->body_blk = blk; break;
+        case ELSE: Ast::ctx->else_blk = blk; break;
+        case END:  Ast::ctx->end_blk = blk; break;
+        default: break;
+    }
+    Ast::ctx->addLabel(id, blk);
+    return blk;
+}
+
 void CondStmt::generateCode() {
     if (token.sym == WHILETK) {
         // TODO: implement while instruction
-        // create condition block body
-        int label_id = Ast::ctx->genLabel();
-        auto cond_blk = new BasicBlock(label_id);
-        Ast::ctx->cond_blk = cond_blk;
-        Ast::ctx->addLabel(label_id, cond_blk);
+        int cond_label_id = Ast::ctx->genLabel();
+        auto cond_blk = setupBlock(cond_label_id, COND);
+        Ast::ctx->func->addBlock(cond_blk);
 
-        // create end while block
+        int body_label_id = Ast::ctx->genLabel();
+        auto body_blk = setupBlock(body_label_id, BODY);
+
         int end_label_id = Ast::ctx->genLabel();
-        auto end_blk = new BasicBlock(end_label_id);
-        Ast::ctx->end_blk = end_blk;
+        auto end_blk = setupBlock(end_label_id, END);
 
         // condition block
         Ast::ctx->blk = cond_blk;
-        Ast::ctx->func->addBlock(cond_blk);
         // TODO: implement && and ||
         condExp->generateCode();
         Ast::ctx->blk->addInst(new BranchInst(Beqz, condExp->getVar(), end_label_id));
 
         // while block body
-        label_id = Ast::ctx->genLabel();
-        auto body_blk = new BasicBlock(label_id);
         Ast::ctx->blk = body_blk;
         Ast::ctx->func->addBlock(body_blk);
         ifStmt->generateCode();
-        Ast::ctx->blk->addInst(new JumpInst(cond_blk->getId()));
+        Ast::ctx->blk->addInst(new JumpInst(cond_label_id));
 
         // while end body
         Ast::ctx->cond_blk = nullptr;
+        Ast::ctx->body_blk = nullptr;
         Ast::ctx->end_blk  = nullptr;
         Ast::ctx->func->addBlock(end_blk);
         Ast::ctx->blk = end_blk;
     } else if (token.sym == IFTK) {
         // TODO: implement if instructions
-        
+        int cond_label_id = Ast::ctx->genLabel();
+        auto cond_blk = setupBlock(cond_label_id, COND);
+        Ast::ctx->func->addBlock(cond_blk);
+
+        int body_label_id = Ast::ctx->genLabel();
+        auto body_blk = setupBlock(body_label_id, BODY);
+
+        int else_label_id = 0, end_label_id = 0;
+        BasicBlock *else_blk = nullptr, *end_blk = nullptr;
+        if (elseStmt) {
+            else_label_id = Ast::ctx->genLabel();
+            else_blk = setupBlock(else_label_id, ELSE);
+        }
+        end_label_id = Ast::ctx->genLabel();
+        end_blk = setupBlock(end_label_id, END);
+
+        Ast::ctx->blk = cond_blk;
+        condExp->generateCode();
+        int next_label_id = else_blk ? else_label_id : end_label_id;
+        Ast::ctx->blk->addInst(new BranchInst(Beqz, condExp->getVar(), next_label_id));
+        Ast::ctx->func->addBlock(body_blk);
+        Ast::ctx->blk = body_blk;
+        ifStmt->generateCode();
+        Ast::ctx->blk->addInst(new JumpInst(end_label_id));
+        if (else_blk) {
+            Ast::ctx->func->addBlock(else_blk);
+            Ast::ctx->blk = else_blk;
+            elseStmt->generateCode();
+            Ast::ctx->blk->addInst(new JumpInst(end_label_id));
+        }
+        Ast::ctx->cond_blk = nullptr;
+        Ast::ctx->body_blk = nullptr;
+        Ast::ctx->end_blk  = nullptr;
+        Ast::ctx->func->addBlock(end_blk);
+        Ast::ctx->blk = end_blk;
     } else {
         // bug
     }
@@ -964,6 +1014,13 @@ void LoopStmt::traverse(int lev) {
 
 void LoopStmt::generateCode() {
     // TODO
+    if (sym.sym == BREAKTK) {
+        Ast::ctx->blk->addInst(new JumpInst(Ast::ctx->end_blk->getId()));
+    } else if (sym.sym == CONTINUETK) {
+        Ast::ctx->blk->addInst(new JumpInst(Ast::ctx->cond_blk->getId()));
+    } else {
+        // bug
+    }
 }
 
 ReturnStmt::ReturnStmt() {

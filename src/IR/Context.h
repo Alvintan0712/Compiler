@@ -23,7 +23,7 @@ public:
     Table* table;
     IrFunc* func;
     Module* module;
-    BasicBlock *blk, *cond_blk, *end_blk;
+    BasicBlock *blk, *cond_blk, *body_blk, *else_blk, *end_blk;
     ExpStmt* expStmt;
     bool isParam;
     bool isCond;
