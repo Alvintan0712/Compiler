@@ -6,7 +6,8 @@
 
 Context::Context() {
     this->blk = nullptr;
-    this->body_blk = nullptr;
+    this->if_body_blk = nullptr;
+    this->while_body_blk = nullptr;
     this->while_end_blk = nullptr;
     this->if_end_blk = nullptr;
     this->if_blk = nullptr;
@@ -40,5 +41,27 @@ int Context::genLabel() {
 
 IrFunc *Context::getFunc(const std::string &name) {
     return module->getFunc(name);
+}
+
+
+
+void Context::pushWhile(BasicBlock *while_blk, BasicBlock *body_blk, BasicBlock *while_end_blk) {
+    while_blks.push(while_blk);
+    while_body_blks.push(body_blk);
+    while_end_blks.push(while_end_blk);
+    getWhile();
+}
+
+void Context::getWhile() {
+    this->while_blk = while_blks.empty() ? nullptr : while_blks.top();
+    this->while_body_blk = while_body_blks.empty() ? nullptr : while_body_blks.top();
+    this->while_end_blk = while_end_blks.empty() ? nullptr : while_end_blks.top();
+}
+
+void Context::popWhile() {
+    while_blks.pop();
+    while_body_blks.pop();
+    while_end_blks.pop();
+    getWhile();
 }
 
