@@ -130,10 +130,19 @@ void Decl::generateCode() {
     auto decl = new DeclInst(var);
 
     if (hasInit()) {
-        if (initVal.size() == 1) {
-            decl->addInit(new Constant(initVal[0]->evalInt()));
+        if (isConst() || isGlobal) {
+            if (initVal.size() == 1) {
+                decl->addInit(new Constant(initVal[0]->evalInt()));
+            } else {
+                // TODO: array initial
+            }
         } else {
-            // TODO: array initial
+            if (initVal.size() == 1) {
+                initVal[0]->generateCode();
+                decl->addInit(initVal[0]->getVar());
+            } else {
+                // TODO: array initial
+            }
         }
     }
 
