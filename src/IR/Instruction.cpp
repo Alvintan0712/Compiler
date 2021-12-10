@@ -161,8 +161,9 @@ NotInst::NotInst() {
     this->var = nullptr;
 }
 
-NotInst::NotInst(Variable *var) {
+NotInst::NotInst(Variable *var, Variable *not_var) {
     this->var = var;
+    this->not_var = not_var;
 }
 
 std::string NotInst::show() {

@@ -103,9 +103,9 @@ public:
 
 class NotInst : public Inst {
 public:
-    Variable* var;
+    Variable *var, *not_var;
     NotInst();
-    NotInst(Variable* var);
+    NotInst(Variable* var, Variable* not_var);
 
     std::string show() override;
 };

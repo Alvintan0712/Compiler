@@ -345,8 +345,8 @@ void Generator::genDeclInst(DeclInst *inst) {
         loadConst(constant, 0);
         assign(inst->getVar(), 0);
     } else {
-        loadVar(inst->getVar(), 0);
-        assign(init, 0);
+        loadVar(init, 0);
+        assign(inst->getVar(), 0);
     }
 }
 
@@ -391,7 +391,7 @@ void Generator::genNotInst(NotInst *inst) {
         loadVar(inst->var, 0);
     }
     mips.emplace_back(tab + "seq $t0, $t0, 0");
-    assign(inst->var, 0);
+    assign(inst->not_var, 0);
 }
 
 void Generator::genInst(IrFunc* func, Inst *inst) {

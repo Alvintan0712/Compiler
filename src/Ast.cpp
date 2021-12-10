@@ -691,8 +691,10 @@ void UnaryExp::generateCode() {
             Ast::ctx->blk->addInst(new BinaryInst(var, Sub, exp));
         } else if (op->sym == NOT) {
             exp->generateCode();
-            Ast::ctx->blk->addInst(new NotInst(exp->getVar()));
-            this->addVar(exp->getVar());
+            int id = Ast::ctx->func->genVar();
+            auto var = new Variable(id, false, exp->evalType());
+            Ast::ctx->blk->addInst(new NotInst(exp->getVar(), var));
+            this->addVar(var);
         }
     }
 }
