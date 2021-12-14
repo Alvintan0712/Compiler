@@ -17,6 +17,7 @@ public:
 
     int getId() const;
     bool isGlobal() const;
+    bool isAddr() const;
     Type getType();
     void addDims(std::vector<Variable*> dims);
     void addAddr();

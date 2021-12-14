@@ -183,31 +183,26 @@ LoadInst::LoadInst() : Inst() {
 
 }
 
+LoadInst::LoadInst(Variable *dst, Variable *addr) {
+    this->dst = dst;
+    this->addr = addr;
+}
+
 std::string LoadInst::show() {
-    // TODO
-    return {};
+    return "load " + dst->show() + ", " + addr->show();
 }
 
 StoreInst::StoreInst() : Inst() {
 
 }
 
-StoreInst::StoreInst(Variable *base, std::vector<Variable *> dims, Variable *val) {
-    this->base = base;
-    this->dims = dims;
+StoreInst::StoreInst(Variable *val, Variable *addr) {
+    this->addr = addr;
     this->val  = val;
 }
 
 std::string StoreInst::show() {
-    return base->show() + showDim() + " = " + val->show();
-}
-
-std::string StoreInst::showDim() {
-    string res;
-    for (auto x : dims) {
-        res += "[" + x->show() + "]";
-    }
-    return res;
+    return "store " + val->show() + ", " + addr->show();
 }
 
 DeclInst::DeclInst() {

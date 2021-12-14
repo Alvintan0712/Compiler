@@ -124,26 +124,21 @@ private:
 
 class LoadInst : public Inst {
 public:
-    Variable* dst;
+    Variable *dst, *addr;
 
     LoadInst();
-    // TODO base dims
+    LoadInst(Variable* dst, Variable* addr);
 
     std::string show() override;
-private:
-    // TODO
 };
 
 class StoreInst : public Inst {
 public:
+    Variable *addr, *val;
     StoreInst();
-    StoreInst(Variable* base, std::vector<Variable*> dims, Variable* val);
+    StoreInst(Variable* val, Variable* addr);
 
     std::string show() override;
-private:
-    Variable *base, *val;
-    std::vector<Variable*> dims;
-    std::string showDim();
 };
 
 class DeclInst : public Inst {

@@ -39,8 +39,7 @@ Type Variable::getType() {
 
 string Variable::show() {
     string tag = isGlobal() ? "@" : "%";
-    string addr = is_addr ? "la " : "";
-    return addr + tag + to_string(id) + showDim();
+    return tag + to_string(id) + showDim();
 }
 
 void Variable::addDims(std::vector<Variable *> dims) {
@@ -55,6 +54,10 @@ std::string Variable::showDim() {
 
 void Variable::addAddr() {
     is_addr = true;
+}
+
+bool Variable::isAddr() const {
+    return is_addr;
 }
 
 Constant::Constant() {
