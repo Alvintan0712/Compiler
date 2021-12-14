@@ -34,18 +34,18 @@ Symbol Type::getType() const {
 }
 
 int Type::getDim() const {
-    return dims.size() + isPointer;
+    return (int) dims.size() + isPointer;
 }
 
 vector<int> Type::getDims() const {
     return dims;
 }
 
-bool Type::getConst() {
+bool Type::getConst() const {
     return isConst;
 }
 
-bool Type::getParam() {
+bool Type::getParam() const {
     return isParam;
 }
 
@@ -61,7 +61,7 @@ bool Type::operator!=(const Type& t) {
     return type != t.getType() || !checkDim(t);
 }
 
-bool Type::checkDim(const Type& t) {
+bool Type::checkDim(const Type& t) const {
     if (getDim() != t.getDim()) return false;
     int n = getDim();
     if (getPointer() || t.getPointer()) {

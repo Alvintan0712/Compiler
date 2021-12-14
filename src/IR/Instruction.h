@@ -35,8 +35,9 @@ public:
 
     BinaryInst();
     explicit BinaryInst(Variable* var, BinaryExp* exp);
-
     BinaryInst(Variable* var, BinaryOp op, Exp* exp);
+    BinaryInst(Variable* var, BinaryOp op, Variable* lhs, Variable* rhs);
+
     std::string show() override;
 };
 
@@ -110,8 +111,21 @@ public:
     std::string show() override;
 };
 
+class IrArray;
+class LoadAddrInst : public Inst {
+public:
+    LoadAddrInst();
+    LoadAddrInst(Variable* var, IrArray* base);
+
+    std::string show() override;
+private:
+    Variable *var, *base;
+};
+
 class LoadInst : public Inst {
 public:
+    Variable* dst;
+
     LoadInst();
     // TODO base dims
 
@@ -123,11 +137,13 @@ private:
 class StoreInst : public Inst {
 public:
     StoreInst();
-    // TODO base dims
+    StoreInst(Variable* base, std::vector<Variable*> dims, Variable* val);
 
     std::string show() override;
 private:
-    // TODO
+    Variable *base, *val;
+    std::vector<Variable*> dims;
+    std::string showDim();
 };
 
 class DeclInst : public Inst {
@@ -138,11 +154,13 @@ public:
     Variable* getVar();
     Variable* getInit();
     void addInit(Variable* init);
+    void addInits(std::vector<Variable*> inits);
     bool hasInit();
 
     std::string show() override;
 private:
     Variable *var, *init;
+    std::vector<Variable*> inits;
 };
 
 class GetReturnInst : public Inst {

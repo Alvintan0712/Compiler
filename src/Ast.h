@@ -61,6 +61,7 @@ public:
     std::vector<int> getDims();
     std::vector<int> getInitVal();
     bool hasInit();
+    bool isArray();
 
     void traverse(int lev) override;
     void generateCode() override;

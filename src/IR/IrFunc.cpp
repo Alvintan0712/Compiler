@@ -67,3 +67,9 @@ std::string IrFunc::show() {
     }
     return f + "\n" + p + b;
 }
+
+int IrFunc::genArray(int size) {
+    int id = varId;
+    varId += size;
+    return id;
+}

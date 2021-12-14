@@ -111,46 +111,76 @@ void Decl::traverse(int lev) {
     if (!bType.getParam()) cout << ";" << endl;
 }
 
+bool Decl::isArray() {
+    return bType.getDim() > 0;
+}
+
 bool Decl::hasInit() {
     return !initVal.empty();
 }
 
 void Decl::generateCode() {
     table.pushDecl(this);
-    if (isConst()) {
-        Ast::ctx->addConst(this);
-        return;
-    }
 
-    Variable* var;
-    bool isGlobal = Ast::ctx->table->isGlobal();
-    int id = isGlobal ? Ast::ctx->genGlobal() : Ast::ctx->func->genVar();
-    if (Ast::ctx->isParam) var = new IrParam(id, this);
-    else var = new Variable(id, isGlobal, bType);
-    auto decl = new DeclInst(var);
+    if (isArray()) {
+        if (isParam()) {
+            int base = Ast::ctx->func->genVar();
+            auto ptr = new IrPointer(base, this);
+            if (isConst()) ptr->addConst();
+            auto decl = new DeclInst(ptr);
+        } else {
+            bool isGlobal = Ast::ctx->table->isGlobal();
+            int size = 1;
+            for (auto x : bType.getDims()) size *= x;
+            int base = isGlobal ? Ast::ctx->genArray(size) : Ast::ctx->func->genArray(size);
+            auto arr = new IrArray(base, isGlobal, bType);
 
-    if (hasInit()) {
-        if (isConst() || isGlobal) {
-            if (initVal.size() == 1) {
+            if (isConst()) arr->addConst();
+            auto decl = new DeclInst(arr);
+            if (hasInit()) {
+                vector<Variable*> inits;
+                Ast::ctx->blk->addInst(decl);
+                for (auto x : initVal) {
+                    if (isConst() || isGlobal) {
+                        inits.push_back(new Constant(x->evalInt()));
+                    } else {
+                        x->generateCode();
+                        inits.push_back(x->getVar());
+                    }
+                }
+                decl->addInits(inits);
+            }
+            if (isGlobal) Ast::ctx->module->addDecl(this, decl);
+            else Ast::ctx->func->addDecl(this, decl);
+        }
+    } else {
+        if (isConst()) {
+            Ast::ctx->addConst(this);
+            return;
+        }
+
+        Variable* var;
+        bool isGlobal = Ast::ctx->table->isGlobal();
+        int id = isGlobal ? Ast::ctx->genGlobal() : Ast::ctx->func->genVar();
+        if (Ast::ctx->isParam) var = new IrParam(id, this);
+        else var = new Variable(id, isGlobal, bType);
+        auto decl = new DeclInst(var);
+
+        if (hasInit()) {
+            if (isConst() || isGlobal) {
                 decl->addInit(new Constant(initVal[0]->evalInt()));
             } else {
-                // TODO: array initial
-            }
-        } else {
-            if (initVal.size() == 1) {
                 initVal[0]->generateCode();
                 decl->addInit(initVal[0]->getVar());
-            } else {
-                // TODO: array initial
             }
         }
-    }
 
-    if (isGlobal) {
-        Ast::ctx->module->addDecl(this, decl);
-    } else {
-        Ast::ctx->func->addDecl(this, decl);
-        Ast::ctx->blk->addInst(decl);
+        if (isGlobal) {
+            Ast::ctx->module->addDecl(this, decl);
+        } else {
+            Ast::ctx->func->addDecl(this, decl);
+            Ast::ctx->blk->addInst(decl);
+        }
     }
 }
 
@@ -781,7 +811,46 @@ int LVal::evalInt() {
 
 void LVal::generateCode() {
     Decl* decl = table.findDecl(this);
-    if (decl->isConst()) {
+    if (decl->isArray()) {
+        auto base = Ast::ctx->func->getVar(decl);
+        if (auto arr = dynamic_cast<IrArray*>(base)) {
+            Variable *prev = nullptr;
+            for (int i = 0; i < dims.size(); i++) {
+                int id = Ast::ctx->func->genVar();
+                auto offset = new Variable(id, false, dims[i]->evalType());
+                if (i == 0) {
+                    dims[i]->generateCode();
+                    Ast::ctx->blk->addInst(new BinaryInst(offset, Add, base, dims[i]->getVar()));
+                } else {
+                    auto size = new Constant(decl->getDims()[i]);
+                    Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, prev, size));
+                    Ast::ctx->blk->addInst(new BinaryInst(offset, Add, offset, dims[i]->getVar()));
+                }
+                prev = offset;
+            }
+            prev->addAddr();
+            this->addVar(prev);
+        } else if (auto ptr = dynamic_cast<IrPointer*>(base)) {
+            Variable *prev = nullptr;
+            for (int i = 0; i < dims.size(); i++) {
+                int id = Ast::ctx->func->genVar();
+                auto offset = new Variable(id, false, dims[i]->evalType());
+                if (i == 0) {
+                    dims[i]->generateCode();
+                    Ast::ctx->blk->addInst(new BinaryInst(offset, Add, base, dims[i]->getVar()));
+                } else {
+                    auto size = new Constant(decl->getDims()[i]);
+                    Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, prev, size));
+                    Ast::ctx->blk->addInst(new BinaryInst(offset, Add, offset, dims[i]->getVar()));
+                }
+                prev = offset;
+            }
+            prev->addAddr();
+            this->addVar(prev);
+        } else {
+            // bug
+        }
+    } else if (decl->isConst()) {
         this->addVar(Ast::ctx->const_map[decl]);
     } else if (Ast::ctx->func && Ast::ctx->func->getVar(decl)) {
         auto var = Ast::ctx->func->getVar(decl);
@@ -1090,7 +1159,7 @@ void FormatString::traverse(int lev) {
 }
 
 void FormatString::generateCode() {
-    // TODO
+
 }
 
 Ast::Ast() {

@@ -27,6 +27,7 @@ public:
     void addDecl(Decl* d, DeclInst* decl);
     void addVar(Decl* decl, Variable* v);
     int genVar();
+    int genArray(int size);
 
     int getVarId() const;
     Type getType();

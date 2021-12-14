@@ -38,6 +38,7 @@ public:
     void addConst(Decl* decl);
     void addLabel(int id, BasicBlock* blk);
     int genGlobal();
+    int genArray(int size);
     int genLabel();
     IrFunc* getFunc(const std::string& name);
     void pushWhile(BasicBlock *while_blk, BasicBlock *body_blk, BasicBlock *while_end_blk);

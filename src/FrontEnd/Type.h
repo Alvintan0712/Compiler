@@ -19,8 +19,8 @@ public:
     bool operator==(const Type& t);
     bool operator!=(const Type& t);
 
-    bool getConst();
-    bool getParam();
+    bool getConst() const;
+    bool getParam() const;
     bool getPointer() const;
     int getDim() const;
     Symbol getType() const;
@@ -33,7 +33,7 @@ private:
     bool isConst, isParam, isPointer;
     std::vector<int> dims;
 
-    bool checkDim(const Type& t);
+    bool checkDim(const Type& t) const;
 };
 
 

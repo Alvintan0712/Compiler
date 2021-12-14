@@ -65,3 +65,7 @@ void Context::popWhile() {
     getWhile();
 }
 
+int Context::genArray(int size) {
+    return global_id++;
+}
+

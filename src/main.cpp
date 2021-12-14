@@ -25,8 +25,8 @@ int main () {
     // errorHandling->output();
     auto module = ast.generateCode();
     module->show();
-    Generator g(module);
-    g.show();
+    // Generator g(module);
+    // g.show();
 
     return 0;
 }

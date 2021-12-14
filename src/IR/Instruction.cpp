@@ -6,6 +6,7 @@
 
 #include <utility>
 #include "Variable.h"
+using namespace std;
 
 Inst::Inst() {
     prev = next = nullptr;
@@ -52,6 +53,13 @@ std::string BinaryInst::show() {
     std::string ops[] = { "+", "-", "*", "/", "%", "&", "|",
                           "<", "<=", ">", ">=", "==", "!=" };
     return var->show() + " = " + lhs->show() + " " + ops[op] + " " + rhs->show();
+}
+
+BinaryInst::BinaryInst(Variable *var, BinaryOp op, Variable *lhs, Variable *rhs) {
+    this->var = var;
+    this->op  = op;
+    this->lhs = lhs;
+    this->rhs = rhs;
 }
 
 AssignInst::AssignInst() : Inst() {
@@ -177,16 +185,29 @@ LoadInst::LoadInst() : Inst() {
 
 std::string LoadInst::show() {
     // TODO
-    return Inst::show();
+    return {};
 }
 
 StoreInst::StoreInst() : Inst() {
 
 }
 
+StoreInst::StoreInst(Variable *base, std::vector<Variable *> dims, Variable *val) {
+    this->base = base;
+    this->dims = dims;
+    this->val  = val;
+}
+
 std::string StoreInst::show() {
-    // TODO
-    return Inst::show();
+    return base->show() + showDim() + " = " + val->show();
+}
+
+std::string StoreInst::showDim() {
+    string res;
+    for (auto x : dims) {
+        res += "[" + x->show() + "]";
+    }
+    return res;
 }
 
 DeclInst::DeclInst() {
@@ -199,21 +220,16 @@ DeclInst::DeclInst(Variable *var) : Inst() {
     this->init = nullptr;
 }
 
-std::string DeclInst::show() {
-    if (auto p = dynamic_cast<IrParam*>(var)) {
-        return "para " + var->getType().getString() + " " + var->show();
-    } else if (init) {
-        return var->getType().getString() + " " + var->show() + " = " + init->show();
-    }
-    return var->getType().getString() + " " + var->show();
-}
-
 Variable *DeclInst::getVar() {
     return var;
 }
 
 void DeclInst::addInit(Variable *init) {
     this->init = init;
+}
+
+void DeclInst::addInits(std::vector<Variable*> inits) {
+    this->inits = inits;
 }
 
 bool DeclInst::hasInit() {
@@ -224,8 +240,37 @@ Variable *DeclInst::getInit() {
     return init;
 }
 
-GetReturnInst::GetReturnInst() : Inst() {
+std::string DeclInst::show() {
+    if (auto arr = dynamic_cast<IrArray*>(var)) {
+        string hasConst = arr->isConst ? "const " : "";
+        string tag = arr->isGlobal() ? "@" : "%";
+        auto def = "alloca " + hasConst + arr->getType().getString() + " " + tag +
+                   to_string(arr->getBase()) + " " + to_string(arr->getSize());
+        if (!inits.empty()) {
+            for (int i = 0; i < inits.size(); i++)
+                def += "\n" + var->show() + "[" + to_string(i) + "] = " + inits[i]->show();
+        }
+        return def;
+    } else if (auto ptr = dynamic_cast<IrPointer*>(var)) {
+        string hasConst = ptr->isConst ? "const " : "";
+        auto dims = ptr->getType().getDims();
+        string sdims = "";
+        for (auto x : dims) sdims += "[" + to_string(x) + "]";
+        auto def = "para " + ptr->getType().getString() + " " +
+                   to_string(ptr->getBase()) + "[]" + sdims;
+    } else {
+        if (auto p = dynamic_cast<IrParam*>(var)) {
+            return "para " + var->getType().getString() + " " + var->show();
+        } else if (init) {
+            return var->getType().getString() + " " + var->show() + " = " + init->show();
+        }
+        return var->getType().getString() + " " + var->show();
+    }
+    return {};
+}
 
+GetReturnInst::GetReturnInst() : Inst() {
+    this->var = nullptr;
 }
 
 GetReturnInst::GetReturnInst(Variable *var) {
@@ -234,4 +279,17 @@ GetReturnInst::GetReturnInst(Variable *var) {
 
 std::string GetReturnInst::show() {
     return var->show() + " = RET";
+}
+
+LoadAddrInst::LoadAddrInst() {
+    this->base = 0;
+}
+
+LoadAddrInst::LoadAddrInst(Variable* var, IrArray* base) {
+    this->var  = var;
+    this->base = base;
+}
+
+std::string LoadAddrInst::show() {
+    return "la " + var->show() + ", " + base->show();
 }
