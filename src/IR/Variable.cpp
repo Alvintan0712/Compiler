@@ -8,7 +8,8 @@
 using namespace std;
 
 Variable::Variable() {
-
+    this->is_global = false;
+    this->is_addr = false;
 }
 
 Variable::Variable(Variable *var) {
@@ -60,17 +61,17 @@ bool Variable::isAddr() const {
     return is_addr;
 }
 
-Constant::Constant() {
+Constant::Constant() : Variable() {
     this->value = 0;
     this->type = UNKNOWN;
 }
 
-Constant::Constant(int x) {
+Constant::Constant(int x) : Variable() {
     this->value = x;
     this->type  = INTTK;
 }
 
-Constant::Constant(std::string s) {
+Constant::Constant(std::string s) : Variable() {
     this->value = 0;
     this->str  = std::move(s);
     this->type = STRCON;
@@ -160,8 +161,6 @@ int IrPointer::getBase() const {
 }
 
 std::string IrPointer::show() {
-    string res = "%" + to_string(base) + "[]";
-    auto dims = getType().getDims();
-    for (auto x : dims) res += "[" + to_string(x) + "]";
+    string res = "%" + to_string(base);
     return res;
 }

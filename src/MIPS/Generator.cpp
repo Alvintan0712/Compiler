@@ -407,6 +407,8 @@ void Generator::genInst(IrFunc* func, Inst *inst) {
         genReturnInst(returnInst);
     } else if (auto callInst = dynamic_cast<CallInst*>(inst)) {
         genCallInst(callInst);
+    } else if (auto loadAddrInst = dynamic_cast<LoadAddrInst*>(inst)) {
+        // TODO
     } else if (auto loadInst = dynamic_cast<LoadInst*>(inst)) {
         // TODO
     } else if (auto storeInst = dynamic_cast<StoreInst*>(inst)) {

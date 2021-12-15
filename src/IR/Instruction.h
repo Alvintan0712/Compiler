@@ -37,6 +37,7 @@ public:
     explicit BinaryInst(Variable* var, BinaryExp* exp);
     BinaryInst(Variable* var, BinaryOp op, Exp* exp);
     BinaryInst(Variable* var, BinaryOp op, Variable* lhs, Variable* rhs);
+    BinaryInst(Variable* var, Variable* lhs, Symbol op, Variable* rhs);
 
     std::string show() override;
 };
@@ -115,7 +116,7 @@ class IrArray;
 class LoadAddrInst : public Inst {
 public:
     LoadAddrInst();
-    LoadAddrInst(Variable* var, IrArray* base);
+    LoadAddrInst(Variable* var, Variable* base);
 
     std::string show() override;
 private:

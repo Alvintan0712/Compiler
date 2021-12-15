@@ -49,6 +49,28 @@ BinaryInst::BinaryInst(Variable* var, BinaryOp op, Exp *exp) {
     this->rhs = exp->getVar();
 }
 
+BinaryInst::BinaryInst(Variable* var, Variable* lhs, Symbol op, Variable* rhs) {
+    switch(op.sym) {
+        case PLUS: this->op = Add; break;
+        case MINU: this->op = Sub; break;
+        case MULT: this->op = Mul; break;
+        case DIV:  this->op = Div; break;
+        case MOD:  this->op = Mod; break;
+        case LSS:  this->op = Slt; break;
+        case LEQ:  this->op = Sle; break;
+        case GRE:  this->op = Sgt; break;
+        case GEQ:  this->op = Sge; break;
+        case EQL:  this->op = Seq; break;
+        case NEQ:  this->op = Sne; break;
+        case AND:  this->op = And; break;
+        case OR:   this->op = Or;  break;
+        default:   /* bug */       break;
+    }
+    this->var = var;
+    this->lhs = lhs;
+    this->rhs = rhs;
+}
+
 std::string BinaryInst::show() {
     std::string ops[] = { "+", "-", "*", "/", "%", "&", "|",
                           "<", "<=", ">", ">=", "==", "!=" };
@@ -144,7 +166,8 @@ std::string CallInst::show() {
     if (func) {
         std::string res;
         for (auto x : params) {
-            std::string push = "push " + x->show();
+            std::string addr = x->isAddr() ? "addr " : "";
+            std::string push = "push " + addr + x->show();
             res += push + "\n";
         }
         std::string call = "call " + func->getName();
@@ -252,7 +275,8 @@ std::string DeclInst::show() {
         string sdims = "";
         for (auto x : dims) sdims += "[" + to_string(x) + "]";
         auto def = "para " + ptr->getType().getString() + " " +
-                   to_string(ptr->getBase()) + "[]" + sdims;
+                          ptr->show() + "[]" + sdims;
+        return def;
     } else {
         if (auto p = dynamic_cast<IrParam*>(var)) {
             return "para " + var->getType().getString() + " " + var->show();
@@ -277,10 +301,10 @@ std::string GetReturnInst::show() {
 }
 
 LoadAddrInst::LoadAddrInst() {
-    this->base = 0;
+
 }
 
-LoadAddrInst::LoadAddrInst(Variable* var, IrArray* base) {
+LoadAddrInst::LoadAddrInst(Variable* var, Variable* base) {
     this->var  = var;
     this->base = base;
 }
