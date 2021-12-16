@@ -1222,7 +1222,13 @@ void ReturnStmt::traverse(int lev) {
 void ReturnStmt::generateCode() {
     if (exp) {
         exp->generateCode();
-        Ast::ctx->blk->addInst(new ReturnInst(exp->getVar()));
+        if (exp->getVar()->isAddr()) {
+            auto var = new Variable(Ast::ctx->func->genVar(), false, exp->evalType());
+            Ast::ctx->blk->addInst(new LoadInst(var, exp->getVar()));
+            Ast::ctx->blk->addInst(new ReturnInst(var));
+        } else {
+            Ast::ctx->blk->addInst(new ReturnInst(exp->getVar()));
+        }
     } else {
         Ast::ctx->blk->addInst(new ReturnInst());
     }
