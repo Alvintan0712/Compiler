@@ -115,12 +115,12 @@ public:
 class IrArray;
 class LoadAddrInst : public Inst {
 public:
+    Variable *var, *base;
+
     LoadAddrInst();
     LoadAddrInst(Variable* var, Variable* base);
 
     std::string show() override;
-private:
-    Variable *var, *base;
 };
 
 class LoadInst : public Inst {
@@ -149,6 +149,7 @@ public:
 
     Variable* getVar();
     Variable* getInit();
+    std::vector<Variable*> getInits();
     void addInit(Variable* init);
     void addInits(std::vector<Variable*> inits);
     bool hasInit();

@@ -17,7 +17,9 @@ std::string Inst::show() {
 }
 
 BinaryInst::BinaryInst() : Inst() {
-
+    this->var = nullptr;
+    this->lhs = nullptr;
+    this->rhs = nullptr;
 }
 
 BinaryInst::BinaryInst(Variable* var, BinaryExp *exp) : Inst() {
@@ -139,17 +141,17 @@ std::string ReturnInst::show() {
 }
 
 CallInst::CallInst() : Inst() {
-
+    this->func = nullptr;
 }
 
 CallInst::CallInst(Symbol sym) {
     this->func = nullptr;
-    this->sym  = std::move(sym);
+    this->sym  = move(sym);
 }
 
 CallInst::CallInst(Symbol sym, std::vector<Variable*>& params) {
     this->func = nullptr;
-    this->sym  = std::move(sym);
+    this->sym  = move(sym);
     this->params = params;
 }
 
@@ -190,6 +192,7 @@ std::string CallInst::show() {
 
 NotInst::NotInst() {
     this->var = nullptr;
+    this->not_var = nullptr;
 }
 
 NotInst::NotInst(Variable *var, Variable *not_var) {
@@ -203,7 +206,8 @@ std::string NotInst::show() {
 }
 
 LoadInst::LoadInst() : Inst() {
-
+    this->dst  = nullptr;
+    this->addr = nullptr;
 }
 
 LoadInst::LoadInst(Variable *dst, Variable *addr) {
@@ -216,7 +220,8 @@ std::string LoadInst::show() {
 }
 
 StoreInst::StoreInst() : Inst() {
-
+    this->addr = nullptr;
+    this->val  = nullptr;
 }
 
 StoreInst::StoreInst(Variable *val, Variable *addr) {
@@ -229,12 +234,12 @@ std::string StoreInst::show() {
 }
 
 DeclInst::DeclInst() {
-    this->var = nullptr;
+    this->var  = nullptr;
     this->init = nullptr;
 }
 
 DeclInst::DeclInst(Variable *var) : Inst() {
-    this->var = var;
+    this->var  = var;
     this->init = nullptr;
 }
 
@@ -247,15 +252,19 @@ void DeclInst::addInit(Variable *init) {
 }
 
 void DeclInst::addInits(std::vector<Variable*> inits) {
-    this->inits = inits;
+    this->inits = move(inits);
 }
 
 bool DeclInst::hasInit() {
-    return init;
+    return init || !inits.empty();
 }
 
 Variable *DeclInst::getInit() {
     return init;
+}
+
+std::vector<Variable *> DeclInst::getInits() {
+    return inits;
 }
 
 std::string DeclInst::show() {
@@ -301,7 +310,8 @@ std::string GetReturnInst::show() {
 }
 
 LoadAddrInst::LoadAddrInst() {
-
+    this->var  = nullptr;
+    this->base = nullptr;
 }
 
 LoadAddrInst::LoadAddrInst(Variable* var, Variable* base) {

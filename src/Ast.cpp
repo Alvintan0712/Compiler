@@ -586,7 +586,11 @@ std::vector<Variable*> split(std::vector<Exp*> rParams) {
             }
             rParams[i]->generateCode();
             auto var = rParams[i++]->getVar();
-            if (auto constant = dynamic_cast<Constant *>(var)) {
+            if (var->isAddr()) {
+                auto val = new Variable(Ast::ctx->func->genVar(), false, var->getType());
+                Ast::ctx->blk->addInst(new LoadInst(val, var));
+                v.push_back(new IrParam(val));
+            } else if (auto constant = dynamic_cast<Constant *>(var)) {
                 v.push_back(new IrParam(constant));
             } else {
                 v.push_back(new IrParam(var));
@@ -849,46 +853,71 @@ void LVal::generateCode() {
         // is global variable
         if (base == nullptr) base = Ast::ctx->module->getGlobal(decl);
         auto var = new Variable(Ast::ctx->func->genVar(), false, base->getType());
-        Ast::ctx->blk->addInst(new LoadAddrInst(var, base));
+        if (auto ptr = dynamic_cast<IrPointer*>(base)) Ast::ctx->blk->addInst(new AssignInst(var, base));
+        else Ast::ctx->blk->addInst(new LoadAddrInst(var, base));
         if (dims.empty()) {
             var->addAddr();
             this->addVar(var);
         } else {
             Variable *prev = nullptr;
-            for (int i = 0; i < dims.size(); i++) {
-                int id = Ast::ctx->func->genVar();
-                auto offset = new Variable(id, false, dims[i]->evalType());
-                if (i == dims.size() - 1) {
-                    dims[i]->generateCode();
-                    if (prev == nullptr) prev = dims[i]->getVar();
-                    Ast::ctx->blk->addInst(new BinaryInst(offset, Add, var, prev));
-                } else {
-                    if (auto ptr = dynamic_cast<IrPointer*>(base)) {
-                        auto size = new Constant(decl->getDims()[i]);
+            if (dims.size() < decl->getDim()) {
+                int n = decl->getDim();
+                auto offset = new Variable(Ast::ctx->func->genVar(), false, dims[0]->evalType());
+                for (int i = 0; i < n - 1; i++) {
+                    auto size = new Constant(decl->getDims()[i + 1]);
+                    if (i < dims.size()) {
                         dims[i]->generateCode();
-                        if (prev == nullptr) {
-                            dims[i]->generateCode();
+                        if (i == 0) {
                             Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, dims[i]->getVar(), size));
                         } else {
-                            Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, prev, size));
+                            Ast::ctx->blk->addInst(new BinaryInst(offset, Add, offset, dims[i]->getVar()));
+                            Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, offset, size));
                         }
-                        Ast::ctx->blk->addInst(new BinaryInst(offset, Add, offset, dims[i]->getVar()));
                     } else {
-                        auto size = new Constant(decl->getDims()[i + 1]);
-                        dims[i + 1]->generateCode();
-                        if (prev == nullptr) {
-                            dims[i]->generateCode();
-                            Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, dims[i]->getVar(), size));
-                        } else {
-                            Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, prev, size));
-                        }
-                        Ast::ctx->blk->addInst(new BinaryInst(offset, Add, offset, dims[i + 1]->getVar()));
+                        Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, offset, size));
                     }
                 }
-                prev = offset;
+                Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, offset, new Constant(4)));
+                Ast::ctx->blk->addInst(new BinaryInst(offset, Add, var, offset));
+                offset->addAddr();
+                this->addVar(offset);
+            } else {
+                for (int i = 0; i < dims.size(); i++) {
+                    int id = Ast::ctx->func->genVar();
+                    auto offset = new Variable(id, false, dims[i]->evalType());
+                    if (i == dims.size() - 1) {
+                        dims[i]->generateCode();
+                        if (prev == nullptr) prev = dims[i]->getVar();
+                        Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, prev, new Constant(4)));
+                        Ast::ctx->blk->addInst(new BinaryInst(offset, Add, var, offset));
+                    } else {
+                        if (auto ptr = dynamic_cast<IrPointer*>(base)) {
+                            auto size = new Constant(decl->getDims()[i]);
+                            if (prev == nullptr) {
+                                dims[i]->generateCode();
+                                Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, dims[i]->getVar(), size));
+                            } else {
+                                Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, prev, size));
+                            }
+                            dims[i + 1]->generateCode();
+                            Ast::ctx->blk->addInst(new BinaryInst(offset, Add, offset, dims[i + 1]->getVar()));
+                        } else {
+                            auto size = new Constant(decl->getDims()[i + 1]);
+                            dims[i + 1]->generateCode();
+                            if (prev == nullptr) {
+                                dims[i]->generateCode();
+                                Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, dims[i]->getVar(), size));
+                            } else {
+                                Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, prev, size));
+                            }
+                            Ast::ctx->blk->addInst(new BinaryInst(offset, Add, offset, dims[i + 1]->getVar()));
+                        }
+                    }
+                    prev = offset;
+                }
+                prev->addAddr();
+                this->addVar(prev);
             }
-            prev->addAddr();
-            this->addVar(prev);
         }
     } else if (decl->isConst()) {
         this->addVar(Ast::ctx->const_map[decl]);

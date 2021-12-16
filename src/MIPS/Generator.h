@@ -45,11 +45,15 @@ private:
     std::map<std::string, int> strMap;
     std::map<int, int> varMap;
 
-    std::string genWordTag(int id, Variable* init);
+    static std::string genWordTag(int id, Variable* init);
     std::string genAsciizTag(std::string s);
-    std::string genLabelTag(int id);
+    static std::string genLabelTag(int id);
+    static std::string genArrayTag(IrArray* arr);
     void loadVar(Variable* var, int reg);
     void loadConst(Constant* var, int reg);
+    void loadAddr(Variable* base, int reg);
+    void loadWord(int addr, int reg);
+    void storeWord(int addr, int reg);
     void assign(Variable* var, int reg);
 
     void genDataSegment();
@@ -66,6 +70,9 @@ private:
     void genBranchInst(BranchInst* inst);
     void genJumpInst(JumpInst* inst);
     void genNotInst(NotInst* inst);
+    void genLoadAddrInst(LoadAddrInst* inst);
+    void genLoadInst(LoadInst* inst);
+    void genStoreInst(StoreInst* inst);
 };
 
 

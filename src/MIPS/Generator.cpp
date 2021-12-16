@@ -30,10 +30,12 @@ std::string mipsRegs[] = {
 };
 
 Generator::Generator() {
+    this->str_id = 1;
     this->module = nullptr;
 }
 
 Generator::Generator(Module *module) {
+    this->str_id = 1;
     this->module = module;
     genDataSegment();
     genTextSegment();
@@ -53,19 +55,43 @@ std::string Generator::genLabelTag(int id) {
     return "label_" + to_string(id) + ":";
 }
 
+std::string Generator::genArrayTag(IrArray *arr) {
+    return "global_" + to_string(arr->getId()) + ": .space " + to_string(arr->getSize()*4);
+}
+
 void Generator::genDataSegment() {
     mips.emplace_back(".data");
 
     // genGlobals
     auto decls = module->decls;
     for (auto x : decls) {
-        // TODO add genArrayTag
-        string res = genWordTag(x->getVar()->getId(), x->getInit());
-        mips.emplace_back(tab + res);
+        auto var = x->getVar();
+        if (auto arr = dynamic_cast<IrArray*>(var)) {
+            auto res = genArrayTag(arr);
+            mips.emplace_back(tab + res);
+            if (x->hasInit()) {
+                mips.emplace_back(".text");
+                int n = arr->getSize();
+                loadAddr(arr, 2);
+                for (int i = 0; i < n; i++) {
+                    auto init = x->getInits()[i];
+                    if (auto constant = dynamic_cast<Constant*>(init)) {
+                        loadConst(constant, 0);
+                    } else {
+                        loadVar(init, 0);
+                    }
+                    mips.emplace_back(tab + "sw $t0, ($t2)");
+                    mips.emplace_back(tab + "addiu $t2, $t2, 4");
+                }
+                mips.emplace_back(".data");
+            }
+        } else {
+            auto res = genWordTag(x->getVar()->getId(), x->getInit());
+            mips.emplace_back(tab + res);
+        }
     }
 
     // genStrings
-    str_id = 1;
     auto strings = module->strings;
     for (const auto& x : strings) {
         string res = genAsciizTag(x);
@@ -116,7 +142,7 @@ void Generator::genBlock(IrFunc* func, BasicBlock *block) {
 }
 
 void Generator::loadVar(Variable *var, int reg) {
-    string t = reg == 0 ? "$t0" : "$t1";
+    string t = "$t" + to_string(reg);
     if (var->isGlobal()) {
         string id = to_string(var->getId());
         mips.emplace_back(tab + "lw " + t + ", global_" + id);
@@ -127,13 +153,13 @@ void Generator::loadVar(Variable *var, int reg) {
 }
 
 void Generator::loadConst(Constant *var, int reg) {
-    string t = reg == 0 ? "$t0" : "$t1";
+    string t = "$t" + to_string(reg);
     string val = to_string(var->getValue());
     mips.emplace_back(tab + "li " + t + ", " + val);
 }
 
 void Generator::assign(Variable* var, int reg) {
-    string t = reg == 0 ? "$t0" : "$t1";
+    string t = "$t" + to_string(reg);
     if (var->isGlobal()) {
         string id = to_string(var->getId());
         mips.emplace_back(tab + "sw " + t + ", global_" + id);
@@ -141,6 +167,27 @@ void Generator::assign(Variable* var, int reg) {
         string id = to_string(var->getId() << 2);
         mips.emplace_back(tab + "sw " + t + ", " + id + "($sp)");
     }
+}
+
+void Generator::loadAddr(Variable *base, int reg) {
+    string r = "$t" + to_string(reg);
+    if (base->isGlobal()) {
+        mips.emplace_back(tab + "la " + r + ", global_" + to_string(base->getId()));
+    } else {
+        mips.emplace_back(tab + "la " + r + ", " + to_string(base->getId() << 2) + "($sp)");
+    }
+}
+
+void Generator::loadWord(int addr, int reg) {
+    string r = "$t" + to_string(reg);
+    string a = "$t" + to_string(addr);
+    mips.emplace_back(tab + "lw " + r + ", (" + a + ")");
+}
+
+void Generator::storeWord(int addr, int reg) {
+    string r = "$t" + to_string(reg);
+    string a = "$t" + to_string(addr);
+    mips.emplace_back(tab + "sw " + r + ", (" + a + ")");
 }
 
 void Generator::genBinaryInst(BinaryInst* inst) {
@@ -337,6 +384,24 @@ void Generator::genDeclInst(DeclInst *inst) {
     auto init = inst->getInit();
     if (auto param = dynamic_cast<IrParam*>(inst->getVar())) {
         // do nothing
+    } else if (auto arr = dynamic_cast<IrArray*>(inst->getVar())) {
+        int n = arr->getSize();
+        loadAddr(arr, 2);
+        for (int i = 0; i < n; i++) {
+            if (inst->hasInit()) {
+                auto x = inst->getInits()[i];
+                if (auto constant = dynamic_cast<Constant*>(x)) {
+                    loadConst(constant, 0);
+                } else {
+                    loadVar(x, 0);
+                }
+                mips.emplace_back(tab + "sw $t0, ($t2)");
+            } else {
+                mips.emplace_back(tab + "li $t0, 0");
+                mips.emplace_back(tab + "sw $t0, ($t2)");
+            }
+            mips.emplace_back(tab + "addiu $t2, $t2, 4");
+        }
     } else if (init == nullptr) {
         auto var = inst->getVar();
         auto id = to_string(var->getId() << 2);
@@ -394,6 +459,30 @@ void Generator::genNotInst(NotInst *inst) {
     assign(inst->not_var, 0);
 }
 
+void Generator::genLoadAddrInst(LoadAddrInst *inst) {
+    loadAddr(inst->base, 2);
+    assign(inst->var, 2);
+}
+
+void Generator::genLoadInst(LoadInst *inst) {
+    loadVar(inst->addr, 2);
+    loadWord(2, 3);
+    auto dst = inst->dst;
+    if (dst->isGlobal()) {
+        string id = to_string(dst->getId());
+        mips.emplace_back(tab + "sw $t3, global_" + id);
+    } else {
+        string id = to_string(dst->getId() << 2);
+        mips.emplace_back(tab + "sw $t3, " + id + "($sp)");
+    }
+}
+
+void Generator::genStoreInst(StoreInst *inst) {
+    loadVar(inst->val, 2);
+    loadVar(inst->addr, 3);
+    storeWord(3,2);
+}
+
 void Generator::genInst(IrFunc* func, Inst *inst) {
     if (auto binaryInst = dynamic_cast<BinaryInst*>(inst)) {
         genBinaryInst(binaryInst);
@@ -408,11 +497,11 @@ void Generator::genInst(IrFunc* func, Inst *inst) {
     } else if (auto callInst = dynamic_cast<CallInst*>(inst)) {
         genCallInst(callInst);
     } else if (auto loadAddrInst = dynamic_cast<LoadAddrInst*>(inst)) {
-        // TODO
+        genLoadAddrInst(loadAddrInst);
     } else if (auto loadInst = dynamic_cast<LoadInst*>(inst)) {
-        // TODO
+        genLoadInst(loadInst);
     } else if (auto storeInst = dynamic_cast<StoreInst*>(inst)) {
-        // TODO
+        genStoreInst(storeInst);
     } else if (auto declInst = dynamic_cast<DeclInst*>(inst)) {
         genDeclInst(declInst);
     } else if (auto getReturnInst = dynamic_cast<GetReturnInst*>(inst)) {

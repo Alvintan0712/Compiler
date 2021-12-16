@@ -24,7 +24,7 @@ int main () {
     // ast.traverse();
     // errorHandling->output();
     auto module = ast.generateCode();
-    // module->show();
+    module->show();
     Generator g(module);
     g.show();
 
