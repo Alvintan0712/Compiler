@@ -620,7 +620,7 @@ void CallExp::generateCode() {
         Ast::ctx->blk->addInst(new GetReturnInst(var));
         this->addVar(var);
     } else { //  other function
-        std::vector<Variable*> params;
+        vector<Variable*> params;
         auto func = Ast::ctx->getFunc(ident.val);
         if (rParams.empty()) { //  if function don't have parameters
             Ast::ctx->blk->addInst(new CallInst(func));
@@ -628,7 +628,13 @@ void CallExp::generateCode() {
             for (auto x : rParams) {
                 x->generateCode();
                 auto var = x->getVar();
-                params.push_back(var);
+                if (var->isAddr()) {
+                    auto val = new Variable(Ast::ctx->func->genVar(), false, var->getType());
+                    Ast::ctx->blk->addInst(new LoadInst(val, var));
+                    params.push_back(val);
+                } else {
+                    params.push_back(var);
+                }
             }
             Ast::ctx->blk->addInst(new CallInst(func, params));
         }
@@ -856,7 +862,6 @@ void LVal::generateCode() {
         if (auto ptr = dynamic_cast<IrPointer*>(base)) Ast::ctx->blk->addInst(new AssignInst(var, base));
         else Ast::ctx->blk->addInst(new LoadAddrInst(var, base));
         if (dims.empty()) {
-            var->addAddr();
             this->addVar(var);
         } else {
             Variable *prev = nullptr;
@@ -879,7 +884,6 @@ void LVal::generateCode() {
                 }
                 Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, offset, new Constant(4)));
                 Ast::ctx->blk->addInst(new BinaryInst(offset, Add, var, offset));
-                offset->addAddr();
                 this->addVar(offset);
             } else {
                 for (int i = 0; i < dims.size(); i++) {
