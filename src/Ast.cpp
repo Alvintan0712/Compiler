@@ -150,7 +150,6 @@ void Decl::generateCode() {
                         inits.push_back(new Constant(x->evalInt()));
                     } else {
                         x->generateCode();
-                        // TODO: if addr in here
                         if (x->getVar()->isAddr()) {
                             auto val = new Variable(Ast::ctx->func->genVar(), false, x->evalType());
                             Ast::ctx->blk->addInst(new LoadInst(val, x->getVar()));
@@ -778,19 +777,39 @@ void UnaryExp::generateCode() {
     } else {
         if (op->sym == PLUS) {
             exp->generateCode();
-            this->addVar(exp->getVar());
+            if (exp->getVar()->isAddr()) {
+                auto val = new Variable(Ast::ctx->expStmt->genVar(), false, evalType());
+                Ast::ctx->blk->addInst(new LoadInst(val, exp->getVar()));
+                this->addVar(val);
+            } else {
+                this->addVar(exp->getVar());
+            }
         } else if (op->sym == MINU) {
             exp->generateCode();
-            int id = Ast::ctx->expStmt->genVar();
-            auto var = new Variable(id, false, evalType());
-            this->addVar(var);
-            Ast::ctx->blk->addInst(new BinaryInst(var, Sub, exp));
+            if (exp->getVar()->isAddr()) {
+                auto val = new Variable(Ast::ctx->func->genVar(), false, exp->evalType());
+                Ast::ctx->blk->addInst(new LoadInst(val, exp->getVar()));
+                auto var = new Variable(Ast::ctx->expStmt->genVar(), false, exp->evalType());
+                Ast::ctx->blk->addInst(new BinaryInst(var, Sub, new Constant(0), val));
+                this->addVar(var);
+            } else {
+                auto var = new Variable(Ast::ctx->expStmt->genVar(), false, exp->evalType());
+                Ast::ctx->blk->addInst(new BinaryInst(var, Sub, exp));
+                this->addVar(var);
+            }
         } else if (op->sym == NOT) {
             exp->generateCode();
-            int id = Ast::ctx->func->genVar();
-            auto var = new Variable(id, false, exp->evalType());
-            Ast::ctx->blk->addInst(new NotInst(exp->getVar(), var));
-            this->addVar(var);
+            if (exp->getVar()->isAddr()) {
+                auto val = new Variable(Ast::ctx->func->genVar(), false, exp->evalType());
+                Ast::ctx->blk->addInst(new LoadInst(val, exp->getVar()));
+                auto var = new Variable(Ast::ctx->func->genVar(), false, exp->evalType());
+                Ast::ctx->blk->addInst(new NotInst(val, var));
+                this->addVar(var);
+            } else {
+                auto var = new Variable(Ast::ctx->func->genVar(), false, exp->evalType());
+                Ast::ctx->blk->addInst(new NotInst(exp->getVar(), var));
+                this->addVar(var);
+            }
         }
     }
 }
@@ -896,7 +915,12 @@ void LVal::generateCode() {
                 int n = decl->getDim();
                 auto offset = new Variable(Ast::ctx->func->genVar(), false, dims[0]->evalType());
                 for (int i = 0; i < n - 1; i++) {
-                    auto size = new Constant(decl->getDims()[i + 1]);
+                    Constant* size;
+                    if (auto ptr = dynamic_cast<IrPointer*>(base)) {
+                        size = new Constant(decl->getDims()[i]);
+                    } else {
+                        size = new Constant(decl->getDims()[i + 1]);
+                    }
                     if (i < dims.size()) {
                         dims[i]->generateCode();
                         if (i == 0) {
@@ -969,11 +993,23 @@ void LVal::generateCode() {
                             dims[i + 1]->generateCode();
                             if (prev == nullptr) {
                                 dims[i]->generateCode();
-                                Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, dims[i]->getVar(), size));
+                                if (dims[i]->getVar()->isAddr()) {
+                                    auto val = new Variable(Ast::ctx->func->genVar(), false, evalType());
+                                    Ast::ctx->blk->addInst(new LoadInst(val, dims[i]->getVar()));
+                                    Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, val, size));
+                                } else {
+                                    Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, dims[i]->getVar(), size));
+                                }
                             } else {
                                 Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, prev, size));
                             }
-                            Ast::ctx->blk->addInst(new BinaryInst(offset, Add, offset, dims[i + 1]->getVar()));
+                            if (dims[i + 1]->getVar()->isAddr()) {
+                                auto val = new Variable(Ast::ctx->func->genVar(), false, evalType());
+                                Ast::ctx->blk->addInst(new LoadInst(val, dims[i + 1]->getVar()));
+                                Ast::ctx->blk->addInst(new BinaryInst(offset, Add, offset, val));
+                            } else {
+                                Ast::ctx->blk->addInst(new BinaryInst(offset, Add, offset, dims[i + 1]->getVar()));
+                            }
                         }
                     }
                     prev = offset;
@@ -1173,12 +1209,20 @@ void CondStmt::generateCode() {
         Ast::ctx->blk = while_blk;
         // TODO: implement && and ||
         condExp->generateCode();
-        Ast::ctx->blk->addInst(new BranchInst(Beqz, condExp->getVar(), while_end_label_id));
+        if (condExp->getVar()->isAddr()) {
+            auto val = new Variable(Ast::ctx->func->genVar(), false, condExp->evalType());
+            Ast::ctx->blk->addInst(new LoadInst(val, condExp->getVar()));
+            Ast::ctx->blk->addInst(new BranchInst(Beqz, val, while_end_label_id));
+        } else {
+            Ast::ctx->blk->addInst(new BranchInst(Beqz, condExp->getVar(), while_end_label_id));
+        }
 
         // while block body
         Ast::ctx->blk = body_blk;
         Ast::ctx->func->addBlock(body_blk);
+        table.pushBlock();
         ifStmt->generateCode();
+        table.popBlock();
         Ast::ctx->blk->addInst(new JumpInst(while_label_id));
 
         // while end body
@@ -1205,15 +1249,25 @@ void CondStmt::generateCode() {
         Ast::ctx->blk = if_blk;
         condExp->generateCode();
         int next_label_id = else_blk ? else_label_id : end_label_id;
-        Ast::ctx->blk->addInst(new BranchInst(Beqz, condExp->getVar(), next_label_id));
+        if (condExp->getVar()->isAddr()) {
+            auto val = new Variable(Ast::ctx->func->genVar(), false, condExp->evalType());
+            Ast::ctx->blk->addInst(new LoadInst(val, condExp->getVar()));
+            Ast::ctx->blk->addInst(new BranchInst(Beqz, val, next_label_id));
+        } else {
+            Ast::ctx->blk->addInst(new BranchInst(Beqz, condExp->getVar(), next_label_id));
+        }
         Ast::ctx->func->addBlock(body_blk);
         Ast::ctx->blk = body_blk;
+        table.pushBlock();
         ifStmt->generateCode();
+        table.popBlock();
         Ast::ctx->blk->addInst(new JumpInst(end_label_id));
         if (else_blk) {
             Ast::ctx->func->addBlock(else_blk);
             Ast::ctx->blk = else_blk;
+            table.pushBlock();
             elseStmt->generateCode();
+            table.popBlock();
             Ast::ctx->blk->addInst(new JumpInst(end_label_id));
         }
         Ast::ctx->if_blk = nullptr;
