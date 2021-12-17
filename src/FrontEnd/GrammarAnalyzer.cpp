@@ -40,7 +40,71 @@ Symbol GrammarAnalyzer::viewNextSymbol(int i) {
     return src[ptr + i];
 }
 
+int GrammarAnalyzer::evalInt(Exp *exp) {
+    if (auto lval = dynamic_cast<LVal*>(exp)) {
+        auto decl = table.findDecl(lval);
+        if (decl->getType().getConst() || table.isGlobal()) {
+            if (lval->getDims().empty()) {
+                return evalInt(decl->getInitValExp()[0]);
+            } else {
+                auto d = decl->getDims();
+                int offset = 0;
+                for (int i = 0; i < lval->getDims().size(); i++) {
+                    offset = offset * d[i] + evalInt(lval->getDims()[i]);
+                }
+                return evalInt(decl->getInitValExp()[offset]);
+            }
+        }
+    } else if (auto unaryExp = dynamic_cast<UnaryExp*>(exp)) {
+        auto op = unaryExp->getOp();
+        if (op == nullptr) {
+            if (unaryExp->getSymbol().sym == INTCON) return stoi(unaryExp->getSymbol().val);
+            else return evalInt(unaryExp->getExp());
+        }
+        if (op->sym == PLUS) {
+            return evalInt(exp);
+        } else if (op->sym == MINU) {
+            return -1 * evalInt(exp);
+        } else if (op->sym == NOT) {
+            return !evalInt(exp);
+        }
+    } else if (auto binaryExp = dynamic_cast<BinaryExp*>(exp)) {
+        auto op = binaryExp->getOp();
+        auto lhs = binaryExp->getLhs();
+        auto rhs = binaryExp->getRhs();
+        if (op.sym == PLUS) {
+            return evalInt(lhs) + evalInt(rhs);
+        } else if (op.sym == MINU) {
+            return evalInt(lhs) - evalInt(rhs);
+        } else if (op.sym == MULT) {
+            return evalInt(lhs) * evalInt(rhs);
+        } else if (op.sym == DIV) {
+            return evalInt(lhs) / evalInt(rhs);
+        } else if (op.sym == MOD) {
+            return evalInt(lhs) % evalInt(rhs);
+        } else if (op.sym == AND) {
+            return evalInt(lhs) && evalInt(rhs);
+        } else if (op.sym == OR) {
+            return evalInt(lhs) || evalInt(rhs);
+        } else if (op.sym == LSS) {
+            return evalInt(lhs) < evalInt(rhs);
+        } else if (op.sym == LEQ) {
+            return evalInt(lhs) <= evalInt(rhs);
+        } else if (op.sym == GRE) {
+            return evalInt(lhs) > evalInt(rhs);
+        } else if (op.sym == GEQ) {
+            return evalInt(lhs) >= evalInt(rhs);
+        } else if (op.sym == EQL) {
+            return evalInt(lhs) == evalInt(rhs);
+        } else if (op.sym == NEQ) {
+            return evalInt(lhs) != evalInt(rhs);
+        }
+    }
+    return 0;
+}
+
 Program* GrammarAnalyzer::compUnit() {
+    table.pushBlock();
     vector<ProgramItem*> items;
 
     while (sym.sym == INTTK || sym.sym == CONSTTK) {
@@ -55,12 +119,14 @@ Program* GrammarAnalyzer::compUnit() {
             break;
         Func* f = funcDef();
         items.push_back(f);
+        table.pushFunc(f);
     }
 
     if (sym.sym != INTTK) output();
     items.push_back(mainFuncDef());
 
     out.emplace_back("<CompUnit>");
+    table.popBlock();
     return new Program(items);
 }
 
@@ -88,12 +154,18 @@ vector<Decl*> GrammarAnalyzer::constDecl() {
     type = bType();
 
     if (sym.sym != IDENFR) output();
-    else decls.push_back(constDef(isConst, type));
+    else {
+        auto def = constDef(isConst, type);
+        decls.push_back(def);
+        table.pushDecl(def);
+    }
 
     while (sym.sym == COMMA) {
         pushSymbol();
         if (sym.sym != IDENFR) output();
-        decls.push_back(constDef(isConst, type));
+        auto def = constDef(isConst, type);
+        decls.push_back(def);
+        table.pushDecl(def);
     }
     if (sym.sym != SEMICN) err->grammarError(symbol, SEMICN);
     else pushSymbol();
@@ -122,7 +194,7 @@ Decl* GrammarAnalyzer::constDef(bool isConst, const Symbol& type) {
     while (sym.sym == LBRACK) {
         pushSymbol();
         Symbol symbol = sym;
-        dims.push_back(constExp()->evalInt());
+        dims.push_back(evalInt(constExp()));
         if (sym.sym != RBRACK) err->grammarError(symbol, RBRACK);
         else pushSymbol();
     }
@@ -192,7 +264,7 @@ Decl* GrammarAnalyzer::varDef(const Symbol& type) {
     while (sym.sym == LBRACK) {
         pushSymbol();
         Symbol symbol = sym;
-        dims.push_back(constExp()->evalInt());
+        dims.push_back(evalInt(constExp()));
         if (sym.sym != RBRACK) err->grammarError(symbol, RBRACK);
         else pushSymbol();
     }
@@ -247,7 +319,9 @@ Func* GrammarAnalyzer::funcDef() {
     if (sym.sym != RPARENT) err->grammarError(symbol, RPARENT);
     else pushSymbol();
 
+    table.pushBlock();
     blk = block();
+    table.popBlock();
     out.emplace_back("<FuncDef>");
 
     return new Func(Type(type, dims), idt, fParams, blk);
@@ -271,7 +345,9 @@ Func* GrammarAnalyzer::mainFuncDef() {
 
     if (sym.sym != RPARENT) err->grammarError(symbol, RPARENT);
     else pushSymbol();
+    table.pushBlock();
     blk = block();
+    table.popBlock();
 
     out.emplace_back("<MainFuncDef>");
     return new Func(Type(type), idt, {}, blk);
@@ -318,7 +394,7 @@ Decl* GrammarAnalyzer::funcFParam() {
         while (sym.sym == LBRACK) {
             pushSymbol();
             symbol = sym;
-            dims.push_back(constExp()->evalInt());
+            dims.push_back(evalInt(constExp()));
             if (sym.sym != RBRACK) err->grammarError(symbol, RBRACK);
             else pushSymbol();
         }
@@ -418,7 +494,9 @@ Stmt* GrammarAnalyzer::stmt() {
         out.emplace_back("<Stmt>");
         return new ExpStmt(e);
     } else if (sym.sym == LBRACE) {
+        table.pushBlock();
         Block* blk = block();
+        table.popBlock();
 
         out.emplace_back("<Stmt>");
         return blk;

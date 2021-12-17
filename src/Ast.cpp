@@ -87,6 +87,10 @@ std::vector<int> Decl::getInitVal() {
     return v;
 }
 
+std::vector<Exp *> Decl::getInitValExp() {
+    return initVal;
+}
+
 void Decl::traverse(int lev) {
     table.pushDecl(this);
     if (!bType.getParam()) {
@@ -146,7 +150,14 @@ void Decl::generateCode() {
                         inits.push_back(new Constant(x->evalInt()));
                     } else {
                         x->generateCode();
-                        inits.push_back(x->getVar());
+                        // TODO: if addr in here
+                        if (x->getVar()->isAddr()) {
+                            auto val = new Variable(Ast::ctx->func->genVar(), false, x->evalType());
+                            Ast::ctx->blk->addInst(new LoadInst(val, x->getVar()));
+                            inits.push_back(val);
+                        } else {
+                            inits.push_back(x->getVar());
+                        }
                     }
                 }
                 decl->addInits(inits);
@@ -176,7 +187,13 @@ void Decl::generateCode() {
                 decl->addInit(new Constant(initVal[0]->evalInt()));
             } else {
                 initVal[0]->generateCode();
-                decl->addInit(initVal[0]->getVar());
+                if (initVal[0]->getVar()->isAddr()) {
+                    auto val = new Variable(Ast::ctx->func->genVar(), false, initVal[0]->evalType());
+                    Ast::ctx->blk->addInst(new LoadInst(val, initVal[0]->getVar()));
+                    decl->addInit(val);
+                } else {
+                    decl->addInit(initVal[0]->getVar());
+                }
             }
         }
 
@@ -707,8 +724,12 @@ Exp *UnaryExp::getExp() {
     return exp;
 }
 
-Symbol UnaryExp::getOp() {
-    return *op;
+Symbol* UnaryExp::getOp() {
+    return op;
+}
+
+Symbol UnaryExp::getSymbol() {
+    return sym;
 }
 
 void UnaryExp::traverse(int lev) {
@@ -740,9 +761,7 @@ int UnaryExp::evalInt() {
 
 void UnaryExp::generateCode() {
     if (op == nullptr) {
-        if (sym.sym == INTCON) { //  this Exp is an integer
-            this->addVar(new Constant(stoi(sym.val)));
-        } else {
+        if (exp) {
             exp->generateCode();
             if (exp->getVar()->isAddr()) {
                 auto var = new Variable(Ast::ctx->expStmt->genVar(), false, evalType());
@@ -751,6 +770,10 @@ void UnaryExp::generateCode() {
             } else {
                 this->addVar(exp->getVar());
             }
+        } else if (sym.sym == INTCON) { //  this Exp is an integer
+            this->addVar(new Constant(stoi(sym.val)));
+        } else {
+            // taktau
         }
     } else {
         if (op->sym == PLUS) {
@@ -795,6 +818,10 @@ LVal::LVal(Symbol sym, std::vector<Exp *> dims = {}) {
 
 Symbol LVal::getIdent() {
     return ident;
+}
+
+std::vector<Exp *> LVal::getDims() {
+    return dims;
 }
 
 void LVal::traverse(int lev) {
@@ -873,9 +900,21 @@ void LVal::generateCode() {
                     if (i < dims.size()) {
                         dims[i]->generateCode();
                         if (i == 0) {
-                            Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, dims[i]->getVar(), size));
+                            if (dims[i]->getVar()->isAddr()) {
+                                auto val = new Variable(Ast::ctx->func->genVar(), false, dims[i]->evalType());
+                                Ast::ctx->blk->addInst(new LoadInst(val, dims[i]->getVar()));
+                                Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, val, size));
+                            } else {
+                                Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, dims[i]->getVar(), size));
+                            }
                         } else {
-                            Ast::ctx->blk->addInst(new BinaryInst(offset, Add, offset, dims[i]->getVar()));
+                            if (dims[i]->getVar()->isAddr()) {
+                                auto val = new Variable(Ast::ctx->func->genVar(), false, dims[i]->evalType());
+                                Ast::ctx->blk->addInst(new LoadInst(val, dims[i]->getVar()));
+                                Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, val, size));
+                            } else {
+                                Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, dims[i]->getVar(), size));
+                            }
                             Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, offset, size));
                         }
                     } else {
@@ -891,7 +930,15 @@ void LVal::generateCode() {
                     auto offset = new Variable(id, false, dims[i]->evalType());
                     if (i == dims.size() - 1) {
                         dims[i]->generateCode();
-                        if (prev == nullptr) prev = dims[i]->getVar();
+                        if (prev == nullptr) {
+                            if (dims[i]->getVar()->isAddr()) {
+                                auto val = new Variable(Ast::ctx->func->genVar(), false, dims[i]->evalType());
+                                Ast::ctx->blk->addInst(new LoadInst(val, dims[i]->getVar()));
+                                prev = val;
+                            } else {
+                                prev = dims[i]->getVar();
+                            }
+                        }
                         Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, prev, new Constant(4)));
                         Ast::ctx->blk->addInst(new BinaryInst(offset, Add, var, offset));
                     } else {
@@ -899,12 +946,24 @@ void LVal::generateCode() {
                             auto size = new Constant(decl->getDims()[i]);
                             if (prev == nullptr) {
                                 dims[i]->generateCode();
-                                Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, dims[i]->getVar(), size));
+                                if (dims[i]->getVar()->isAddr()) {
+                                    auto val = new Variable(Ast::ctx->func->genVar(), false, dims[i]->evalType());
+                                    Ast::ctx->blk->addInst(new LoadInst(val, dims[i]->getVar()));
+                                    Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, val, size));
+                                } else {
+                                    Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, dims[i]->getVar(), size));
+                                }
                             } else {
                                 Ast::ctx->blk->addInst(new BinaryInst(offset, Mul, prev, size));
                             }
                             dims[i + 1]->generateCode();
-                            Ast::ctx->blk->addInst(new BinaryInst(offset, Add, offset, dims[i + 1]->getVar()));
+                            if (dims[i + 1]->getVar()->isAddr()) {
+                                auto val = new Variable(Ast::ctx->func->genVar(), false, dims[i + 1]->evalType());
+                                Ast::ctx->blk->addInst(new LoadInst(val, dims[i + 1]->getVar()));
+                                Ast::ctx->blk->addInst(new BinaryInst(offset, Add, offset, val));
+                            } else {
+                                Ast::ctx->blk->addInst(new BinaryInst(offset, Add, offset, dims[i + 1]->getVar()));
+                            }
                         } else {
                             auto size = new Constant(decl->getDims()[i + 1]);
                             dims[i + 1]->generateCode();

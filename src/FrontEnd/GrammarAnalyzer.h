@@ -24,11 +24,13 @@ private:
 
     Program* program;
     ErrorHandling* err;
+    Table table;
 
     int ptr;
     Symbol nextSymbol();
     Symbol viewNextSymbol();
     Symbol viewNextSymbol(int i);
+    int evalInt(Exp* exp);
 
     Program* compUnit();
     std::vector<Decl*> decl();

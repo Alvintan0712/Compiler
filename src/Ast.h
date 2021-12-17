@@ -60,6 +60,7 @@ public:
     Symbol getIdent();
     std::vector<int> getDims();
     std::vector<int> getInitVal();
+    std::vector<Exp*> getInitValExp();
     bool hasInit();
     bool isArray();
 
@@ -205,7 +206,8 @@ public:
     explicit UnaryExp(Symbol op, Exp* exp);
 
     Exp* getExp();
-    Symbol getOp();
+    Symbol* getOp();
+    Symbol getSymbol();
 
     virtual void traverse(int lev);
     virtual Type evalType();
@@ -253,6 +255,7 @@ public:
     explicit LVal(Symbol sym, std::vector<Exp *> dims);
 
     Symbol getIdent();
+    std::vector<Exp*> getDims();
 
     int evalInt() override;
     Type evalType() override;
