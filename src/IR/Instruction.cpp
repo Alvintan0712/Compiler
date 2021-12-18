@@ -74,7 +74,7 @@ BinaryInst::BinaryInst(Variable* var, Variable* lhs, Symbol op, Variable* rhs) {
 }
 
 std::string BinaryInst::show() {
-    std::string ops[] = { "+", "-", "*", "/", "%", "&", "|",
+    std::string ops[] = { "+", "-", "*", "/", "%", "&&", "||",
                           "<", "<=", ">", ">=", "==", "!=" };
     return var->show() + " = " + lhs->show() + " " + ops[op] + " " + rhs->show();
 }

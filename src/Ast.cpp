@@ -356,39 +356,97 @@ int BinaryExp::evalInt() {
 }
 
 void BinaryExp::generateCode() {
-    lhs->generateCode();
-    rhs->generateCode();
-    if (lhs->getVar()->isAddr() && rhs->getVar()->isAddr()) {
-        auto var = new Variable(Ast::ctx->expStmt->genVar(), false, evalType());
-        auto lval = new Variable(Ast::ctx->expStmt->genVar(), false, lhs->evalType());
-        auto rval = new Variable(Ast::ctx->expStmt->genVar(), false, rhs->evalType());
-        Ast::ctx->blk->addInst(new LoadInst(lval, lhs->getVar()));
-        Ast::ctx->blk->addInst(new LoadInst(rval, rhs->getVar()));
-        Ast::ctx->blk->addInst(new BinaryInst(var, lval, op, rval));
+    auto sym = this->op.sym;
+    if (sym == AND) {
+        int end_label = Ast::ctx->genLabel();
+        auto end_blk = new BasicBlock(end_label);
+        int right_label = Ast::ctx->genLabel();
+        auto right_blk = new BasicBlock(right_label);
+        auto var = new Variable(Ast::ctx->func->genVar(), false, evalType());
+        lhs->generateCode();
+        if (lhs->getVar()->isAddr()) {
+            auto val = new Variable(Ast::ctx->func->genVar(), false, evalType());
+            Ast::ctx->blk->addInst(new LoadInst(val, lhs->getVar()));
+            Ast::ctx->blk->addInst(new BranchInst(Bnez, val, right_label));
+        } else {
+            Ast::ctx->blk->addInst(new BranchInst(Bnez, lhs->getVar(), right_label));
+        }
+        auto blk = new BasicBlock(Ast::ctx->genLabel());
+        Ast::ctx->func->addBlock(blk);
+        Ast::ctx->blk = blk;
+        Ast::ctx->blk->addInst(new AssignInst(var, new Constant(0)));
+        Ast::ctx->blk->addInst(new JumpInst(end_label));
+        Ast::ctx->func->addBlock(right_blk);
+        Ast::ctx->blk = right_blk;
+        rhs->generateCode();
+        if (rhs->getVar()->isAddr()) {
+            auto val = new Variable(Ast::ctx->func->genVar(), false, evalType());
+            Ast::ctx->blk->addInst(new LoadInst(val, rhs->getVar()));
+            Ast::ctx->blk->addInst(new AssignInst(var, val));
+        } else {
+            Ast::ctx->blk->addInst(new AssignInst(var, rhs->getVar()));
+        }
+        Ast::ctx->func->addBlock(end_blk);
+        Ast::ctx->blk = end_blk;
         this->addVar(var);
-    } else if (lhs->getVar()->isAddr()) {
-        auto var = new Variable(Ast::ctx->expStmt->genVar(), false, evalType());
-        auto lval = new Variable(Ast::ctx->expStmt->genVar(), false, lhs->evalType());
-        Ast::ctx->blk->addInst(new LoadInst(lval, lhs->getVar()));
-        Ast::ctx->blk->addInst(new BinaryInst(var, lval, op, rhs->getVar()));
-        this->addVar(var);
-    } else if (rhs->getVar()->isAddr()) {
-        auto var = new Variable(Ast::ctx->expStmt->genVar(), false, evalType());
-        auto rval = new Variable(Ast::ctx->expStmt->genVar(), false, rhs->evalType());
-        Ast::ctx->blk->addInst(new LoadInst(rval, rhs->getVar()));
-        Ast::ctx->blk->addInst(new BinaryInst(var, lhs->getVar(), op, rval));
+    } else if (sym == OR) {
+        int end_label = Ast::ctx->genLabel();
+        auto end_blk = new BasicBlock(end_label);
+        int right_label = Ast::ctx->genLabel();
+        auto right_blk = new BasicBlock(right_label);
+        auto var = new Variable(Ast::ctx->func->genVar(), false, evalType());
+        lhs->generateCode();
+        if (lhs->getVar()->isAddr()) {
+            auto val = new Variable(Ast::ctx->func->genVar(), false, evalType());
+            Ast::ctx->blk->addInst(new LoadInst(val, lhs->getVar()));
+            Ast::ctx->blk->addInst(new BranchInst(Beqz, val, right_label));
+        } else {
+            Ast::ctx->blk->addInst(new BranchInst(Beqz, lhs->getVar(), right_label));
+        }
+        auto blk = new BasicBlock(Ast::ctx->genLabel());
+        Ast::ctx->func->addBlock(blk);
+        Ast::ctx->blk = blk;
+        Ast::ctx->blk->addInst(new AssignInst(var, new Constant(1)));
+        Ast::ctx->blk->addInst(new JumpInst(end_label));
+        Ast::ctx->func->addBlock(right_blk);
+        Ast::ctx->blk = right_blk;
+        rhs->generateCode();
+        if (rhs->getVar()->isAddr()) {
+            auto val = new Variable(Ast::ctx->func->genVar(), false, evalType());
+            Ast::ctx->blk->addInst(new LoadInst(val, rhs->getVar()));
+            Ast::ctx->blk->addInst(new AssignInst(var, val));
+        } else {
+            Ast::ctx->blk->addInst(new AssignInst(var, rhs->getVar()));
+        }
+        Ast::ctx->func->addBlock(end_blk);
+        Ast::ctx->blk = end_blk;
         this->addVar(var);
     } else {
-        int id = Ast::ctx->expStmt->genVar();
-        auto var = new Variable(id, false, evalType());
-        auto inst = new BinaryInst(var, this);
-        Ast::ctx->blk->addInst(inst);
-        this->addVar(var);
-    }
-    auto sym = this->op.sym;
-    if (sym == LSS || sym == LEQ || sym == EQL || sym == NEQ || sym == GRE || sym == GEQ) {
-        // TODO: add next label id
-        // Ast::ctx->blk->addInst(new BranchInst(Beqz, var, Ast::ctx->end_blk->getId()));
+        lhs->generateCode();
+        rhs->generateCode();
+        auto var = new Variable(Ast::ctx->expStmt->genVar(), false, evalType());
+        if (lhs->getVar()->isAddr() && rhs->getVar()->isAddr()) {
+            auto lval = new Variable(Ast::ctx->expStmt->genVar(), false, lhs->evalType());
+            auto rval = new Variable(Ast::ctx->expStmt->genVar(), false, rhs->evalType());
+            Ast::ctx->blk->addInst(new LoadInst(lval, lhs->getVar()));
+            Ast::ctx->blk->addInst(new LoadInst(rval, rhs->getVar()));
+            Ast::ctx->blk->addInst(new BinaryInst(var, lval, op, rval));
+            this->addVar(var);
+        } else if (lhs->getVar()->isAddr()) {
+            auto lval = new Variable(Ast::ctx->expStmt->genVar(), false, lhs->evalType());
+            Ast::ctx->blk->addInst(new LoadInst(lval, lhs->getVar()));
+            Ast::ctx->blk->addInst(new BinaryInst(var, lval, op, rhs->getVar()));
+            this->addVar(var);
+        } else if (rhs->getVar()->isAddr()) {
+            auto rval = new Variable(Ast::ctx->expStmt->genVar(), false, rhs->evalType());
+            Ast::ctx->blk->addInst(new LoadInst(rval, rhs->getVar()));
+            Ast::ctx->blk->addInst(new BinaryInst(var, lhs->getVar(), op, rval));
+            this->addVar(var);
+        } else {
+            auto inst = new BinaryInst(var, this);
+            Ast::ctx->blk->addInst(inst);
+            this->addVar(var);
+        }
     }
 }
 
