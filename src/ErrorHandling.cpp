@@ -9,9 +9,7 @@
 #include "ErrorHandling.h"
 using namespace std;
 
-ErrorHandling::ErrorHandling() {
-
-}
+ErrorHandling::ErrorHandling() = default;
 
 void ErrorHandling::pushError(int line, char err) {
     errors.emplace_back(line, err);
@@ -86,6 +84,10 @@ void ErrorHandling::printfError(const Symbol& sym) {
 
 void ErrorHandling::loopError(const Symbol& sym) {
     pushError(sym.row, 'm');
+}
+
+bool ErrorHandling::errorExists() {
+    return !errors.empty();
 }
 
 void ErrorHandling::output() {

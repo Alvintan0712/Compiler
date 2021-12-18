@@ -16,17 +16,19 @@ int main () {
     string buffer(length, 0);
     f.read(&buffer[0], length);
     f.close();
-
     auto* errorHandling = new ErrorHandling();
     LexicalAnalyzer lexical(buffer);
     GrammarAnalyzer grammar(lexical.getSymbols(), errorHandling);
     Ast ast(grammar.getProgram(), errorHandling);
-    // ast.traverse();
-    // errorHandling->output();
-    auto module = ast.generateCode();
-    module->show();
-    Generator g(module);
-    g.show();
+    ast.traverse();
+    if (errorHandling->errorExists()) {
+        errorHandling->output();
+    } else {
+        auto module = ast.generateCode();
+        module->show();
+        Generator g(module);
+        g.show();
+    }
 
     return 0;
 }

@@ -62,11 +62,11 @@ int GrammarAnalyzer::evalInt(Exp *exp) {
             else return evalInt(unaryExp->getExp());
         }
         if (op->sym == PLUS) {
-            return evalInt(exp);
+            return evalInt(unaryExp->getExp());
         } else if (op->sym == MINU) {
-            return -1 * evalInt(exp);
+            return -1 * evalInt(unaryExp->getExp());
         } else if (op->sym == NOT) {
-            return !evalInt(exp);
+            return !evalInt(unaryExp->getExp());
         }
     } else if (auto binaryExp = dynamic_cast<BinaryExp*>(exp)) {
         auto op = binaryExp->getOp();

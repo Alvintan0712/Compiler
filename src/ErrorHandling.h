@@ -39,6 +39,7 @@ public:
     void constAssign(const Symbol& sym);
     void printfError(const Symbol &sym);
     void loopError(const Symbol &sym);
+    bool errorExists();
     void output();
 private:
     std::vector<std::pair<int, char>> errors;

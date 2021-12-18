@@ -29,6 +29,14 @@ void Type::addDim(int dim) {
     dims.push_back(dim);
 }
 
+void Type::addPointer() {
+    this->isPointer = true;
+}
+
+void Type::addParam() {
+    this->isParam = true;
+}
+
 Symbol Type::getType() const {
     return type;
 }
@@ -63,17 +71,23 @@ bool Type::operator!=(const Type& t) {
 
 bool Type::checkDim(const Type& t) const {
     if (getDim() != t.getDim()) return false;
-    int n = getDim();
-    if (getPointer() || t.getPointer()) {
+    // if bug just comment all below
+    if (getPointer() && t.getPointer() || !getPointer() && !t.getPointer()) {
         auto v = getDims();
         auto w = t.getDims();
-        for (int i = 1; i < n; i++)
+        for (int i = 0; i < v.size(); i++)
             if (v[i] != w[i])
                 return false;
-    } else {
+    } else if (getPointer()) {
         auto v = getDims();
         auto w = t.getDims();
-        for (int i = 0; i < n; i++)
+        for (int i = 0; i < v.size(); i++)
+            if (v[i] != w[i])
+                return false;
+    } else if (t.getPointer()) {
+        auto v = getDims();
+        auto w = t.getDims();
+        for (int i = 0; i < w.size(); i++)
             if (v[i] != w[i])
                 return false;
     }

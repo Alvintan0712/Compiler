@@ -921,11 +921,17 @@ Type LVal::evalType() {
 
     Type type = Type(tkn);
 
-    int n = (int) declDim.size();
-    int lValDim = n - dims.size();
+    int n = (int) declType.getDim();
+    int lValDim = n - (int) dims.size();
     for (int i = 0; i < lValDim; i++) {
-        type.addDim(declDim[n - i - 1]);
+        if (declType.getPointer()) {
+            if (i == n - 1 && declType.getPointer()) type.addPointer();
+            else type.addDim(declDim[n - i - 2]);
+        } else {
+            type.addDim(declDim[n - i - 1]);
+        }
     }
+    if (declType.getParam()) type.addParam();
 
     return type;
 }

@@ -28,6 +28,8 @@ public:
     std::string getString() const;
 
     void addDim(int dim);
+    void addPointer();
+    void addParam();
 private:
     Symbol type;
     bool isConst, isParam, isPointer;
