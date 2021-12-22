@@ -25,7 +25,8 @@ public:
 
 enum BinaryOp {
     Add, Sub, Mul, Div, Mod, And, Or,
-    Slt, Sle, Sgt, Sge, Seq, Sne
+    Slt, Sle, Sgt, Sge, Seq, Sne,
+    Sll, Srl, Sra
 };
 
 class BinaryInst : public Inst {
@@ -37,7 +38,7 @@ public:
     explicit BinaryInst(Variable* var, BinaryExp* exp);
     BinaryInst(Variable* var, BinaryOp op, Exp* exp);
     BinaryInst(Variable* var, BinaryOp op, Variable* lhs, Variable* rhs);
-    BinaryInst(Variable* var, Variable* lhs, Symbol op, Variable* rhs);
+    BinaryInst(Variable* var, Variable* lhs, const Symbol& op, Variable* rhs);
 
     std::string show() override;
 };
@@ -166,6 +167,15 @@ public:
 
     GetReturnInst();
     GetReturnInst(Variable* var);
+
+    std::string show() override;
+};
+
+class LoadHiInst : public Inst {
+public:
+    Variable* var;
+    LoadHiInst();
+    LoadHiInst(Variable* var);
 
     std::string show() override;
 };

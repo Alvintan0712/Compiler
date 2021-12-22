@@ -70,7 +70,9 @@ void IntrusiveLinkedList<T>::insertBack(T *t, T *back) {
 template<class T>
 void IntrusiveLinkedList<T>::remove(T *t) {
     if (t->next) t->next->prev = t->prev;
+    else tail = t->prev;
     if (t->prev) t->prev->next = t->next;
+    else head = t->next;
     delete t;
 }
 

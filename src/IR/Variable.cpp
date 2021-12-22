@@ -100,6 +100,7 @@ IrParam::IrParam(int varId, Decl *decl) : Variable(varId, false, decl->getType()
 
 IrParam::IrParam(Variable *var) : Variable(var) {
     this->constant = nullptr;
+    this->var = var;
 }
 
 IrParam::IrParam(Constant* constant) {

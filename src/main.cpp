@@ -4,6 +4,7 @@
 #include "ErrorHandling.h"
 #include "Ast.h"
 #include "MIPS/Generator.h"
+#include "IR/IrOptimizer.h"
 
 using namespace std;
 
@@ -12,6 +13,8 @@ int main () {
     f.seekg(0, f.end);
     int length = f.tellg();
     f.seekg(0, f.beg);
+
+    int optim = 2, useReg = 0;
 
     string buffer(length, 0);
     f.read(&buffer[0], length);
@@ -26,7 +29,7 @@ int main () {
     } else {
         auto module = ast.generateCode();
         module->show();
-        Generator g(module);
+        Generator g(module, optim, useReg);
         g.show();
     }
 

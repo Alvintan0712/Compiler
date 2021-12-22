@@ -19,6 +19,8 @@ public:
     void addPred(BasicBlock* pred);
     void addSucc(BasicBlock* succ);
     void addInst(Inst* inst);
+    void remove(Inst* inst);
+    void insertAfter(Inst* src, Inst* inst);
 
     Inst* getEntryInst() const;
     Inst* getLastInst() const;

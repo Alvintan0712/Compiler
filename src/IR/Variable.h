@@ -50,11 +50,13 @@ public:
 class IrParam : public Variable {
 public:
     Constant* constant;
+    Variable* var;
 
     IrParam();
     explicit IrParam(int varId, Decl* decl);
     IrParam(Variable* var);
     IrParam(Constant* constant);
+
     std::string show() override;
 };
 

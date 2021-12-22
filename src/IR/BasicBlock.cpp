@@ -48,3 +48,11 @@ std::string BasicBlock::show() {
 Inst *BasicBlock::getEntryInst() const {
     return insts.head;
 }
+
+void BasicBlock::insertAfter(Inst *src, Inst *inst) {
+    insts.insertBack(inst, src);
+}
+
+void BasicBlock::remove(Inst *inst) {
+    insts.remove(inst);
+}

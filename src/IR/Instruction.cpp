@@ -51,7 +51,7 @@ BinaryInst::BinaryInst(Variable* var, BinaryOp op, Exp *exp) {
     this->rhs = exp->getVar();
 }
 
-BinaryInst::BinaryInst(Variable* var, Variable* lhs, Symbol op, Variable* rhs) {
+BinaryInst::BinaryInst(Variable* var, Variable* lhs, const Symbol& op, Variable* rhs) {
     switch(op.sym) {
         case PLUS: this->op = Add; break;
         case MINU: this->op = Sub; break;
@@ -73,17 +73,18 @@ BinaryInst::BinaryInst(Variable* var, Variable* lhs, Symbol op, Variable* rhs) {
     this->rhs = rhs;
 }
 
-std::string BinaryInst::show() {
-    std::string ops[] = { "+", "-", "*", "/", "%", "&&", "||",
-                          "<", "<=", ">", ">=", "==", "!=" };
-    return var->show() + " = " + lhs->show() + " " + ops[op] + " " + rhs->show();
-}
-
 BinaryInst::BinaryInst(Variable *var, BinaryOp op, Variable *lhs, Variable *rhs) {
     this->var = var;
     this->op  = op;
     this->lhs = lhs;
     this->rhs = rhs;
+}
+
+std::string BinaryInst::show() {
+    std::string ops[] = { "+", "-", "*", "/", "%", "&&", "||",
+                          "<", "<=", ">", ">=", "==", "!=",
+                          "<<", ">>", ">>>"};
+    return var->show() + " = " + lhs->show() + " " + ops[op] + " " + rhs->show();
 }
 
 AssignInst::AssignInst() : Inst() {
@@ -321,4 +322,16 @@ LoadAddrInst::LoadAddrInst(Variable* var, Variable* base) {
 
 std::string LoadAddrInst::show() {
     return "la " + var->show() + ", " + base->show();
+}
+
+LoadHiInst::LoadHiInst() {
+    this->var = nullptr;
+}
+
+LoadHiInst::LoadHiInst(Variable *var) {
+    this->var = var;
+}
+
+std::string LoadHiInst::show() {
+    return "mfhi " + var->show();
 }
