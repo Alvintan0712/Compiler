@@ -577,9 +577,39 @@ private:
 
 # 2021代码生成阶段设计文档
 
-### 编码前设计
+#### 编码前设计
 
-#### 编译器中间代码设计
+##### 编译器中间代码设计
+
+###### 变量
+
+* 局部变量
+
+  ```c
+  int main() {
+  	int a, b = 0;
+  }
+  ```
+
+  ```
+  int %0
+  int %1 = 0
+
+* 全局变量
+
+  ```c
+  int a, b = 0;
+  int main() {
+      ...
+  }
+  ```
+
+  ```
+  int @1
+  int @2 = 0
+  ```
+
+  
 
 ###### 表达式
 
@@ -588,11 +618,11 @@ z = a*(b + c)
 ```
 
 ```
-t1 = b + c
-z = a * t1
+%2 = %0 + %1
+%4 = %3 * %2
 ```
 
-##### 函数
+###### 函数
 
 * 函数声明
 
@@ -602,21 +632,31 @@ z = a * t1
 
   ```
   int foo()
-  para int a
-  para int b
+  label:
+  para int %0
+  para int %1
+  ...
+  ret %2
   ```
 
-* 函数调用
+* 函数调用 （`printf` 和 `getint` 都归类为函数调用）
 
   ```
   i = tar(x, y);
+  x = getint();
+  printf("%d", x);
   ```
 
   ```
-  push x
-  push y
+  push %0
+  push %1
   call tar
   i = RET
+  call getint
+  %2 = RET
+  %1 = %2
+  push %1
+  call printf
   ```
 
 * 函数返回
@@ -626,43 +666,74 @@ z = a * t1
   ```
 
   ```
-  t1 = x + y
-  ret t1
+  %2 = %0 + %1
+  ret %2
   ```
 
-##### 变量和常量
+###### 变量和常量
 
-`@` 是全局变量，`%` 是局部变量
+* 局部变量
 
-* 变量声明及初始化
-
-  ```
-  int i;
-  int j = 1;
-  ```
-
-  ```
-  var int i
-  var int j = 1
+  ```c
+  int main() {
+  	int a, b = 0;
+  }
   ```
 
+  ```
+  int %0
+  int %1 = 0
+  ```
+
+* 全局变量
+
+  ```c
+  int a, b = 0;
+  int main() {
+      ...
+  }
+  ```
+
+  ```
+  int @1
+  int @2 = 0
+  ```
+
+* 数组声明
+
+  格式为 `alloca <type> (%|@)x <size>` 
+  
+  ```c
+  int a[3] = {1,2,3};
+  int b[3];
+  ```
+  
+  ```
+  alloca int %0 3
+  %0[0] = 1
+  %0[1] = 2
+  %0[2] = 3
+  alloca int %1 3
+  ```
+  
 * 常量声明
 
   ```
-  const int c = 10;
+  const int c = 10; // 常数不做声明
+  const int arr[3] = {1,2,3};
+  ```
+  
+  ```
+  alloca const int %0 3
   ```
 
-  ```
-  const int c = 10
-  ```
-
-##### 分支和跳转
+###### 分支和跳转
 
 * 标签
 
   ```
   label:
-  	z = x + y
+  	%0 = %1 + %2
   ```
 
 * 条件分值
@@ -698,42 +769,451 @@ z = a * t1
   loop_end:
   ```
 
-##### 数组
+###### 数组
 
 * 数组定义
 
+  格式为 `alloca <type> (%|@)<编号> <size>` 
+
   ```
-  int a[4] = {1, 2, 3, 4};
+  int a[3] = {1,2,3};
+  int b[3];
   ```
 
   ```
-  arr int a[4]
-  a[0] = 1
-  a[1] = 2
-  a[2] = 3
-  a[3] = 4
+  alloca int %0 3
+  %0[0] = 1
+  %0[1] = 2
+  %0[2] = 3
+  alloca int %1 3
   ```
 
 * 数组读取
 
   ```
-  z = a[x][y]; // a[4][2]
+  int a[3][2];
+  int x = a[2][1];
   ```
 
   ```
-  t1 = x * 2
-  t2 = y + t1
-  z = a[t2]
+  la %7, %0
+  %8 = 2 * 2
+  %8 = %8 + 1
+  %9 = %8 * 4
+  %9 = %7 + %9
+  load %10, %9
+  int %6 = %10
+  ret 0
   ```
 
 * 数组存储
 
   ```
-  a[x][y] = z; // a[4][2]
+  int a[3][2];
+  int x = 0;
+  a[2][1] = x; // a[3][2]
+  ```
+  
+  ```
+  int %6 = 0
+  la %7, %0
+  %8 = 2 * 2
+  %8 = %8 + 1
+  %9 = %8 * 4
+  %9 = %7 + %9
+  load %10, %9
+  %10 = %6
+  store %10, %9
+
+###### 控制语句
+
+* `while` 语句
+
+  ```c
+  while (condition) stmt
   ```
 
   ```
-  t1 = x * 2
-  t2 = y + t1
-  a[t2] = z
+  label_1:
+  	// while condition code
+  	Beqz %1, label_3
+  label_2:
+  	// while statement code
+  	Jump label_1
+  label_3:
+  	// while end code
+  ```
+
+* `if` 语句
+
+  ```c
+  if (cond1) stmt1;
+  if (cond2) stmt2;
+  else stmt3;
+  ```
+
+  ```
+  label_1:
+  	// if condition code
+  	Beqz %1, label_2
+  label_2:
+  	// if end code (empty)
+  label_3:
+  	// if condition code
+  	Beqz %2, label_5
+  label_4:
+  	// if statement code
+  label_5:
+  	// else statement code
+  label_6:
+  	// if end code
+  ```
+
+###### 条件语句
+
+* `&&` 
+
+  ```c
+  cond1 && cond2
+  ```
+
+  ```
+  // cond1 code
+  Beqz %1, end_label
+  // cond2 code
+  Beqz %2, end_label
+  ```
+
+* `||` 
+
+  ```c
+  cond1 || cond2
+  ```
+
+  ```
+  // cond1 code
+  Beqz %1, body_label
+  // cond2 code
+  Beqz %2, body_label
+  ```
+
+#### 编码后设计
+
+##### 中间代码生成
+
+中间代码设计分为三大层次，`IrFunc` 、`BasicBlock`、`Inst` ，并使用数据结构侵入式链表存储。
+
+###### `IrFunc` 设计
+
+```c++
+class IrFunc {
+    int varId; // 局部变量 id
+    std::string funcName; // 函数名
+    std::vector<IrParam*> params; // 参数
+    IntrusiveLinkedList<BasicBlock> blocks; // 基本块链表
+    Type returnType; // 返回类型
+
+    std::map<Decl*, Variable*> table; // 函数符号表
+};
+```
+
+###### `BasicBlock` 设计
+
+```c++
+class BasicBlock {
+    BasicBlock *prev, *next; // 链表指针
+
+    int label_id;
+    IntrusiveLinkedList<Inst> insts; // 中间指令
+    std::vector<BasicBlock*> pred, succ; // 基本块的前驱和后继
+};
+```
+
+###### `Inst` 设计
+
+```c++
+class Inst {
+    Inst *prev, *next; // 链表指针
+};
+```
+
+实现时把中间代码都分类成以下的中间指令，并都继承父类 `Inst` 
+
+* `BinaryInst`
+
+  ```c++
+  class BinaryInst : public Inst {
+      BinaryOp op;
+      Variable *var, *lhs, *rhs;
+  };
+  ```
+
+* `AssignInst`
+
+  ```c++
+  class AssignInst : public Inst {
+      Variable *lhs, *rhs;
+  };
+  
+  ```
+
+* `ReturnInst`
+
+  ```c++
+  class ReturnInst : public Inst {
+      Variable* var;
+  };
+  ```
+
+* `CallInst`
+
+  ```c++
+  class CallInst : public Inst {
+      Symbol sym;
+      IrFunc* func;
+      std::vector<Variable*> params;
+  };
+  ```
+
+* `DeclInst`
+
+  ```c++
+  class DeclInst : public Inst {
+      Variable *var, *init;
+      std::vector<Variable*> inits;
+  };
+  ```
+
+* `GetReturnInst`
+
+  ```c++
+  
+  class GetReturnInst : public Inst {
+      Variable* var; // 接收变量
+  };
+  ```
+
+* `BranchInst`
+
+  ```c++
+  class BranchInst : public Inst {
+      BranchOp op;
+      Variable* var;
+      int label_id;
+  };
+  ```
+
+* `JumpInst`
+
+  ```c++
+  
+  class JumpInst : public Inst {
+      int label_id;
+  };
+  ```
+
+* `NotInst`
+
+  ```c++
+  class NotInst : public Inst {
+      Variable *var, *not_var;
+  };
+  ```
+
+* `LoadAddrInst`
+
+  ```c++
+  class LoadAddrInst : public Inst {
+      Variable *var, *base;
+  };
+  ```
+
+* `LoadInst`
+
+  ```c++
+  class LoadInst : public Inst {
+  public:
+      Variable *dst, *addr;
+  };
+  ```
+
+* `StoreInst`
+
+  ```c++
+  class StoreInst : public Inst {
+  public:
+      Variable *addr, *val;
+      StoreInst();
+      StoreInst(Variable* val, Variable* addr);
+  
+      std::string show() override;
+  };
+  ```
+
+中间代码中的数据表示都为 `Variable` ，以下为 `Variable` 的设计
+
+###### `Variable` 设计
+
+```c++
+class Variable {
+    int id; // id
+    Type bType; // 变量数据类型
+    bool is_global, is_addr; // 表示该 Variable 是全局和数组地址
+    std::vector<Variable*> dims; // 变量维度
+};
+```
+
+`Variable` 也细分成以下的类，都继承 `Variable` 父类
+
+* `Constant`
+
+  `Constant` 可以是常数或常量字符串，并由 `type` 决定
+
+  ```c++
+  class Constant : public Variable {
+      int value; // 数值
+      SYMBOL type; // 数据类型
+      std::string str; // 字符串
+  };
+  ```
+
+* `IrParam` 
+
+  实参类型
+
+  ```c++
+  class IrParam : public Variable {
+      Constant* constant;
+      Variable* var;
+  };
+  ```
+
+* `IrArray`
+
+  ```c++
+  class IrArray : public Variable {
+      bool isConst; // 是否为常量
+      int base, size; // 基地址和数组大小
+  };
+  ```
+
+* `IrPointer` 
+
+  `IrPointer` 主要用在数组传参上
+
+  ```c++
+  class IrPointer : public IrParam {
+  public:
+      bool isConst; // 是否为常量
+      int base; // 地址
+  };
+  ```
+
+  
+
+##### 目标代码生成
+
+代码生成作业实现的是生成 `Mips` 汇编代码，目标代码生成主要在 `Generator` 上实现，根据中间指令，生成对应的汇编代码。
+
+* `BinaryInst`
+
+  该指令有四个情况：
+
+  * 若 `lhs` 和 `rhs` 都为常量
+
+    直接在编译器里计算
+
+  * 若 `lhs` 为常量
+
+    若该运算符满足交换律，则将 `lhs` 作为立即数计算，否则需 `li` 到寄存器上
+
+  * 若 `rhs` 为常量
+
+    将 `rhs` 作为立即数计算
+
+  * 若都不为常量
+
+    将 `lhs` 和 `rhs` 从内存拿到寄存器中，并根据 `op` 的类型进行计算。
+
+* `AssignInst` 
+
+  该指令有两个情况
+
+  * 若 `rhs` 为常量
+
+    直接 `li` 到 `lhs`
+
+  * 若 `rhs` 不为常量
+
+    从内存 `lw` 并赋值到 `lhs` 
+
+* `ReturnInst` 
+
+  若有返回值将 `var` 传到 `v0` 里，再 `jr $ra`
+
+* `CallInst` 
+
+  该指令分为三个情况
+
+  * `getint` 函数
+
+    将 `v0` 设为 $5$ 并执行 `syscall` 。
+
+  * `printf` 函数
+
+    根据参数类型设置 `v0` 并执行 `syscall` 输出，参数可以是字符串常量及普通变量。
+
+  * 其他函数
+
+    将实参填入到该函数定义的位置，再将当前 `$ra` 寄存器存入栈内，并腾出被调用函数的空间，最后跳转到函数的第一个 `BasicBlock` 
+
+* `DeclInst` 
+
+  若有初始化，则将对应的值存入该变量的内存。
+
+* `GetReturnInst` 
+
+  将 `v0` 的值存入该变量的内存。
+
+* `BranchInst` 
+
+  将变量从内存取出到寄存器，并根据 op 决定跳转条件跳转到制定的 `label`。
+
+* `JumpInst` 
+
+  直接跳转到制定 `label` 。
+
+* `NotInst` 
+
+  检测 `Variable` 是否为 $0$ 即可。
+
+* `LoadAddrInst` 
+
+  将 `base` 的地址放入 `var` 内。
+
+* `LoadInst` 
+
+  将 `addr` 地址的值放入 `dst` 内。
+
+* `StoreInst` 
+
+  将 `val` 的值放入 `addr` 地址的内存里。
+
+
+
+### debug 经历
+
+一开始实现的 bug 很多，只叙述几个重要的 bug 
+
+* break continue
+
+  在 while 代码的设计里分为三个 label，即 while condition, while body 和 while end，一开始认为执行完 while condition 后就不会再使用这三个 label，因此 break 的时候找不到 label 而导致程序崩溃。因此这些 label 会用栈进行维护，每进入一个 while 程序就会将这三个 label 压栈，退出时弹栈。
+
+* 指针取地址
+
+  数组取地址时使用的是 `la` ，但因为指针存储的是数组的地址，若直接 `la` 会取出指针的地址，而不是数组的基地址。
+
+* NotInst
+
+  当执行 `!x` 时，需要一个临时变量保存结果，而不是直接将 `x` 设为 `!x` 。
 
