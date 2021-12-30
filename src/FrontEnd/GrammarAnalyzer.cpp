@@ -9,9 +9,11 @@
 using namespace std;
 
 bool isLVal;
+bool inConst;
 GrammarAnalyzer::GrammarAnalyzer(vector<Symbol> symbols, ErrorHandling* errorHandling) {
     src = move(symbols);
     err = errorHandling;
+    table.addError(err);
     src.emplace_back(END, "", 0, 0);
     analyze();
 }
@@ -43,6 +45,9 @@ Symbol GrammarAnalyzer::viewNextSymbol(int i) {
 int GrammarAnalyzer::evalInt(Exp *exp) {
     if (auto lval = dynamic_cast<LVal*>(exp)) {
         auto decl = table.findDecl(lval);
+        if (!decl || !decl->isConst()) {
+            return 0;
+        }
         if (decl->getType().getConst() || table.isGlobal()) {
             if (lval->getDims().empty()) {
                 return evalInt(decl->getInitValExp()[0]);
@@ -241,12 +246,18 @@ vector<Decl*> GrammarAnalyzer::varDecl() {
     Symbol symbol;
     type = bType();
     if (sym.sym != IDENFR) output();
-    else decls.push_back(varDef(type));
+    else {
+        auto def = varDef(type);
+        decls.push_back(def);
+        table.pushDecl(def);
+    }
 
     while (sym.sym == COMMA) {
         pushSymbol();
         if (sym.sym != IDENFR) output();
-        decls.push_back(varDef(type));
+        auto def = varDef(type);
+        decls.push_back(def);
+        table.pushDecl(def);
     }
     if (sym.sym != SEMICN) err->grammarError(symbol, SEMICN);
     else pushSymbol();
@@ -617,7 +628,13 @@ UnaryExp* GrammarAnalyzer::lVal() {
     isLVal = true;
 
     out.emplace_back("<LVal>");
-    return new LVal(idt, dims);
+    auto lval = new LVal(idt, dims);
+    if (inConst) {
+        auto d = table.findDecl(lval);
+        if (!d->isConst())
+            err->constError(idt);
+    }
+    return lval;
 }
 
 UnaryExp* GrammarAnalyzer::primaryExp() {
@@ -666,6 +683,10 @@ UnaryExp* GrammarAnalyzer::unaryExp() {
 
         pushSymbol();
         if (sym.sym == LPARENT) {
+            if (inConst) {
+                err->constError(idt);
+            }
+
             Symbol symbol = sym;
             pushSymbol();
             if (sym.sym != RPARENT && isExp())
@@ -742,12 +763,28 @@ Exp* GrammarAnalyzer::addExp() {
     Symbol op;
 
     lhs = mulExp();
-    while (sym.sym == PLUS || sym.sym == MINU) {
+    if (isLVal && sym.sym == PLUS && viewNextSymbol().sym == PLUS) {
+        auto lval = (LVal *) lhs;
         op = sym;
         pushSymbol();
-        rhs = mulExp();
-        out.emplace_back("<AddExp>");
-        lhs = new BinaryExp(lhs, op, rhs);
+        pushSymbol();
+        auto exp = new BinaryExp(lval, op, new UnaryExp(Symbol(INTCON, "1", 0, 0)));
+        return new AssignExp(lval, exp);
+    } else if (isLVal && sym.sym == MINU && viewNextSymbol().sym == MINU) {
+        auto lval = (LVal *) lhs;
+        op = sym;
+        pushSymbol();
+        pushSymbol();
+        auto exp = new BinaryExp(lval, op, new UnaryExp(Symbol(INTCON, "1", 0, 0)));
+        return new AssignExp(lval, exp);
+    } else {
+        while (sym.sym == PLUS || sym.sym == MINU) {
+            op = sym;
+            pushSymbol();
+            rhs = mulExp();
+            out.emplace_back("<AddExp>");
+            lhs = new BinaryExp(lhs, op, rhs);
+        }
     }
 
     out.emplace_back("<AddExp>");
@@ -823,7 +860,9 @@ Exp* GrammarAnalyzer::lOrExp() {
 }
 
 Exp* GrammarAnalyzer::constExp() {
+    inConst = true;
     Exp* node = addExp();
+    inConst = false;
 
     out.emplace_back("<ConstExp>");
     return node;

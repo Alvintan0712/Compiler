@@ -14,7 +14,7 @@ int main () {
     int length = f.tellg();
     f.seekg(0, f.beg);
 
-    int optim = 2, useReg = 0;
+    int optim = 0, useReg = 0;
 
     string buffer(length, 0);
     f.read(&buffer[0], length);
@@ -26,7 +26,8 @@ int main () {
     ast.traverse();
     if (errorHandling->errorExists()) {
         errorHandling->output();
-    } else {
+    }
+    else {
         auto module = ast.generateCode();
         module->show();
         Generator g(module, optim, useReg);

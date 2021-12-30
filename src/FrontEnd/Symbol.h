@@ -6,6 +6,7 @@
 #define SRC_SYMBOL_H
 #include <string>
 
+// if bug delete this
 const std::string symbolsName[] = {
         "UNKNOWN", "END", "IDENFR", "INTCON", "STRCON", "MAINTK", "CONSTTK",
         "INTTK", "BREAKTK", "CONTINUETK", "IFTK", "ELSETK", "NOT", "AND",

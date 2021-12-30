@@ -23,6 +23,7 @@ public:
     bool checkDecl(LVal* lval);
     Decl* findDecl(LVal* lval);
     void pushDecl(Decl* decl);
+    void pushDeclGrammar(Decl* decl);
     bool containsFunc(Func* func);
     bool checkFunc(CallExp* func);
     Func* findFunc(CallExp* func);

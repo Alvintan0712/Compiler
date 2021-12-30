@@ -86,6 +86,10 @@ void ErrorHandling::loopError(const Symbol& sym) {
     pushError(sym.row, 'm');
 }
 
+void ErrorHandling::constError(const Symbol &sym) {
+    pushError(sym.row, 'p');
+}
+
 bool ErrorHandling::errorExists() {
     return !errors.empty();
 }

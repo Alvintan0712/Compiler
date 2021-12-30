@@ -36,6 +36,11 @@ void Table::pushDecl(Decl* decl) {
     else declTable.back().insert(make_pair(decl->getIdent().val, decl));
 }
 
+void Table::pushDeclGrammar(Decl* decl) {
+    if (containsDecl(decl)) return;
+    else declTable.back().insert(make_pair(decl->getIdent().val, decl));
+}
+
 void Table::pushBlock() {
     declTable.emplace_back();
     funcTable.emplace_back();
